@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AdminRoute } from './AdminRoute'
+import { FullPageSpinner } from '../components/ui/Spinner'
 import { AdminLayout } from '../layouts/AdminLayout'
 import { VendedorLayout } from '../layouts/VendedorLayout'
 import { LoginPage } from '../modules/auth/LoginPage'
@@ -19,7 +20,14 @@ function Placeholder({ title }) {
 }
 
 export function AppRoutes() {
-  const { isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
+
+  // Helper: decide the correct home page based on role
+  function RootRedirect() {
+    if (loading) return <FullPageSpinner />
+    if (!user) return <Navigate to="/login" replace />
+    return <Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />
+  }
 
   return (
     <Routes>
@@ -61,16 +69,10 @@ export function AppRoutes() {
       </Route>
 
       {/* Root redirect */}
-      <Route
-        path="/"
-        element={<Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />}
-      />
+      <Route path="/" element={<RootRedirect />} />
 
       {/* 404 fallback */}
-      <Route
-        path="*"
-        element={<Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />}
-      />
+      <Route path="*" element={<RootRedirect />} />
     </Routes>
   )
 }

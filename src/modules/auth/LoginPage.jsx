@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Gem } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { loginConEmail } from './authService'
+import { useAuth } from '../../hooks/useAuth'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 
@@ -9,6 +11,12 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const { user, isAdmin, loading: authLoading } = useAuth()
+
+  // If already authenticated, redirect away from login
+  if (!authLoading && user) {
+    return <Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -19,7 +27,7 @@ export function LoginPage() {
     setLoading(true)
     try {
       await loginConEmail(email, password)
-      // Redirect handled automatically by useInitAuth → SIGNED_IN event
+      // Redirect handled automatically by the guard above once auth state updates
     } catch (err) {
       toast.error(err.message || 'Credenciales incorrectas')
     } finally {
