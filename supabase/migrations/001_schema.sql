@@ -45,7 +45,7 @@ create table if not exists productos (
   nombre text not null,
   descripcion text,
   categoria_id uuid references categorias(id),
-  metal text check (metal in ('oro', 'plata', 'ambos', 'ninguno')),
+  metal text check (metal in ('oro', 'plata', 'ambos', 'fantasia', 'ninguno')),
   peso_gramos decimal(10,3),
   costo_mano_obra decimal(10,2) default 0,
   precio_fijo decimal(10,2),
@@ -266,6 +266,8 @@ create policy "productos_insert_admin" on productos for insert to authenticated
   with check (get_user_rol() = 'administrador');
 create policy "productos_update_admin" on productos for update to authenticated
   using (get_user_rol() = 'administrador');
+create policy "productos_delete_admin" on productos for delete to authenticated
+  using (get_user_rol() = 'administrador');
 
 -- INVENTARIO: all read; admin write
 create policy "inventario_select" on inventario for select to authenticated using (true);
@@ -273,12 +275,16 @@ create policy "inventario_insert_admin" on inventario for insert to authenticate
   with check (get_user_rol() = 'administrador');
 create policy "inventario_update_admin" on inventario for update to authenticated
   using (get_user_rol() = 'administrador');
+create policy "inventario_delete_admin" on inventario for delete to authenticated
+  using (get_user_rol() = 'administrador');
 
 -- MOVIMIENTOS_INVENTARIO: admin reads all; all authenticated insert
 create policy "movimientos_inventario_select_admin" on movimientos_inventario for select to authenticated
   using (get_user_rol() = 'administrador');
 create policy "movimientos_inventario_insert" on movimientos_inventario for insert to authenticated
   with check (true);
+create policy "movimientos_inventario_delete_admin" on movimientos_inventario for delete to authenticated
+  using (get_user_rol() = 'administrador');
 
 -- CLIENTES: all read; admin write
 create policy "clientes_select" on clientes for select to authenticated using (true);

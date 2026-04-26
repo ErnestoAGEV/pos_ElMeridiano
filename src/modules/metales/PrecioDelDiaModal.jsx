@@ -36,25 +36,34 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
   async function cargarDesdeAPIs() {
     setLoading(true)
     setApiError(null)
-    try {
-      const [metales, tc] = await Promise.all([
-        fetchPreciosMetalesAPI(),
-        fetchTipoCambioUSDMXN(),
-      ])
+
+    // Fetch independently so one failure doesn't block the other
+    const [metalesResult, tcResult] = await Promise.allSettled([
+      fetchPreciosMetalesAPI(),
+      fetchTipoCambioUSDMXN(),
+    ])
+
+    const metalesOk = metalesResult.status === 'fulfilled'
+    const tcOk = tcResult.status === 'fulfilled'
+
+    if (metalesOk && tcOk) {
+      const metales = metalesResult.value
+      const tc = tcResult.value
       setXauUsd(metales.xau)
       setXagUsd(metales.xag)
       setTipoCambio(tc.toFixed(2))
-
-      const oroPrecio = convertirAGramoMXN(metales.xau, tc)
-      const plataPrecio = convertirAGramoMXN(metales.xag, tc)
-      setOroGramo(oroPrecio.toFixed(2))
-      setPlataGramo(plataPrecio.toFixed(2))
-    } catch (err) {
-      setApiError(err.message)
-      setEditadoManual(true) // force manual since API failed
-    } finally {
-      setLoading(false)
+      setOroGramo(convertirAGramoMXN(metales.xau, tc).toFixed(2))
+      setPlataGramo(convertirAGramoMXN(metales.xag, tc).toFixed(2))
+    } else if (!metalesOk && tcOk) {
+      setTipoCambio(tcResult.value.toFixed(2))
+      setApiError('No se pudo consultar precios de metales. Ingresa los precios manualmente.')
+      setEditadoManual(true)
+    } else {
+      setApiError('No se pudieron consultar las APIs. Ingresa los precios manualmente.')
+      setEditadoManual(true)
     }
+
+    setLoading(false)
   }
 
   function handleRecalcular() {

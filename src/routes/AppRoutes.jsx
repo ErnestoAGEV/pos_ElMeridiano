@@ -10,6 +10,7 @@ import { DashboardPage } from '../modules/dashboard/DashboardPage'
 import { UsuariosPage } from '../modules/usuarios/UsuariosPage'
 import { MetalesPage } from '../modules/metales/MetalesPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
+import { CatalogoPage } from '../modules/catalogo/CatalogoPage'
 
 function Placeholder({ title }) {
   return (
@@ -46,7 +47,7 @@ export function AppRoutes() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/metales" element={<MetalesPage />} />
-        <Route path="/catalogo" element={<Placeholder title="Catálogo de Productos" />} />
+        <Route path="/catalogo" element={<CatalogoPage />} />
         <Route path="/inventario" element={<Placeholder title="Inventario" />} />
         <Route path="/devoluciones" element={<Placeholder title="Devoluciones" />} />
         <Route path="/auditoria" element={<Placeholder title="Auditoría" />} />

@@ -3,24 +3,31 @@ import { supabase } from '../../lib/supabase'
 const TROY_OZ_TO_GRAMS = 31.1035
 
 /**
- * Fetch gold (XAU) and silver (XAG) prices in USD/troy oz from metals.live
+ * Fetch gold (XAU) and silver (XAG) prices in USD/troy oz from gold-api.com.
+ * Uses a 5s timeout — if the API is down, the modal falls back to manual input.
  */
 export async function fetchPreciosMetalesAPI() {
-  const res = await fetch('https://metals.live/api/v1/latest')
-  if (!res.ok) throw new Error('No se pudo consultar la API de metales')
-  const data = await res.json()
-  const precios = Array.isArray(data) ? data[0] : data
-  if (!precios?.gold || !precios?.silver) {
+  const [resXau, resXag] = await Promise.all([
+    fetch('https://api.gold-api.com/price/XAU', { signal: AbortSignal.timeout(5000) }),
+    fetch('https://api.gold-api.com/price/XAG', { signal: AbortSignal.timeout(5000) })
+  ])
+  
+  if (!resXau.ok || !resXag.ok) throw new Error('No se pudo consultar la API de metales')
+  
+  const [dataXau, dataXag] = await Promise.all([resXau.json(), resXag.json()])
+  
+  if (!dataXau?.price || !dataXag?.price) {
     throw new Error('Formato de respuesta inesperado de la API de metales')
   }
-  return { xau: precios.gold, xag: precios.silver }
+  
+  return { xau: dataXau.price, xag: dataXag.price }
 }
 
 /**
  * Fetch USD→MXN exchange rate from open.er-api.com
  */
 export async function fetchTipoCambioUSDMXN() {
-  const res = await fetch('https://open.er-api.com/v6/latest/USD')
+  const res = await fetch('/api/exchange')
   if (!res.ok) throw new Error('No se pudo consultar el tipo de cambio')
   const data = await res.json()
   if (!data?.rates?.MXN) {
