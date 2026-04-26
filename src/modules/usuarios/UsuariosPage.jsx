@@ -41,10 +41,10 @@ export function UsuariosPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-100">Gestión de Usuarios</h1>
-        <p className="text-slate-400 text-sm mt-1">
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-bold text-warm-900">Gestión de Usuarios</h1>
+        <p className="text-warm-400 text-sm mt-2">
           Para crear un nuevo usuario, hazlo desde el panel de Supabase
           (Authentication → Add user) y luego asigna su rol aquí.
         </p>
@@ -55,22 +55,22 @@ export function UsuariosPage() {
           <Spinner size="lg" />
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
-                <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Rol</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Creado</th>
-                <th className="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
+              <tr className="border-b border-ivory-300">
+                <th className="text-left px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Nombre</th>
+                <th className="text-left px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Rol</th>
+                <th className="text-left px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Estado</th>
+                <th className="text-left px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Creado</th>
+                <th className="text-right px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-ivory-200">
               {usuarios.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-800/50 transition-colors">
+                <tr key={u.id} className="hover:bg-ivory-50 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-slate-100">{u.nombre}</p>
+                    <p className="text-sm font-medium text-warm-800">{u.nombre}</p>
                   </td>
                   <td className="px-6 py-4">
                     <Badge variant={u.roles?.nombre === 'administrador' ? 'gold' : 'blue'}>
@@ -82,24 +82,24 @@ export function UsuariosPage() {
                       {u.activo ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
+                  <td className="px-6 py-4 text-sm text-warm-400">
                     {new Date(u.created_at).toLocaleDateString('es-MX')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => abrirEditar(u)}
-                        className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-700 rounded transition-colors"
+                        className="p-2 text-warm-400 hover:text-gold-500 hover:bg-gold-50 rounded-lg transition-all"
                         title="Editar nombre y rol"
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => handleToggleActivo(u)}
-                        className={`p-1.5 rounded transition-colors ${
+                        className={`p-2 rounded-lg transition-all ${
                           u.activo
-                            ? 'text-emerald-400 hover:bg-slate-700'
-                            : 'text-slate-500 hover:bg-slate-700'
+                            ? 'text-emerald-500 hover:bg-emerald-50'
+                            : 'text-warm-300 hover:bg-ivory-200'
                         }`}
                         title={u.activo ? 'Desactivar usuario' : 'Activar usuario'}
                       >
@@ -111,7 +111,7 @@ export function UsuariosPage() {
               ))}
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={5} className="px-6 py-16 text-center text-warm-300">
                     No hay usuarios registrados aún
                   </td>
                 </tr>

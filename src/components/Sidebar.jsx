@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 
 const adminLinks = [
   { to: '/dashboard', icon: BarChart2, label: 'Dashboard' },
-  { to: '/metales', icon: DollarSign, label: 'Precios de Metales' },
+  { to: '/metales', icon: DollarSign, label: 'Precios Metales' },
   { to: '/catalogo', icon: Gem, label: 'Catálogo' },
   { to: '/inventario', icon: Package, label: 'Inventario' },
   { to: '/clientes', icon: Users, label: 'Clientes' },
@@ -48,25 +48,34 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col h-screen w-64 bg-slate-900 border-r border-slate-800 shrink-0">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-800">
-        <div className="w-9 h-9 rounded-lg bg-gold-500/20 border border-gold-500/40 flex items-center justify-center">
-          <Gem size={18} className="text-gold-400" />
-        </div>
-        <div>
-          <p className="font-bold text-slate-100 leading-tight">Meridiano</p>
-          <p className="text-xs text-slate-500">Sistema POS</p>
+    <aside className="flex flex-col h-screen w-64 bg-white border-r border-ivory-300 shrink-0">
+      {/* Brand */}
+      <div className="px-6 pt-7 pb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center shadow-gold-sm">
+            <Gem size={18} className="text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-warm-900 leading-tight tracking-tight">
+              Meridiano
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-warm-400 font-sans font-medium">
+              Joyería
+            </p>
+          </div>
         </div>
       </div>
 
+      {/* Ornamental divider */}
+      <div className="mx-5 divider-gold" />
+
       {/* Role badge */}
-      <div className="px-5 py-3 border-b border-slate-800">
+      <div className="px-6 py-3">
         <span
-          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-semibold ${
             isAdmin
-              ? 'bg-gold-500/15 text-gold-400'
-              : 'bg-blue-500/15 text-blue-400'
+              ? 'bg-gold-50 text-gold-600 border border-gold-200'
+              : 'bg-sky-50 text-sky-600 border border-sky-200'
           }`}
         >
           {isAdmin ? 'Administrador' : 'Vendedor'}
@@ -74,37 +83,38 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
         {links.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-gold-500/15 text-gold-400 font-medium'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                  ? 'bg-gold-50 text-gold-600 shadow-gold-sm border border-gold-200/60'
+                  : 'text-warm-500 hover:bg-ivory-200 hover:text-warm-700 border border-transparent'
               }`
             }
           >
-            <Icon size={16} className="shrink-0" />
+            <Icon size={16} className="shrink-0" strokeWidth={1.8} />
             {label}
           </NavLink>
         ))}
       </nav>
 
-      {/* User info + logout */}
-      <div className="px-3 py-4 border-t border-slate-800">
+      {/* User section */}
+      <div className="px-3 py-4 border-t border-ivory-300">
         <div className="px-3 py-2 mb-1">
-          <p className="text-sm font-medium text-slate-200 truncate">
+          <p className="text-sm font-semibold text-warm-800 truncate">
             {perfil?.nombre || 'Usuario'}
           </p>
+          <p className="text-[11px] text-warm-400">{isAdmin ? 'Administrador' : 'Vendedor'}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          className="flex items-center gap-3 px-3 py-2 w-full rounded-xl text-[13px] font-medium text-warm-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
         >
-          <LogOut size={16} />
+          <LogOut size={16} strokeWidth={1.8} />
           Cerrar sesión
         </button>
       </div>

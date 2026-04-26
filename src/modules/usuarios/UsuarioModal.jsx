@@ -51,12 +51,12 @@ export function UsuarioModal({ isOpen, onClose, usuario, onSuccess }) {
           onChange={(e) => setNombre(e.target.value)}
           required
         />
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-300">Rol</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-warm-600">Rol</label>
           <select
             value={rolId}
             onChange={(e) => setRolId(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-gold-500"
+            className="select-luxury"
             required
           >
             <option value="">Seleccionar rol...</option>

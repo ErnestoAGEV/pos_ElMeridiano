@@ -4,17 +4,80 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-ivory-100 text-warm-900 antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 
-  ::-webkit-scrollbar {
-    @apply w-1.5;
+  h1, h2, h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
   }
-  ::-webkit-scrollbar-track {
-    @apply bg-slate-900;
+
+  ::selection {
+    background: rgba(212, 175, 55, 0.2);
+    color: #3A3731;
   }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded-full;
+    background: #D4CFC3;
+    border-radius: 100px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #B8962E; }
+}
+
+@layer components {
+  /* Premium card with subtle gold top-accent */
+  .card {
+    @apply bg-white rounded-2xl shadow-luxury border border-ivory-300/60;
+  }
+
+  .card-gold {
+    @apply bg-white rounded-2xl shadow-gold-sm overflow-hidden;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+  .card-gold::before {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, #D4AF37, #E8C44E, #D4AF37);
+  }
+
+  /* Thin ornamental gold divider */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+  }
+
+  /* Subtle texture for sidebar/sections */
+  .texture-linen {
+    background-color: #FEFDFB;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' type='fractalNoise' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  }
+
+  /* Gold shimmer text */
+  .text-gold-shimmer {
+    background: linear-gradient(135deg, #9A7D26 0%, #D4AF37 40%, #E8C44E 50%, #D4AF37 60%, #9A7D26 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Select styling */
+  .select-luxury {
+    @apply bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800
+           focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400
+           transition-all appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23A9A295' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 5.646a.5.5 0 0 1 .708 0L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+}
+
+@layer utilities {
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
   }
 }

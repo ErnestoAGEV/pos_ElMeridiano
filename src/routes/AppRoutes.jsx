@@ -8,13 +8,14 @@ import { VendedorLayout } from '../layouts/VendedorLayout'
 import { LoginPage } from '../modules/auth/LoginPage'
 import { DashboardPage } from '../modules/dashboard/DashboardPage'
 import { UsuariosPage } from '../modules/usuarios/UsuariosPage'
+import { MetalesPage } from '../modules/metales/MetalesPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
 
 function Placeholder({ title }) {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-100">{title}</h1>
-      <p className="text-slate-400 mt-2">Próximamente</p>
+    <div className="p-8">
+      <h1 className="font-display text-3xl font-bold text-warm-900">{title}</h1>
+      <p className="text-warm-400 mt-2">Próximamente</p>
     </div>
   )
 }
@@ -22,7 +23,6 @@ function Placeholder({ title }) {
 export function AppRoutes() {
   const { user, loading, isAdmin } = useAuth()
 
-  // Helper: decide the correct home page based on role
   function RootRedirect() {
     if (loading) return <FullPageSpinner />
     if (!user) return <Navigate to="/login" replace />
@@ -45,7 +45,7 @@ export function AppRoutes() {
         }
       >
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/metales" element={<Placeholder title="Precios de Metales" />} />
+        <Route path="/metales" element={<MetalesPage />} />
         <Route path="/catalogo" element={<Placeholder title="Catálogo de Productos" />} />
         <Route path="/inventario" element={<Placeholder title="Inventario" />} />
         <Route path="/devoluciones" element={<Placeholder title="Devoluciones" />} />
