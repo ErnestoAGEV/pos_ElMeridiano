@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && echo y | npm create vite@latest . -- --template react 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm install react react-dom && npm install @supabase/supabase-js zustand react-router-dom react-hot-toast lucide-react && npm install -D vite @vitejs/plugin-react tailwindcss@3 postcss autoprefixer 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx tailwindcss init -p 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1)"
+    ]
+  }
+}
