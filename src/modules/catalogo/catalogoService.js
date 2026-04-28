@@ -80,6 +80,7 @@ export async function crearProducto(producto) {
       peso_gramos: producto.peso_gramos || null,
       costo_mano_obra: producto.costo_mano_obra || 0,
       precio_fijo: producto.precio_fijo || null,
+      costo_compra: producto.costo_compra || 0,
       imagen_url: producto.imagen_url || null,
     })
     .select()
@@ -120,6 +121,7 @@ export async function actualizarProducto(id, producto) {
       peso_gramos: producto.peso_gramos || null,
       costo_mano_obra: producto.costo_mano_obra || 0,
       precio_fijo: producto.precio_fijo || null,
+      costo_compra: producto.costo_compra || 0,
       imagen_url: producto.imagen_url || null,
       activo: producto.activo,
     })

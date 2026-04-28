@@ -3,9 +3,10 @@ import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
-import { Upload, Trash2 } from 'lucide-react'
+import { Upload, Trash2, TrendingUp } from 'lucide-react'
 import { crearProducto, actualizarProducto, eliminarProducto, subirImagenProducto } from './catalogoService'
 import { registrarEnAuditoria } from '../auth/authService'
+import { usePrecioDelDia } from '../metales/usePrecioDelDia'
 
 const METALES = [
   { value: 'oro', label: 'Oro' },
@@ -17,6 +18,7 @@ const METALES = [
 
 export function ProductoModal({ isOpen, onClose, producto, categorias, userId, onGuardado }) {
   const esEdicion = !!producto
+  const { precioHoy } = usePrecioDelDia()
 
   const [form, setForm] = useState({
     codigo: '',
@@ -27,6 +29,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
     peso_gramos: '',
     costo_mano_obra: '',
     precio_fijo: '',
+    costo_compra: '',
     imagen_url: '',
     stock_actual: '',
     activo: true,
@@ -47,6 +50,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           peso_gramos: producto.peso_gramos ?? '',
           costo_mano_obra: producto.costo_mano_obra ?? '',
           precio_fijo: producto.precio_fijo ?? '',
+          costo_compra: producto.costo_compra ?? '',
           imagen_url: producto.imagen_url || '',
           stock_actual: producto.inv?.[0]?.stock_actual ?? producto.inv?.stock_actual ?? 0,
           activo: producto.activo ?? true,
@@ -61,6 +65,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           peso_gramos: '',
           costo_mano_obra: '',
           precio_fijo: '',
+          costo_compra: '',
           imagen_url: '',
           stock_actual: '',
           activo: true,
@@ -141,6 +146,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
         peso_gramos: form.peso_gramos ? parseFloat(form.peso_gramos) : null,
         costo_mano_obra: form.costo_mano_obra ? parseFloat(form.costo_mano_obra) : 0,
         precio_fijo: form.precio_fijo ? parseFloat(form.precio_fijo) : null,
+        costo_compra: form.costo_compra ? parseFloat(form.costo_compra) : 0,
         categoria_id: form.categoria_id || null,
         stock_inicial: form.stock_actual !== '' ? parseInt(form.stock_actual, 10) : 0,
         stock_actual: form.stock_actual !== '' ? parseInt(form.stock_actual, 10) : 0,
@@ -255,6 +261,22 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           />
         </div>
 
+        {/* Row: Cost + Utility */}
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Costo de compra"
+            type="number"
+            step="0.01"
+            value={form.costo_compra}
+            onChange={handleChange('costo_compra')}
+            placeholder="$0.00"
+          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-warm-600">Utilidad estimada</label>
+            <UtilidadIndicator form={form} necesitaPeso={necesitaPeso} precioHoy={precioHoy} />
+          </div>
+        </div>
+
         {/* Pricing explanation */}
         <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
           {necesitaPeso ? (
@@ -362,5 +384,57 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
         </div>
       </form>
     </Modal>
+  )
+}
+
+function UtilidadIndicator({ form, necesitaPeso, precioHoy }) {
+  const costo = parseFloat(form.costo_compra) || 0
+  if (costo <= 0) {
+    return (
+      <div className="flex items-center h-[42px] px-4 rounded-xl bg-ivory-50 border border-ivory-300 text-sm text-warm-300">
+        Ingresa el costo de compra
+      </div>
+    )
+  }
+
+  // Calculate selling price
+  let precioVenta = null
+  if (form.precio_fijo) {
+    precioVenta = parseFloat(form.precio_fijo)
+  } else if (necesitaPeso && precioHoy && form.peso_gramos) {
+    let precioMetal = 0
+    if (form.metal === 'oro') precioMetal = precioHoy.oro_por_gramo
+    else if (form.metal === 'plata') precioMetal = precioHoy.plata_por_gramo
+    else if (form.metal === 'ambos') precioMetal = precioHoy.oro_por_gramo
+    const base = (parseFloat(form.peso_gramos) * precioMetal) + (parseFloat(form.costo_mano_obra) || 0)
+    precioVenta = Math.ceil(base / 5) * 5
+  }
+
+  if (!precioVenta || precioVenta <= 0) {
+    return (
+      <div className="flex items-center h-[42px] px-4 rounded-xl bg-ivory-50 border border-ivory-300 text-sm text-warm-300">
+        Sin precio de venta
+      </div>
+    )
+  }
+
+  const ganancia = precioVenta - costo
+  const porcentaje = ((ganancia / costo) * 100).toFixed(1)
+  const esPositivo = ganancia > 0
+
+  return (
+    <div className={`flex items-center gap-3 h-[42px] px-4 rounded-xl border ${
+      esPositivo ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
+    }`}>
+      <TrendingUp size={16} className={esPositivo ? 'text-emerald-500' : 'text-red-500 rotate-180'} />
+      <div className="flex items-baseline gap-2">
+        <span className={`text-lg font-bold ${esPositivo ? 'text-emerald-700' : 'text-red-700'}`}>
+          {porcentaje}%
+        </span>
+        <span className={`text-xs ${esPositivo ? 'text-emerald-500' : 'text-red-500'}`}>
+          ${Math.abs(ganancia).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+        </span>
+      </div>
+    </div>
   )
 }

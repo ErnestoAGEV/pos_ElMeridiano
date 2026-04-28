@@ -57,7 +57,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="font-display text-xl font-bold text-warm-900 leading-tight tracking-tight">
-              Meridiano
+              El Meridiano
             </h1>
             <p className="text-[10px] uppercase tracking-[0.2em] text-warm-400 font-sans font-medium">
               Joyería

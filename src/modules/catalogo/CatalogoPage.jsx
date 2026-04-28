@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Search, Gem, PenLine, FolderOpen, Filter,
-  Package, Weight, Banknote, Tag,
+  Package, Weight, Banknote, Tag, TrendingUp,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
@@ -326,6 +326,18 @@ export function CatalogoPage() {
                     <p className="font-display text-xl font-bold text-warm-900">
                       {formatMXN(precio)}
                     </p>
+                    {isAdmin && precio && prod.costo_compra > 0 && (() => {
+                      const ganancia = precio - prod.costo_compra
+                      const pct = ((ganancia / prod.costo_compra) * 100).toFixed(0)
+                      return (
+                        <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] font-medium ${
+                          ganancia > 0 ? 'text-emerald-600' : 'text-red-500'
+                        }`}>
+                          <TrendingUp size={10} className={ganancia <= 0 ? 'rotate-180' : ''} />
+                          {pct}% utilidad
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               </div>

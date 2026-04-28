@@ -59,7 +59,7 @@ export function LoginPage() {
             <Gem size={26} className="text-white" />
           </div>
           <h1 className="font-display text-4xl font-bold text-warm-900 tracking-tight">
-            Meridiano
+            El Meridiano
           </h1>
           <div className="flex items-center gap-3 mt-2">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-gold-400" />

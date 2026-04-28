@@ -11,6 +11,10 @@ import { UsuariosPage } from '../modules/usuarios/UsuariosPage'
 import { MetalesPage } from '../modules/metales/MetalesPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
 import { CatalogoPage } from '../modules/catalogo/CatalogoPage'
+import { InventarioPage } from '../modules/inventario/InventarioPage'
+import { ClientesPage } from '../modules/clientes/ClientesPage'
+import { ApartadosPage } from '../modules/apartados/ApartadosPage'
+import { CotizacionesPage } from '../modules/cotizaciones/CotizacionesPage'
 
 function Placeholder({ title }) {
   return (
@@ -48,7 +52,7 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/metales" element={<MetalesPage />} />
         <Route path="/catalogo" element={<CatalogoPage />} />
-        <Route path="/inventario" element={<Placeholder title="Inventario" />} />
+        <Route path="/inventario" element={<InventarioPage />} />
         <Route path="/devoluciones" element={<Placeholder title="Devoluciones" />} />
         <Route path="/auditoria" element={<Placeholder title="Auditoría" />} />
         <Route path="/reportes" element={<Placeholder title="Reportes" />} />
@@ -64,9 +68,9 @@ export function AppRoutes() {
         }
       >
         <Route path="/ventas" element={<VentasPage />} />
-        <Route path="/clientes" element={<Placeholder title="Clientes" />} />
-        <Route path="/apartados" element={<Placeholder title="Apartados" />} />
-        <Route path="/cotizaciones" element={<Placeholder title="Cotizaciones" />} />
+        <Route path="/clientes" element={<ClientesPage />} />
+        <Route path="/apartados" element={<ApartadosPage />} />
+        <Route path="/cotizaciones" element={<CotizacionesPage />} />
       </Route>
 
       {/* Root redirect */}
