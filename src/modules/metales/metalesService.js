@@ -47,7 +47,8 @@ export function convertirAGramoMXN(precioUsdTroyOz, tipoCambioMXN) {
  * Get today's confirmed metal price from DB (null if not confirmed yet)
  */
 export async function obtenerPrecioHoy() {
-  const hoy = new Date().toISOString().split('T')[0]
+  const date = new Date()
+  const hoy = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
   const { data, error } = await supabase
     .from('precios_metales')
     .select('*, confirmado_por_perfil:perfiles!confirmado_por(nombre)')
@@ -61,7 +62,8 @@ export async function obtenerPrecioHoy() {
  * Save or update today's metal price
  */
 export async function guardarPrecioDelDia({ oroPorGramo, plataPorGramo, fuente, confirmadoPor }) {
-  const hoy = new Date().toISOString().split('T')[0]
+  const date = new Date()
+  const hoy = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
   // Upsert — if a price exists for today, update it
   const { data, error } = await supabase

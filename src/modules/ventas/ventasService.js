@@ -4,7 +4,9 @@ import { supabase } from '../../lib/supabase'
  * Generate a unique folio: V-YYYYMMDD-NNN
  */
 export async function generarFolio() {
-  const hoy = new Date().toISOString().split('T')[0].replace(/-/g, '')
+  const date = new Date()
+  const hoyStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
+  const hoy = hoyStr
   const prefijo = `V-${hoy}-`
 
   const { data } = await supabase
