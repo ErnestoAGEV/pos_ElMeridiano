@@ -15,15 +15,9 @@ import { InventarioPage } from '../modules/inventario/InventarioPage'
 import { ClientesPage } from '../modules/clientes/ClientesPage'
 import { ApartadosPage } from '../modules/apartados/ApartadosPage'
 import { CotizacionesPage } from '../modules/cotizaciones/CotizacionesPage'
-
-function Placeholder({ title }) {
-  return (
-    <div className="p-8">
-      <h1 className="font-display text-3xl font-bold text-warm-900">{title}</h1>
-      <p className="text-warm-400 mt-2">Próximamente</p>
-    </div>
-  )
-}
+import { DevolucionesPage } from '../modules/devoluciones/DevolucionesPage'
+import { AuditoriaPage } from '../modules/auditoria/AuditoriaPage'
+import { ReportesPage } from '../modules/reportes/ReportesPage'
 
 export function AppRoutes() {
   const { user, loading, isAdmin } = useAuth()
@@ -53,9 +47,9 @@ export function AppRoutes() {
         <Route path="/metales" element={<MetalesPage />} />
         <Route path="/catalogo" element={<CatalogoPage />} />
         <Route path="/inventario" element={<InventarioPage />} />
-        <Route path="/devoluciones" element={<Placeholder title="Devoluciones" />} />
-        <Route path="/auditoria" element={<Placeholder title="Auditoría" />} />
-        <Route path="/reportes" element={<Placeholder title="Reportes" />} />
+        <Route path="/devoluciones" element={<DevolucionesPage />} />
+        <Route path="/auditoria" element={<AuditoriaPage />} />
+        <Route path="/reportes" element={<ReportesPage />} />
         <Route path="/usuarios" element={<UsuariosPage />} />
       </Route>
 

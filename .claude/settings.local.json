@@ -6,7 +6,9 @@
       "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx tailwindcss init -p 2>&1)",
       "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://metals.live/api/v1/latest\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://open.er-api.com/v6/latest/USD\")"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://open.er-api.com/v6/latest/USD\")",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -20)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -15)"
     ]
   }
 }

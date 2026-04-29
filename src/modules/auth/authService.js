@@ -1,8 +1,16 @@
 import { supabase } from '../../lib/supabase'
 
-export async function loginConEmail(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) throw new Error(error.message)
+/**
+ * Convert a username to the internal fake email used by Supabase Auth
+ */
+export function usernameToEmail(username) {
+  return `${username.toLowerCase().trim()}@meridiano.pos`
+}
+
+export async function loginConUsuario(username, pin) {
+  const email = usernameToEmail(username)
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pin })
+  if (error) throw new Error('Usuario o PIN incorrecto')
   return data
 }
 

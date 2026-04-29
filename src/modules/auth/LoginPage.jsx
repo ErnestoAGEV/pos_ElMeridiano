@@ -1,37 +1,40 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Gem } from 'lucide-react'
+import { Gem, User, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { loginConEmail } from './authService'
+import { loginConUsuario } from './authService'
 import { useAuth } from '../../hooks/useAuth'
-import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [usuario, setUsuario] = useState('')
+  const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
   const { user, isAdmin, loading: authLoading } = useAuth()
 
-  // If already authenticated, redirect away from login
   if (!authLoading && user) {
     return <Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!email || !password) {
-      toast.error('Ingresa tu correo y contraseña')
+    if (!usuario || !pin) {
+      toast.error('Ingresa tu usuario y PIN')
       return
     }
     setLoading(true)
     try {
-      await loginConEmail(email, password)
+      await loginConUsuario(usuario, pin)
     } catch (err) {
       toast.error(err.message || 'Credenciales incorrectas')
     } finally {
       setLoading(false)
     }
+  }
+
+  function handlePinChange(e) {
+    const val = e.target.value.replace(/\D/g, '')
+    setPin(val)
   }
 
   return (
@@ -64,7 +67,7 @@ export function LoginPage() {
           <div className="flex items-center gap-3 mt-2">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-gold-400" />
             <p className="text-[11px] uppercase tracking-[0.25em] text-warm-400 font-semibold">
-              Joyería
+              Joyeria
             </p>
             <div className="w-8 h-px bg-gradient-to-l from-transparent to-gold-400" />
           </div>
@@ -77,42 +80,58 @@ export function LoginPage() {
               Bienvenido
             </h2>
             <p className="text-sm text-warm-400 mb-7">
-              Ingresa tus credenciales para continuar
+              Ingresa tu usuario y PIN para continuar
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <Input
-                label="Correo electrónico"
-                type="email"
-                placeholder="usuario@meridiano.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-              />
-              <Input
-                label="Contraseña"
-                type="password"
-                placeholder="Ingresa tu contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-warm-600">Usuario</label>
+                <div className="relative">
+                  <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-300" />
+                  <input
+                    type="text"
+                    value={usuario}
+                    onChange={(e) => setUsuario(e.target.value)}
+                    placeholder="Ej: maria, admin"
+                    autoComplete="username"
+                    required
+                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-warm-600">PIN</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-300" />
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    value={pin}
+                    onChange={handlePinChange}
+                    placeholder="Ingresa tu PIN numerico"
+                    autoComplete="current-password"
+                    required
+                    maxLength={10}
+                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all tracking-[0.3em] text-center text-lg"
+                  />
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 loading={loading}
                 className="w-full justify-center mt-1"
                 size="lg"
               >
-                Iniciar sesión
+                Iniciar Sesion
               </Button>
             </form>
           </div>
         </div>
 
         <p className="text-center text-warm-300 text-xs mt-8 tracking-wide">
-          Meridiano Joyería &middot; Sistema POS &middot; {new Date().getFullYear()}
+          Meridiano Joyeria &middot; Sistema POS &middot; {new Date().getFullYear()}
         </p>
       </div>
     </div>
