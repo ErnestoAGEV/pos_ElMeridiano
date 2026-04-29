@@ -9,8 +9,14 @@ export async function obtenerEstadisticasVentas({ desde, hasta } = {}) {
     .select('id, total, metodo_pago, descuento, created_at, vendedor_id')
     .eq('estado', 'completada')
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59.999`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
@@ -55,8 +61,14 @@ export async function obtenerEstadisticasApartados({ desde, hasta } = {}) {
     .from('apartados')
     .select('id, total, saldo_pendiente, estado, created_at')
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59.999`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
@@ -83,8 +95,14 @@ export async function obtenerEstadisticasDevoluciones({ desde, hasta } = {}) {
     .from('devoluciones')
     .select('id, total_devuelto, created_at')
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59.999`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
@@ -110,8 +128,14 @@ export async function obtenerTopProductos({ desde, hasta, limite = 10 } = {}) {
     `)
     .eq('estado', 'completada')
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59.999`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
@@ -147,8 +171,14 @@ export async function obtenerTopVendedores({ desde, hasta } = {}) {
     .select('total, vendedor:perfiles!vendedor_id(id, nombre)')
     .eq('estado', 'completada')
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59.999`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
