@@ -86,6 +86,21 @@ export async function guardarPrecioDelDia({ oroPorGramo, plataPorGramo, fuente, 
 }
 
 /**
+ * Get the most recent confirmed metal price (any date)
+ */
+export async function obtenerUltimoPrecio() {
+  const { data, error } = await supabase
+    .from('precios_metales')
+    .select('*')
+    .order('fecha', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+/**
  * Get price history with optional date range filter
  */
 export async function obtenerHistorialPrecios({ desde, hasta } = {}) {

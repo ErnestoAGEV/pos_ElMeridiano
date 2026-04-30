@@ -21,7 +21,6 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
   const [loading, setLoading] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [resumen, setResumen] = useState(null)
-  const [fondoInicial, setFondoInicial] = useState('')
   const [efectivoReal, setEfectivoReal] = useState('')
   const [notas, setNotas] = useState('')
   const printRef = useRef(null)
@@ -29,7 +28,6 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
   useEffect(() => {
     if (!isOpen || !fecha) return
     setLoading(true)
-    setFondoInicial('')
     setEfectivoReal('')
     setNotas('')
     calcularResumenDelDia(fecha)
@@ -40,22 +38,17 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
 
   if (!isOpen) return null
 
-  const fondoNum = parseFloat(fondoInicial) || 0
   const efectivoRealNum = parseFloat(efectivoReal) || 0
 
   const efectivoEsperado = resumen
-    ? fondoNum + resumen.ventasEfectivo + resumen.cobrosApartadosEfectivo - resumen.totalDevoluciones
+    ? resumen.ventasEfectivo + resumen.cobrosApartadosEfectivo - resumen.totalDevoluciones
     : 0
 
   const diferencia = efectivoRealNum - efectivoEsperado
 
   async function handleGuardar() {
-    if (!fondoInicial && fondoInicial !== '0') {
-      toast.error('Ingresa el fondo de caja inicial')
-      return
-    }
     if (!efectivoReal && efectivoReal !== '0') {
-      toast.error('Ingresa el efectivo real contado')
+      toast.error('Ingresa el efectivo contado en caja')
       return
     }
 
@@ -63,7 +56,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
     try {
       await guardarCorte({
         fecha,
-        fondoInicial: fondoNum,
+        fondoInicial: 0,
         ventasEfectivo: resumen.ventasEfectivo,
         ventasTarjeta: resumen.ventasTarjeta,
         ventasTransferencia: resumen.ventasTransferencia,
@@ -151,26 +144,6 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
           </div>
         ) : (
           <div className="px-6 py-4 space-y-5">
-            {/* Fondo de caja */}
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1.5 block">
-                Fondo de caja inicial
-              </label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={fondoInicial}
-                  onChange={(e) => setFondoInicial(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-8 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
-                  autoFocus
-                />
-              </div>
-            </div>
-
             {/* Resumen del dia */}
             <div className="space-y-3">
               {/* Ventas */}
@@ -283,7 +256,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-gold-500 font-semibold">Efectivo esperado en caja</p>
-                  <p className="text-[10px] text-gold-400 mt-0.5">Fondo + Ventas efectivo + Cobros efectivo - Devoluciones</p>
+                  <p className="text-[10px] text-gold-400 mt-0.5">Ventas efectivo + Cobros efectivo − Devoluciones</p>
                 </div>
                 <span className="font-display text-xl font-bold text-gold-700">{fmt(efectivoEsperado)}</span>
               </div>
@@ -292,7 +265,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
             {/* Efectivo real */}
             <div>
               <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1.5 block">
-                Efectivo real contado en caja
+                ¿Cuánto efectivo contaste en caja?
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
@@ -304,6 +277,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
                   onChange={(e) => setEfectivoReal(e.target.value)}
                   placeholder="0.00"
                   className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-8 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  autoFocus
                 />
               </div>
             </div>
@@ -385,11 +359,6 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
                 </div>
                 <div className="divider"></div>
 
-                <div className="section">
-                  <div className="row"><span className="bold">Fondo inicial:</span><span>{fmt(fondoNum)}</span></div>
-                </div>
-                <div className="divider"></div>
-
                 <h3>Ventas ({resumen.cantidadVentas})</h3>
                 <div className="row"><span>Efectivo</span><span>{fmt(resumen.ventasEfectivo)}</span></div>
                 <div className="row"><span>Tarjeta</span><span>{fmt(resumen.ventasTarjeta)}</span></div>
@@ -443,7 +412,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
 
                 <div className="section">
                   <div className="row bold big"><span>Efectivo esperado:</span><span>{fmt(efectivoEsperado)}</span></div>
-                  <div className="row bold big"><span>Efectivo real:</span><span>{fmt(efectivoRealNum)}</span></div>
+                  <div className="row bold big"><span>Efectivo contado:</span><span>{fmt(efectivoRealNum)}</span></div>
                   <div className="row bold big">
                     <span>Diferencia:</span>
                     <span>{diferencia > 0 ? '+' : ''}{fmt(diferencia)}</span>

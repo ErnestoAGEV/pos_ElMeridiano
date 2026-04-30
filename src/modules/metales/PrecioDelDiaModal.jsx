@@ -8,6 +8,7 @@ import {
   fetchTipoCambioUSDMXN,
   convertirAGramoMXN,
   guardarPrecioDelDia,
+  obtenerUltimoPrecio,
 } from './metalesService'
 import { registrarEnAuditoria } from '../auth/authService'
 
@@ -27,6 +28,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
 
   // Track if user manually edited values
   const [editadoManual, setEditadoManual] = useState(false)
+  const [usandoUltimo, setUsandoUltimo] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -36,6 +38,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
   async function cargarDesdeAPIs() {
     setLoading(true)
     setApiError(null)
+    setUsandoUltimo(false)
 
     // Fetch independently so one failure doesn't block the other
     const [metalesResult, tcResult] = await Promise.allSettled([
@@ -54,12 +57,23 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
       setTipoCambio(tc.toFixed(2))
       setOroGramo(convertirAGramoMXN(metales.xau, tc).toFixed(2))
       setPlataGramo(convertirAGramoMXN(metales.xag, tc).toFixed(2))
-    } else if (!metalesOk && tcOk) {
-      setTipoCambio(tcResult.value.toFixed(2))
-      setApiError('No se pudo consultar precios de metales. Ingresa los precios manualmente.')
-      setEditadoManual(true)
     } else {
-      setApiError('No se pudieron consultar las APIs. Ingresa los precios manualmente.')
+      // API failed — try to load last saved price as fallback
+      if (tcOk) setTipoCambio(tcResult.value.toFixed(2))
+
+      try {
+        const ultimo = await obtenerUltimoPrecio()
+        if (ultimo) {
+          setOroGramo(Number(ultimo.oro_por_gramo).toFixed(2))
+          setPlataGramo(Number(ultimo.plata_por_gramo).toFixed(2))
+          setUsandoUltimo(true)
+          setApiError(`No se pudo consultar la API. Se cargó el último precio registrado (${ultimo.fecha}).`)
+        } else {
+          setApiError('No se pudo consultar la API y no hay precios previos. Ingresa los precios manualmente.')
+        }
+      } catch {
+        setApiError('No se pudo consultar la API ni cargar precios previos. Ingresa los precios manualmente.')
+      }
       setEditadoManual(true)
     }
 
@@ -135,12 +149,20 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
         <div className="space-y-5">
           {/* API Error Banner */}
           {apiError && (
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-              <AlertTriangle size={18} className="text-amber-500 mt-0.5 shrink-0" />
+            <div className={`flex items-start gap-3 p-4 rounded-xl ${
+              usandoUltimo
+                ? 'bg-blue-50 border border-blue-200'
+                : 'bg-amber-50 border border-amber-200'
+            }`}>
+              <AlertTriangle size={18} className={`mt-0.5 shrink-0 ${usandoUltimo ? 'text-blue-500' : 'text-amber-500'}`} />
               <div>
-                <p className="text-sm font-medium text-amber-800">No se pudo consultar la API</p>
-                <p className="text-xs text-amber-600 mt-1">{apiError}</p>
-                <p className="text-xs text-amber-600 mt-1">Ingresa los precios manualmente.</p>
+                <p className={`text-sm font-medium ${usandoUltimo ? 'text-blue-800' : 'text-amber-800'}`}>
+                  {usandoUltimo ? 'Usando último precio registrado' : 'No se pudo consultar la API'}
+                </p>
+                <p className={`text-xs mt-1 ${usandoUltimo ? 'text-blue-600' : 'text-amber-600'}`}>{apiError}</p>
+                <p className={`text-xs mt-1 ${usandoUltimo ? 'text-blue-600' : 'text-amber-600'}`}>
+                  {usandoUltimo ? 'Puedes ajustar los precios si es necesario.' : 'Ingresa los precios manualmente.'}
+                </p>
               </div>
             </div>
           )}

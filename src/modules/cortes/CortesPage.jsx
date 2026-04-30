@@ -104,12 +104,11 @@ export function CortesPage() {
                 <tr className="border-b border-ivory-300 bg-ivory-50">
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Fecha</th>
                   <th className="text-left px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Realizado por</th>
-                  <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Fondo</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ventas</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Apartados</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Devoluciones</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Esperado</th>
-                  <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Real</th>
+                  <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Contado</th>
                   <th className="text-right px-4 py-3 text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Diferencia</th>
                 </tr>
               </thead>
@@ -128,7 +127,6 @@ export function CortesPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-warm-600">{corte.usuario?.nombre || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-warm-600 text-right">{fmt(corte.fondo_inicial)}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-warm-800 text-right">{fmt(totalVentas)}</td>
                       <td className="px-4 py-3 text-sm text-warm-600 text-right">{fmt(corte.cobros_apartados)}</td>
                       <td className="px-4 py-3 text-sm text-red-500 text-right">
@@ -136,6 +134,7 @@ export function CortesPage() {
                       </td>
                       <td className="px-4 py-3 text-sm font-semibold text-warm-800 text-right">{fmt(corte.efectivo_esperado)}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-warm-800 text-right">{fmt(corte.efectivo_real)}</td>
+
                       <td className="px-4 py-3 text-right">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                           dif === 0
