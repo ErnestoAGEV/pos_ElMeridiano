@@ -18,6 +18,7 @@ import { CotizacionesPage } from '../modules/cotizaciones/CotizacionesPage'
 import { DevolucionesPage } from '../modules/devoluciones/DevolucionesPage'
 import { AuditoriaPage } from '../modules/auditoria/AuditoriaPage'
 import { ReportesPage } from '../modules/reportes/ReportesPage'
+import { CortesPage } from '../modules/cortes/CortesPage'
 
 export function AppRoutes() {
   const { user, loading, isAdmin } = useAuth()
@@ -65,6 +66,7 @@ export function AppRoutes() {
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/apartados" element={<ApartadosPage />} />
         <Route path="/cotizaciones" element={<CotizacionesPage />} />
+        <Route path="/cortes" element={<CortesPage />} />
       </Route>
 
       {/* Root redirect */}

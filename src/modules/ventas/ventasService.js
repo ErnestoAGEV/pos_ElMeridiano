@@ -60,6 +60,13 @@ export async function completarVenta({
   precioOroUsado,
   precioPlataUsado,
 }) {
+  // 0. Validar si hay corte de caja pendiente
+  const { obtenerCortePendiente } = await import('../cortes/cortesService.js')
+  const fechaPendiente = await obtenerCortePendiente()
+  if (fechaPendiente) {
+    throw new Error(`No puedes realizar ventas. Tienes pendiente el corte de caja del día ${fechaPendiente}. Por favor, realiza el corte de caja antes de continuar.`)
+  }
+
   const folio = await generarFolio()
 
   // 1. Create venta

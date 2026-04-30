@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useInitAuth, useAuth } from './hooks/useAuth'
@@ -5,10 +6,50 @@ import { useAuthStore } from './stores/authStore'
 import { AppRoutes } from './routes/AppRoutes'
 import { PrecioDelDiaModal } from './modules/metales/PrecioDelDiaModal'
 import { usePrecioDelDia } from './modules/metales/usePrecioDelDia'
+import { CorteCajaModal } from './modules/cortes/CorteCajaModal'
+import { obtenerCortePendiente } from './modules/cortes/cortesService'
 
 function AuthInitializer({ children }) {
   useInitAuth()
   return children
+}
+
+function CortePendienteGate({ children }) {
+  const { perfil } = useAuth()
+  const { loading: authLoading } = useAuthStore()
+  const [fechaPendiente, setFechaPendiente] = useState(null)
+  const [checking, setChecking] = useState(true)
+
+  const verificar = useCallback(async () => {
+    if (!perfil) { setChecking(false); return }
+    try {
+      const pending = await obtenerCortePendiente()
+      setFechaPendiente(pending)
+    } catch {
+      // If table doesn't exist yet, ignore
+      setFechaPendiente(null)
+    } finally {
+      setChecking(false)
+    }
+  }, [perfil])
+
+  useEffect(() => { verificar() }, [verificar])
+
+  const mostrar = !authLoading && perfil && !checking && fechaPendiente
+
+  return (
+    <>
+      {children}
+      <CorteCajaModal
+        isOpen={!!mostrar}
+        onClose={() => {}}
+        onCompletado={verificar}
+        fecha={fechaPendiente}
+        usuarioId={perfil?.id}
+        forzado
+      />
+    </>
+  )
 }
 
 function PrecioDelDiaGate({ children }) {
@@ -36,9 +77,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthInitializer>
-        <PrecioDelDiaGate>
-          <AppRoutes />
-        </PrecioDelDiaGate>
+        <CortePendienteGate>
+          <PrecioDelDiaGate>
+            <AppRoutes />
+          </PrecioDelDiaGate>
+        </CortePendienteGate>
         <Toaster
           position="top-right"
           toastOptions={{

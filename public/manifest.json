@@ -1,0 +1,23 @@
+{
+  "name": "Meridiano - Joyeria POS",
+  "short_name": "Meridiano POS",
+  "description": "Sistema de punto de venta para Joyeria Meridiano",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
