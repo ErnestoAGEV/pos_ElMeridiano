@@ -149,8 +149,14 @@ export async function obtenerVentas({ desde, hasta, limite = 50 } = {}) {
     .order('created_at', { ascending: false })
     .limit(limite)
 
-  if (desde) query = query.gte('created_at', `${desde}T00:00:00`)
-  if (hasta) query = query.lte('created_at', `${hasta}T23:59:59`)
+  if (desde) {
+    const fromDate = new Date(`${desde}T00:00:00`)
+    query = query.gte('created_at', fromDate.toISOString())
+  }
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message)

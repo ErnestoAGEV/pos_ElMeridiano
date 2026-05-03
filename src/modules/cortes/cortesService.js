@@ -41,17 +41,17 @@ export async function obtenerCortePendiente() {
 
   if (!ultimo) {
     // No cortes exist yet — check if there are sales from before today
+    const fromHoy = new Date(`${hoyStr}T00:00:00`)
     const { data: ventasAntes } = await supabase
       .from('ventas')
       .select('created_at')
-      .lt('created_at', `${hoyStr}T00:00:00`)
+      .lt('created_at', fromHoy.toISOString())
       .order('created_at', { ascending: true })
       .limit(1)
 
     if (ventasAntes?.length > 0) {
       // There are old sales without corte — force corte for that day
-      const fechaVenta = ventasAntes[0].created_at.split('T')[0]
-      return fechaVenta
+      return formatFecha(new Date(ventasAntes[0].created_at))
     }
     return null
   }
@@ -81,8 +81,10 @@ export async function obtenerCortePendiente() {
  * Calculate the summary for a given day (auto-populated data)
  */
 export async function calcularResumenDelDia(fecha) {
-  const desde = `${fecha}T00:00:00`
-  const hasta = `${fecha}T23:59:59.999`
+  const fromDate = new Date(`${fecha}T00:00:00`)
+  const toDate = new Date(`${fecha}T23:59:59.999`)
+  const desde = fromDate.toISOString()
+  const hasta = toDate.toISOString()
 
   // 1. Ventas del día por método con detalles
   const { data: ventas } = await supabase
@@ -128,14 +130,14 @@ export async function calcularResumenDelDia(fecha) {
       
       let item = articulosVendidos[metodo].find(i => i.key === key)
       if (item) {
-        item.cantidad += det.cantidad
+        item.cantidad += parseInt(det.cantidad, 10) || 0
         item.subtotal += parseFloat(det.subtotal || 0)
       } else {
         articulosVendidos[metodo].push({
           key,
           codigo: prodCode,
           nombre: prodName,
-          cantidad: det.cantidad,
+          cantidad: parseInt(det.cantidad, 10) || 0,
           subtotal: parseFloat(det.subtotal || 0)
         })
       }
