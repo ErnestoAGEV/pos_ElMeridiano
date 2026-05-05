@@ -30,62 +30,25 @@ export async function buscarVentaParaDevolucion(folio) {
  */
 export async function procesarDevolucion({
   ventaId,
-  items, // [{ producto_id, cantidad }]
+  items,
   motivo,
   totalDevuelto,
   procesadoPor,
   folioVenta,
 }) {
-  // 1. Create devolucion
-  const { data: dev, error: devErr } = await supabase
-    .from('devoluciones')
-    .insert({
-      venta_id: ventaId,
-      motivo,
-      total_devuelto: totalDevuelto,
-      procesado_por: procesadoPor,
-    })
-    .select()
-    .single()
-  if (devErr) throw new Error(devErr.message)
+  const { data, error } = await supabase.rpc('procesar_devolucion_v2', {
+    p_venta_id: ventaId,
+    p_usuario_id: procesadoPor,
+    p_items: items.map(i => ({
+      producto_id: i.producto_id,
+      cantidad: i.cantidad,
+    })),
+    p_motivo: motivo,
+    p_total_devuelto: totalDevuelto,
+  })
 
-  // 2. Create detalle_devoluciones
-  const detalles = items.map((item) => ({
-    devolucion_id: dev.id,
-    producto_id: item.producto_id,
-    cantidad: item.cantidad,
-  }))
-
-  const { error: detErr } = await supabase
-    .from('detalle_devoluciones')
-    .insert(detalles)
-  if (detErr) throw new Error(detErr.message)
-
-  // 3. Return inventory
-  for (const item of items) {
-    const { data: inv } = await supabase
-      .from('inventario')
-      .select('stock_actual')
-      .eq('producto_id', item.producto_id)
-      .single()
-
-    if (inv) {
-      await supabase
-        .from('inventario')
-        .update({ stock_actual: inv.stock_actual + item.cantidad, updated_at: new Date().toISOString() })
-        .eq('producto_id', item.producto_id)
-
-      await supabase.from('movimientos_inventario').insert({
-        producto_id: item.producto_id,
-        tipo: 'devolucion',
-        cantidad: item.cantidad,
-        motivo: `Devolución de venta ${folioVenta}`,
-        usuario_id: procesadoPor,
-      })
-    }
-  }
-
-  return dev
+  if (error) throw new Error(error.message)
+  return data
 }
 
 /**
