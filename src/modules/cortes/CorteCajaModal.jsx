@@ -142,6 +142,22 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
           <div className="flex items-center justify-center py-16">
             <Spinner size="lg" />
           </div>
+        ) : !resumen ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-warm-400">No se pudo cargar el resumen del dia.</p>
+            <button
+              onClick={() => {
+                setLoading(true)
+                calcularResumenDelDia(fecha)
+                  .then(setResumen)
+                  .catch((err) => toast.error(err.message))
+                  .finally(() => setLoading(false))
+              }}
+              className="mt-3 text-xs px-4 py-2 rounded-lg bg-ivory-100 text-warm-600 border border-ivory-300 hover:bg-ivory-200 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : (
           <div className="px-6 py-4 space-y-5">
             {/* Resumen del dia */}

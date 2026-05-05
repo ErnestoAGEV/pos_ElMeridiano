@@ -19,15 +19,17 @@ function CortePendienteGate({ children }) {
   const { loading: authLoading } = useAuthStore()
   const [fechaPendiente, setFechaPendiente] = useState(null)
   const [checking, setChecking] = useState(true)
+  const [errorCorte, setErrorCorte] = useState(null)
 
   const verificar = useCallback(async () => {
     if (!perfil) { setChecking(false); return }
+    setErrorCorte(null)
     try {
       const pending = await obtenerCortePendiente()
       setFechaPendiente(pending)
-    } catch {
-      // If table doesn't exist yet, ignore
+    } catch (err) {
       setFechaPendiente(null)
+      setErrorCorte(err.message)
     } finally {
       setChecking(false)
     }
@@ -40,6 +42,17 @@ function CortePendienteGate({ children }) {
   return (
     <>
       {children}
+      {errorCorte && (
+        <div className="fixed bottom-4 right-4 z-50 bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg max-w-sm">
+          <p className="text-sm text-red-700 mb-2">Error al verificar corte pendiente</p>
+          <button
+            onClick={verificar}
+            className="text-xs px-3 py-1.5 rounded-lg bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
       <CorteCajaModal
         isOpen={!!mostrar}
         onClose={() => {}}
