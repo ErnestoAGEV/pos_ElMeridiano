@@ -57,47 +57,60 @@ export async function obtenerMovimientos({ productoId, limite = 50 } = {}) {
   return data
 }
 
-/**
- * Register a stock movement and update inventory
- */
 export async function registrarMovimiento({ productoId, tipo, cantidad, motivo, usuarioId }) {
-  // Get current stock
-  const { data: inv, error: invErr } = await supabase
-    .from('inventario')
-    .select('stock_actual')
-    .eq('producto_id', productoId)
-    .single()
-  if (invErr) throw new Error(invErr.message)
-
-  let nuevoStock = inv.stock_actual
   if (tipo === 'entrada' || tipo === 'devolucion') {
-    nuevoStock += cantidad
-  } else if (tipo === 'salida') {
-    nuevoStock -= cantidad
-    if (nuevoStock < 0) throw new Error('No hay suficiente stock para esta salida')
-  } else if (tipo === 'ajuste') {
-    nuevoStock = cantidad // For adjustments, cantidad IS the new absolute stock
+    const { data, error } = await supabase.rpc('incrementar_stock', {
+      p_producto_id: productoId,
+      p_cantidad: cantidad,
+      p_motivo: motivo,
+      p_usuario_id: usuarioId,
+    })
+    if (error) throw new Error(error.message)
+    return data
   }
 
-  // Update inventory
-  const { error: updErr } = await supabase
-    .from('inventario')
-    .update({ stock_actual: nuevoStock, updated_at: new Date().toISOString() })
-    .eq('producto_id', productoId)
-  if (updErr) throw new Error(updErr.message)
-
-  // Log movement
-  const cantidadLog = tipo === 'ajuste' ? Math.abs(nuevoStock - inv.stock_actual) : cantidad
-  const { error: movErr } = await supabase
-    .from('movimientos_inventario')
-    .insert({
-      producto_id: productoId,
-      tipo,
-      cantidad: cantidadLog,
-      motivo,
-      usuario_id: usuarioId,
+  if (tipo === 'salida') {
+    const { data, error } = await supabase.rpc('decrementar_stock', {
+      p_producto_id: productoId,
+      p_cantidad: cantidad,
+      p_motivo: motivo,
+      p_usuario_id: usuarioId,
     })
-  if (movErr) throw new Error(movErr.message)
+    if (error) throw new Error(error.message)
+    return data
+  }
 
-  return nuevoStock
+  if (tipo === 'ajuste') {
+    const { data: inv, error: invErr } = await supabase
+      .from('inventario')
+      .select('stock_actual')
+      .eq('producto_id', productoId)
+      .single()
+    if (invErr) throw new Error(invErr.message)
+
+    const delta = cantidad - inv.stock_actual
+    if (delta === 0) return inv.stock_actual
+
+    if (delta > 0) {
+      const { data, error } = await supabase.rpc('incrementar_stock', {
+        p_producto_id: productoId,
+        p_cantidad: delta,
+        p_motivo: motivo,
+        p_usuario_id: usuarioId,
+      })
+      if (error) throw new Error(error.message)
+      return data
+    } else {
+      const { data, error } = await supabase.rpc('decrementar_stock', {
+        p_producto_id: productoId,
+        p_cantidad: Math.abs(delta),
+        p_motivo: motivo,
+        p_usuario_id: usuarioId,
+      })
+      if (error) throw new Error(error.message)
+      return data
+    }
+  }
+
+  throw new Error(`Tipo de movimiento no soportado: ${tipo}`)
 }
