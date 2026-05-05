@@ -34,6 +34,7 @@ export async function crearApartado({
   items,
   total,
   anticipo,
+  metodoPago,
   fechaLimite,
   notas,
 }) {
@@ -77,34 +78,20 @@ export async function crearApartado({
     .insert({
       apartado_id: apartado.id,
       monto: anticipo,
-      metodo_pago: 'efectivo',
+      metodo_pago: metodoPago || 'efectivo',
       registrado_por: vendedorId,
     })
   if (pagoErr) throw new Error(pagoErr.message)
 
-  // 4. Reserve inventory (salida)
+  // 4. Reserve inventory (atomic)
   for (const item of items) {
-    const { data: inv } = await supabase
-      .from('inventario')
-      .select('stock_actual')
-      .eq('producto_id', item.producto_id)
-      .single()
-
-    if (inv) {
-      const nuevoStock = Math.max(0, inv.stock_actual - item.cantidad)
-      await supabase
-        .from('inventario')
-        .update({ stock_actual: nuevoStock, updated_at: new Date().toISOString() })
-        .eq('producto_id', item.producto_id)
-
-      await supabase.from('movimientos_inventario').insert({
-        producto_id: item.producto_id,
-        tipo: 'salida',
-        cantidad: item.cantidad,
-        motivo: `Apartado ${folio}`,
-        usuario_id: vendedorId,
-      })
-    }
+    const { error: stockErr } = await supabase.rpc('decrementar_stock', {
+      p_producto_id: item.producto_id,
+      p_cantidad: item.cantidad,
+      p_motivo: `Apartado ${folio}`,
+      p_usuario_id: vendedorId,
+    })
+    if (stockErr) throw new Error(stockErr.message)
   }
 
   return apartado
@@ -150,44 +137,15 @@ export async function obtenerApartados({ estado, busqueda } = {}) {
  * Register a payment on an apartado
  */
 export async function registrarPagoApartado({ apartadoId, monto, metodoPago, registradoPor }) {
-  // Get current saldo
-  const { data: ap, error: apErr } = await supabase
-    .from('apartados')
-    .select('saldo_pendiente, total, anticipo')
-    .eq('id', apartadoId)
-    .single()
-  if (apErr) throw new Error(apErr.message)
+  const { data, error } = await supabase.rpc('registrar_pago_apartado_v2', {
+    p_apartado_id: apartadoId,
+    p_monto: monto,
+    p_metodo_pago: metodoPago,
+    p_usuario_id: registradoPor,
+  })
 
-  if (monto > ap.saldo_pendiente) {
-    throw new Error(`El pago excede el saldo pendiente (${ap.saldo_pendiente})`)
-  }
-
-  const nuevoSaldo = ap.saldo_pendiente - monto
-  const nuevoEstado = nuevoSaldo <= 0 ? 'completado' : 'activo'
-
-  // Register payment
-  const { error: pagoErr } = await supabase
-    .from('pagos_apartados')
-    .insert({
-      apartado_id: apartadoId,
-      monto,
-      metodo_pago: metodoPago,
-      registrado_por: registradoPor,
-    })
-  if (pagoErr) throw new Error(pagoErr.message)
-
-  // Update apartado
-  const { error: updErr } = await supabase
-    .from('apartados')
-    .update({
-      saldo_pendiente: nuevoSaldo,
-      anticipo: ap.anticipo + monto,
-      estado: nuevoEstado,
-    })
-    .eq('id', apartadoId)
-  if (updErr) throw new Error(updErr.message)
-
-  return { nuevoSaldo, nuevoEstado }
+  if (error) throw new Error(error.message)
+  return { nuevoSaldo: data.nuevo_saldo, nuevoEstado: data.nuevo_estado }
 }
 
 /**
@@ -201,28 +159,15 @@ export async function cancelarApartado({ apartadoId, usuarioId }) {
     .single()
   if (apErr) throw new Error(apErr.message)
 
-  // Return inventory
+  // Return inventory (atomic)
   for (const det of ap.detalle_apartados || []) {
-    const { data: inv } = await supabase
-      .from('inventario')
-      .select('stock_actual')
-      .eq('producto_id', det.producto_id)
-      .single()
-
-    if (inv) {
-      await supabase
-        .from('inventario')
-        .update({ stock_actual: inv.stock_actual + det.cantidad, updated_at: new Date().toISOString() })
-        .eq('producto_id', det.producto_id)
-
-      await supabase.from('movimientos_inventario').insert({
-        producto_id: det.producto_id,
-        tipo: 'devolucion',
-        cantidad: det.cantidad,
-        motivo: `Cancelación apartado ${ap.folio}`,
-        usuario_id: usuarioId,
-      })
-    }
+    const { error: stockErr } = await supabase.rpc('incrementar_stock', {
+      p_producto_id: det.producto_id,
+      p_cantidad: det.cantidad,
+      p_motivo: `Cancelacion apartado ${ap.folio}`,
+      p_usuario_id: usuarioId,
+    })
+    if (stockErr) throw new Error(stockErr.message)
   }
 
   // Update status
