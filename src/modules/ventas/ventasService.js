@@ -1,32 +1,6 @@
 import { supabase } from '../../lib/supabase'
 
 /**
- * Generate a unique folio: V-YYYYMMDD-NNN
- */
-export async function generarFolio() {
-  const date = new Date()
-  const hoyStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
-  const hoy = hoyStr
-  const prefijo = `V-${hoy}-`
-
-  const { data } = await supabase
-    .from('ventas')
-    .select('folio')
-    .like('folio', `${prefijo}%`)
-    .order('folio', { ascending: false })
-    .limit(1)
-
-  let siguiente = 1
-  if (data?.length) {
-    const ultimo = data[0].folio
-    const num = parseInt(ultimo.split('-').pop(), 10)
-    if (!isNaN(num)) siguiente = num + 1
-  }
-
-  return `${prefijo}${String(siguiente).padStart(3, '0')}`
-}
-
-/**
  * Calculate the selling price for a product given today's metal prices
  */
 export function calcularPrecioProducto(producto, precioHoy) {
@@ -46,12 +20,12 @@ export function calcularPrecioProducto(producto, precioHoy) {
 }
 
 /**
- * Complete a sale: create venta + detalles + update inventory + log movements
+ * Complete a sale via atomic RPC
  */
 export async function completarVenta({
   clienteId,
   vendedorId,
-  items, // [{ producto_id, cantidad, precio_unitario, subtotal }]
+  items,
   subtotal,
   descuento,
   total,
@@ -60,76 +34,33 @@ export async function completarVenta({
   precioOroUsado,
   precioPlataUsado,
 }) {
-  // 0. Validar si hay corte de caja pendiente
+  // Check for pending corte
   const { obtenerCortePendiente } = await import('../cortes/cortesService.js')
   const fechaPendiente = await obtenerCortePendiente()
   if (fechaPendiente) {
     throw new Error(`No puedes realizar ventas. Tienes pendiente el corte de caja del día ${fechaPendiente}. Por favor, realiza el corte de caja antes de continuar.`)
   }
 
-  const folio = await generarFolio()
+  const { data, error } = await supabase.rpc('completar_venta_v2', {
+    p_cliente_id: clienteId || null,
+    p_vendedor_id: vendedorId,
+    p_items: items.map(i => ({
+      producto_id: i.producto_id,
+      cantidad: i.cantidad,
+      precio_unitario: i.precio_unitario,
+      subtotal: i.subtotal,
+    })),
+    p_subtotal: subtotal,
+    p_descuento: descuento || 0,
+    p_total: total,
+    p_metodo_pago: metodoPago,
+    p_notas: notas || null,
+    p_precio_oro: precioOroUsado || null,
+    p_precio_plata: precioPlataUsado || null,
+  })
 
-  // 1. Create venta
-  const { data: venta, error: ventaErr } = await supabase
-    .from('ventas')
-    .insert({
-      folio,
-      cliente_id: clienteId || null,
-      vendedor_id: vendedorId,
-      subtotal,
-      descuento: descuento || 0,
-      total,
-      metodo_pago: metodoPago,
-      notas: notas || null,
-      precio_oro_usado: precioOroUsado || null,
-      precio_plata_usado: precioPlataUsado || null,
-      estado: 'completada',
-    })
-    .select()
-    .single()
-  if (ventaErr) throw new Error(ventaErr.message)
-
-  // 2. Create detalle_ventas
-  const detalles = items.map((item) => ({
-    venta_id: venta.id,
-    producto_id: item.producto_id,
-    cantidad: item.cantidad,
-    precio_unitario: item.precio_unitario,
-    subtotal: item.subtotal,
-  }))
-
-  const { error: detErr } = await supabase
-    .from('detalle_ventas')
-    .insert(detalles)
-  if (detErr) throw new Error(detErr.message)
-
-  // 3. Update inventory + log movements
-  for (const item of items) {
-    // Decrease stock
-    const { data: inv } = await supabase
-      .from('inventario')
-      .select('stock_actual')
-      .eq('producto_id', item.producto_id)
-      .single()
-
-    if (inv) {
-      const nuevoStock = Math.max(0, inv.stock_actual - item.cantidad)
-      await supabase
-        .from('inventario')
-        .update({ stock_actual: nuevoStock, updated_at: new Date().toISOString() })
-        .eq('producto_id', item.producto_id)
-
-      await supabase.from('movimientos_inventario').insert({
-        producto_id: item.producto_id,
-        tipo: 'salida',
-        cantidad: item.cantidad,
-        motivo: `Venta ${folio}`,
-        usuario_id: vendedorId,
-      })
-    }
-  }
-
-  return venta
+  if (error) throw new Error(error.message)
+  return data
 }
 
 /**
