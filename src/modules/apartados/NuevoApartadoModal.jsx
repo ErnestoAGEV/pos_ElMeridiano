@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, X, User } from 'lucide-react'
+import { Search, Plus, Minus, X, User, Banknote, CreditCard, ArrowRightLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
@@ -25,6 +25,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
   const [anticipo, setAnticipo] = useState('')
   const [fechaLimite, setFechaLimite] = useState('')
   const [notas, setNotas] = useState('')
+  const [metodoPagoAnticipo, setMetodoPagoAnticipo] = useState('efectivo')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
       setAnticipo('')
       setFechaLimite('')
       setNotas('')
+      setMetodoPagoAnticipo('efectivo')
       setBusquedaProd('')
       setBusquedaCli('')
     }
@@ -96,6 +98,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
         items: carrito.map((i) => ({ producto_id: i.producto_id, cantidad: i.cantidad, precio_unitario: i.precio_unitario })),
         total,
         anticipo: anticipoNum,
+        metodoPago: metodoPagoAnticipo,
         fechaLimite: fechaLimite || null,
         notas,
       })
@@ -245,6 +248,31 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
               onChange={(e) => setAnticipo(e.target.value)}
               placeholder="$0.00"
             />
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1.5 block">Metodo anticipo</label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { value: 'efectivo', label: 'Efectivo', icon: Banknote },
+                  { value: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
+                  { value: 'transferencia', label: 'Transfer.', icon: ArrowRightLeft },
+                ].map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setMetodoPagoAnticipo(value)}
+                    className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[10px] font-medium transition-all ${
+                      metodoPagoAnticipo === value
+                        ? 'bg-gold-50 border-gold-200 text-gold-700'
+                        : 'bg-white border-ivory-300 text-warm-500 hover:border-ivory-400'
+                    }`}
+                  >
+                    <Icon size={12} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {anticipoNum > 0 && total > 0 && (
               <div className="text-xs text-warm-400 bg-ivory-50 rounded-lg p-2">

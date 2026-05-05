@@ -24,6 +24,8 @@ export function CortesPage() {
   const [hasta, setHasta] = useState('')
   const [corteModal, setCorteModal] = useState({ open: false, fecha: null })
 
+  const corteHoyExiste = !loading && cortes.length > 0 && cortes[0].fecha === hoyStr()
+
   async function cargar() {
     setLoading(true)
     try {
@@ -54,7 +56,8 @@ export function CortesPage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gold-400 to-gold-500 text-white rounded-xl text-sm font-semibold shadow-gold-sm hover:shadow-gold-md transition-all"
         >
           <Calculator size={16} />
-          Corte de hoy
+          {corteHoyExiste ? 'Ver corte de hoy' : 'Corte de hoy'}
+          {corteHoyExiste && <Check size={14} />}
         </button>
       </div>
 

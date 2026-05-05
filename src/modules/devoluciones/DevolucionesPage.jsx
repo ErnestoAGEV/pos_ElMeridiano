@@ -43,7 +43,7 @@ export function DevolucionesPage() {
         <div>
           <h1 className="font-display text-3xl font-bold text-warm-900">Devoluciones</h1>
           <p className="text-warm-400 text-sm mt-1">
-            {devoluciones.length} devolucione{devoluciones.length !== 1 && 's'} registrada{devoluciones.length !== 1 && 's'}
+            {devoluciones.length} {devoluciones.length === 1 ? 'devolucion registrada' : 'devoluciones registradas'}
           </p>
         </div>
         <Button size="md" onClick={() => setNuevaModal(true)}>
