@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { usePrecioDelDia } from '../metales/usePrecioDelDia'
 import { supabase } from '../../lib/supabase'
+import { Spinner } from '../../components/ui/Spinner'
 
 export function DashboardPage() {
   const { precioHoy } = usePrecioDelDia()
@@ -16,35 +17,45 @@ export function DashboardPage() {
     apartadosActivos: 0, saldoPendiente: 0,
     devolucionesHoy: 0,
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function cargar() {
-      const hoy = new Date()
-      const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString()
+      setLoading(true)
+      setError(null)
+      try {
+        const hoy = new Date()
+        const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString()
 
-      const [prodRes, cliRes, invRes, ventasRes, apartadosRes, devRes] = await Promise.all([
-        supabase.from('productos').select('id', { count: 'exact', head: true }).eq('activo', true),
-        supabase.from('clientes').select('id', { count: 'exact', head: true }).eq('activo', true),
-        supabase.from('inventario').select('stock_actual, stock_minimo'),
-        supabase.from('ventas').select('id, total').eq('estado', 'completada').gte('created_at', inicioHoy),
-        supabase.from('apartados').select('id, saldo_pendiente').eq('estado', 'activo'),
-        supabase.from('devoluciones').select('id').gte('created_at', inicioHoy),
-      ])
+        const [prodRes, cliRes, invRes, ventasRes, apartadosRes, devRes] = await Promise.all([
+          supabase.from('productos').select('id', { count: 'exact', head: true }).eq('activo', true),
+          supabase.from('clientes').select('id', { count: 'exact', head: true }).eq('activo', true),
+          supabase.from('inventario').select('stock_actual, stock_minimo'),
+          supabase.from('ventas').select('id, total').eq('estado', 'completada').gte('created_at', inicioHoy),
+          supabase.from('apartados').select('id, saldo_pendiente').eq('estado', 'activo'),
+          supabase.from('devoluciones').select('id').gte('created_at', inicioHoy),
+        ])
 
-      const stockBajo = (invRes.data || []).filter((i) => i.stock_actual <= i.stock_minimo).length
-      const ventasData = ventasRes.data || []
-      const apartadosData = apartadosRes.data || []
+        const stockBajo = (invRes.data || []).filter((i) => i.stock_actual <= i.stock_minimo).length
+        const ventasData = ventasRes.data || []
+        const apartadosData = apartadosRes.data || []
 
-      setStats({
-        productos: prodRes.count || 0,
-        clientes: cliRes.count || 0,
-        stockBajo,
-        ventasHoy: ventasData.length,
-        totalHoy: ventasData.reduce((s, v) => s + (parseFloat(v.total) || 0), 0),
-        apartadosActivos: apartadosData.length,
-        saldoPendiente: apartadosData.reduce((s, a) => s + (parseFloat(a.saldo_pendiente) || 0), 0),
-        devolucionesHoy: (devRes.data || []).length,
-      })
+        setStats({
+          productos: prodRes.count || 0,
+          clientes: cliRes.count || 0,
+          stockBajo,
+          ventasHoy: ventasData.length,
+          totalHoy: ventasData.reduce((s, v) => s + (parseFloat(v.total) || 0), 0),
+          apartadosActivos: apartadosData.length,
+          saldoPendiente: apartadosData.reduce((s, a) => s + (parseFloat(a.saldo_pendiente) || 0), 0),
+          devolucionesHoy: (devRes.data || []).length,
+        })
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
     }
     cargar()
   }, [])
@@ -54,6 +65,20 @@ export function DashboardPage() {
       <h1 className="font-display text-3xl font-bold text-warm-900 mb-2">Dashboard</h1>
       <p className="text-warm-400 text-sm mb-8">Resumen general de Meridiano Joyeria</p>
 
+      {loading && (
+        <div className="flex items-center justify-center h-48">
+          <Spinner size="lg" />
+        </div>
+      )}
+
+      {error && (
+        <div className="card p-5 border-red-200 bg-red-50 mb-6">
+          <p className="text-sm text-red-700">Error al cargar el dashboard: {error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+      <>
       {/* Sales today highlight */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div className="card-gold lg:col-span-2">
@@ -165,6 +190,8 @@ export function DashboardPage() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }
