@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Banknote, CreditCard, ArrowRightLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
@@ -17,6 +17,13 @@ export function PagoModal({ isOpen, onClose, apartado, userId, onGuardado }) {
   const [monto, setMonto] = useState('')
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setMonto('')
+      setMetodoPago('efectivo')
+    }
+  }, [isOpen])
 
   if (!apartado) return null
 
@@ -80,7 +87,7 @@ export function PagoModal({ isOpen, onClose, apartado, userId, onGuardado }) {
         </div>
         <div className="flex justify-between text-sm mt-1">
           <span className="text-warm-500">Pagado</span>
-          <span className="text-emerald-600 font-semibold">{fmt(apartado.anticipo)}</span>
+          <span className="text-emerald-600 font-semibold">{fmt(apartado.total - apartado.saldo_pendiente)}</span>
         </div>
         <div className="flex justify-between text-sm mt-1 pt-1 border-t border-ivory-300">
           <span className="font-semibold text-warm-700">Saldo pendiente</span>

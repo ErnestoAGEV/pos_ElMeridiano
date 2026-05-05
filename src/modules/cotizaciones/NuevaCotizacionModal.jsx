@@ -24,6 +24,15 @@ export function NuevaCotizacionModal({ isOpen, onClose, userId, onGuardado }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (!isOpen) {
+      setCarrito([])
+      setClienteSeleccionado(null)
+      setBusquedaProd('')
+      setBusquedaCli('')
+    }
+  }, [isOpen])
+
+  useEffect(() => {
     if (isOpen) {
       obtenerProductos({ busqueda: busquedaProd || undefined, soloActivos: true }).then(setProductos).catch(() => {})
     }

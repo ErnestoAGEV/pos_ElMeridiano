@@ -28,6 +28,18 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (!isOpen) {
+      setCarrito([])
+      setClienteSeleccionado(null)
+      setAnticipo('')
+      setFechaLimite('')
+      setNotas('')
+      setBusquedaProd('')
+      setBusquedaCli('')
+    }
+  }, [isOpen])
+
+  useEffect(() => {
     if (isOpen) {
       obtenerProductos({ busqueda: busquedaProd || undefined, soloActivos: true }).then(setProductos).catch(() => {})
     }

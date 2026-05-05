@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
@@ -17,6 +17,14 @@ export function MovimientoModal({ isOpen, onClose, inventario, userId, onGuardad
   const [cantidad, setCantidad] = useState('')
   const [motivo, setMotivo] = useState('')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setTipo('entrada')
+      setCantidad('')
+      setMotivo('')
+    }
+  }, [isOpen])
 
   const producto = inventario?.producto
 
