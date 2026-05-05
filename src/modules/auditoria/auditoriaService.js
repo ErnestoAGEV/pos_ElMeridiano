@@ -14,7 +14,10 @@ export async function obtenerAuditoria({ modulo, busqueda, desde, hasta } = {}) 
 
   if (modulo) query = query.eq('modulo', modulo)
   if (desde) query = query.gte('created_at', desde)
-  if (hasta) query = query.lte('created_at', hasta + 'T23:59:59')
+  if (hasta) {
+    const toDate = new Date(`${hasta}T23:59:59.999`)
+    query = query.lte('created_at', toDate.toISOString())
+  }
 
   const { data, error } = await query
 

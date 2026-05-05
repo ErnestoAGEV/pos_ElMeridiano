@@ -68,12 +68,6 @@ export async function obtenerCortePendiente() {
     return formatFecha(siguiente)
   }
 
-  // Last corte is yesterday or today — nothing pending
-  // (but if it's today and there's no corte for yesterday...)
-  if (ultimo.fecha < ayerStr) {
-    return ayerStr
-  }
-
   return null
 }
 

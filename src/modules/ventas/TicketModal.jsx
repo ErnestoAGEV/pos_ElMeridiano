@@ -1,6 +1,7 @@
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Printer, Check } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export function TicketModal({ isOpen, onClose, venta }) {
   if (!venta) return null
@@ -11,6 +12,10 @@ export function TicketModal({ isOpen, onClose, venta }) {
     const printArea = document.getElementById('ticket-content')
     if (!printArea) return
     const win = window.open('', '_blank', 'width=360,height=600')
+    if (!win) {
+      toast.error('El navegador bloqueo la ventana de impresion. Permite los popups para este sitio.')
+      return
+    }
     win.document.write(`
       <html>
         <head>

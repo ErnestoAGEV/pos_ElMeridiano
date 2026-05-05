@@ -79,6 +79,9 @@ export async function obtenerHistorialCliente(clienteId) {
       .limit(20),
   ])
 
+  if (ventasRes.error) throw new Error(ventasRes.error.message)
+  if (apartadosRes.error) throw new Error(apartadosRes.error.message)
+
   return {
     ventas: ventasRes.data || [],
     apartados: apartadosRes.data || [],
