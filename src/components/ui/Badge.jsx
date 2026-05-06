@@ -7,7 +7,7 @@ const variants = {
   amber: 'bg-amber-50 text-amber-700 border border-amber-200',
   blue: 'bg-sky-50 text-sky-700 border border-sky-200',
   gray: 'bg-ivory-200 text-warm-600 border border-ivory-400',
-  gold: 'bg-gold-50 text-gold-600 border border-gold-200',
+  gold: 'bg-primary-50 text-primary-600 border border-primary-200',
 }
 
 export function Badge({ children, variant = 'gray', className = '' }) {

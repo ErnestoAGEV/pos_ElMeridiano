@@ -44,7 +44,7 @@ export function DetalleApartadoModal({ isOpen, onClose, apartado }) {
           </div>
           <div className="w-full h-3 bg-ivory-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-gold-400 to-gold-500 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500"
               style={{ width: `${progreso}%` }}
             />
           </div>
@@ -114,8 +114,8 @@ export function DetalleApartadoModal({ isOpen, onClose, apartado }) {
         </div>
 
         {apartado.notas && (
-          <div className="p-3 rounded-xl bg-gold-50 border border-gold-200 text-sm text-warm-700">
-            <strong className="text-gold-600 text-[10px] uppercase tracking-wider">Notas:</strong>
+          <div className="p-3 rounded-xl bg-primary-50 border border-primary-200 text-sm text-warm-700">
+            <strong className="text-primary-600 text-[10px] uppercase tracking-wider">Notas:</strong>
             <p className="mt-0.5">{apartado.notas}</p>
           </div>
         )}

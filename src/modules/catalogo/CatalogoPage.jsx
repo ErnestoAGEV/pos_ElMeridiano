@@ -135,7 +135,7 @@ export function CatalogoPage() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por nombre o código..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
 
@@ -175,7 +175,7 @@ export function CatalogoPage() {
                 type="checkbox"
                 checked={mostrarInactivos}
                 onChange={(e) => setMostrarInactivos(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-ivory-400 text-gold-500 focus:ring-gold-400/30"
+                className="w-3.5 h-3.5 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
               />
               Inactivos
             </label>
@@ -190,8 +190,8 @@ export function CatalogoPage() {
             onClick={() => setFiltroCategoria('')}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
               !filtroCategoria
-                ? 'bg-gold-50 text-gold-600 border-gold-200'
-                : 'bg-white text-warm-500 border-ivory-300 hover:border-gold-200 hover:text-gold-600'
+                ? 'bg-primary-50 text-primary-600 border-primary-200'
+                : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200 hover:text-primary-600'
             }`}
           >
             Todos
@@ -202,8 +202,8 @@ export function CatalogoPage() {
               onClick={() => setFiltroCategoria(c.id === filtroCategoria ? '' : c.id)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                 filtroCategoria === c.id
-                  ? 'bg-gold-50 text-gold-600 border-gold-200'
-                  : 'bg-white text-warm-500 border-ivory-300 hover:border-gold-200 hover:text-gold-600'
+                  ? 'bg-primary-50 text-primary-600 border-primary-200'
+                  : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200 hover:text-primary-600'
               }`}
             >
               {c.nombre}
@@ -265,7 +265,7 @@ export function CatalogoPage() {
                         e.stopPropagation()
                         setProductoModal({ open: true, producto: prod })
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-gold-500 transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
                     >
                       <PenLine size={14} />
                     </button>

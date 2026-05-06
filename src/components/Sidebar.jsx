@@ -72,7 +72,7 @@ export function Sidebar() {
       {/* Brand */}
       <div className={`pt-7 pb-5 ${collapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center shadow-gold-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
             <Gem size={18} className="text-white" />
           </div>
           {!collapsed && (
@@ -89,7 +89,7 @@ export function Sidebar() {
       </div>
 
       {/* Ornamental divider */}
-      <div className={`divider-gold ${collapsed ? 'mx-3' : 'mx-5'}`} />
+      <div className={`divider-primary ${collapsed ? 'mx-3' : 'mx-5'}`} />
 
       {/* Role badge */}
       {!collapsed && (
@@ -97,7 +97,7 @@ export function Sidebar() {
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-semibold ${
               isAdmin
-                ? 'bg-gold-50 text-gold-600 border border-gold-200'
+                ? 'bg-primary-50 text-primary-600 border border-primary-200'
                 : 'bg-sky-50 text-sky-600 border border-sky-200'
             }`}
           >
@@ -116,7 +116,7 @@ export function Sidebar() {
             className={({ isActive }) =>
               `flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-gold-50 text-gold-600 shadow-gold-sm border border-gold-200/60'
+                  ? 'bg-primary-50 text-primary-600 shadow-primary-sm border border-primary-200/60'
                   : 'text-warm-500 hover:bg-ivory-200 hover:text-warm-700 border border-transparent'
               }`
             }

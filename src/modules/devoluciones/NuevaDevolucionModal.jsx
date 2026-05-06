@@ -179,7 +179,7 @@ export function NuevaDevolucionModal({ isOpen, onClose, userId, onGuardado }) {
                         max={det.cantidad}
                         value={cantidades[det.producto_id] || 0}
                         onChange={(e) => setCantidad(det.producto_id, e.target.value, det.cantidad)}
-                        className="w-16 bg-white border border-ivory-400 rounded-lg px-2 py-1.5 text-sm text-center text-warm-800 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400"
+                        className="w-16 bg-white border border-ivory-400 rounded-lg px-2 py-1.5 text-sm text-center text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400"
                       />
                       <span className="text-[10px] text-warm-400">/ {det.cantidad}</span>
                     </div>
@@ -196,7 +196,7 @@ export function NuevaDevolucionModal({ isOpen, onClose, userId, onGuardado }) {
                 onChange={(e) => setMotivo(e.target.value)}
                 rows={2}
                 placeholder="Ej: Producto defectuoso, talla incorrecta, cambio de opinión..."
-                className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all resize-none"
+                className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
               />
             </div>
 

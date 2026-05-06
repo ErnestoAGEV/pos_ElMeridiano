@@ -151,7 +151,7 @@ export function CotizacionesPage() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por folio o cliente..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
           <div className="flex gap-1">
@@ -161,8 +161,8 @@ export function CotizacionesPage() {
                 onClick={() => setFiltroEstado(e.value)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                   filtroEstado === e.value
-                    ? 'bg-gold-50 text-gold-600 border-gold-200'
-                    : 'bg-white text-warm-500 border-ivory-300 hover:border-gold-200'
+                    ? 'bg-primary-50 text-primary-600 border-primary-200'
+                    : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200'
                 }`}
               >
                 {e.label}
@@ -201,7 +201,7 @@ export function CotizacionesPage() {
                   <td className="px-6 py-3.5">
                     <button
                       onClick={() => setDetalleModal({ open: true, cotizacion: cot })}
-                      className="font-mono text-sm font-semibold text-warm-800 hover:text-gold-600 transition-colors"
+                      className="font-mono text-sm font-semibold text-warm-800 hover:text-primary-600 transition-colors"
                     >
                       {cot.folio}
                     </button>

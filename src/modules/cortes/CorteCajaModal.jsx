@@ -268,13 +268,13 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
             </div>
 
             {/* Efectivo esperado */}
-            <div className="bg-gold-50 border border-gold-200 rounded-xl p-4">
+            <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gold-500 font-semibold">Efectivo esperado en caja</p>
-                  <p className="text-[10px] text-gold-400 mt-0.5">Ventas efectivo + Cobros efectivo − Devoluciones</p>
+                  <p className="text-[10px] uppercase tracking-wider text-primary-500 font-semibold">Efectivo esperado en caja</p>
+                  <p className="text-[10px] text-primary-400 mt-0.5">Ventas efectivo + Cobros efectivo − Devoluciones</p>
                 </div>
-                <span className="font-display text-xl font-bold text-gold-700">{fmt(efectivoEsperado)}</span>
+                <span className="font-display text-xl font-bold text-primary-700">{fmt(efectivoEsperado)}</span>
               </div>
             </div>
 
@@ -292,7 +292,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
                   value={efectivoReal}
                   onChange={(e) => setEfectivoReal(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-8 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-8 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                   autoFocus
                 />
               </div>
@@ -343,7 +343,7 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
                 onChange={(e) => setNotas(e.target.value)}
                 placeholder="Notas sobre el corte..."
                 rows={2}
-                className="w-full bg-ivory-50 border border-ivory-300 rounded-xl px-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all resize-none"
+                className="w-full bg-ivory-50 border border-ivory-300 rounded-xl px-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
               />
             </div>
 

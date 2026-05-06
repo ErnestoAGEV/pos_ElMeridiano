@@ -84,7 +84,7 @@ export function ClientesPage() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por nombre, teléfono, email o RFC..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
           <label className="flex items-center gap-2 text-sm text-warm-500 cursor-pointer whitespace-nowrap">
@@ -92,7 +92,7 @@ export function ClientesPage() {
               type="checkbox"
               checked={mostrarInactivos}
               onChange={(e) => setMostrarInactivos(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-ivory-400 text-gold-500 focus:ring-gold-400/30"
+              className="w-3.5 h-3.5 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
             />
             Inactivos
           </label>
@@ -129,7 +129,7 @@ export function ClientesPage() {
                   <td className="px-6 py-3.5">
                     <button
                       onClick={() => verDetalle(cli)}
-                      className="text-left hover:text-gold-600 transition-colors"
+                      className="text-left hover:text-primary-600 transition-colors"
                     >
                       <p className="text-sm font-semibold text-warm-800">{cli.nombre}</p>
                       {cli.notas && (
@@ -178,7 +178,7 @@ export function ClientesPage() {
                       </button>
                       <button
                         onClick={() => setClienteModal({ open: true, cliente: cli })}
-                        className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-gold-500 transition-all"
+                        className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
                         title="Editar"
                       >
                         <PenLine size={14} />
@@ -251,8 +251,8 @@ export function ClientesPage() {
             </div>
 
             {detalleModal.cliente.notas && (
-              <div className="p-3 rounded-xl bg-gold-50 border border-gold-200">
-                <p className="text-[10px] uppercase tracking-wider text-gold-600 font-semibold mb-1">Notas</p>
+              <div className="p-3 rounded-xl bg-primary-50 border border-primary-200">
+                <p className="text-[10px] uppercase tracking-wider text-primary-600 font-semibold mb-1">Notas</p>
                 <p className="text-sm text-warm-700">{detalleModal.cliente.notas}</p>
               </div>
             )}

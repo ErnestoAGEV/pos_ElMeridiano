@@ -142,7 +142,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-ivory-400 border-t-gold-400" />
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-ivory-400 border-t-primary-400" />
           <p className="text-sm text-warm-400">Consultando precios internacionales...</p>
         </div>
       ) : (
@@ -188,7 +188,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
                     value={tipoCambio}
                     onChange={(e) => { setTipoCambio(e.target.value); setEditadoManual(true) }}
                     onBlur={handleRecalcular}
-                    className="w-16 text-sm font-semibold text-warm-700 bg-transparent text-center outline-none border-b border-dashed border-warm-300 focus:border-gold-400"
+                    className="w-16 text-sm font-semibold text-warm-700 bg-transparent text-center outline-none border-b border-dashed border-warm-300 focus:border-primary-400"
                   />
                 </div>
               </div>
@@ -196,7 +196,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
           )}
 
           {/* Ornamental divider */}
-          <div className="divider-gold" />
+          <div className="divider-primary" />
 
           {/* Editable final prices */}
           <div className="grid grid-cols-2 gap-4">
@@ -213,7 +213,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
                   value={oroGramo}
                   onChange={handleEditField(setOroGramo)}
                   placeholder="0.00"
-                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
               </div>
             </div>
@@ -230,7 +230,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
                   value={plataGramo}
                   onChange={handleEditField(setPlataGramo)}
                   placeholder="0.00"
-                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
               </div>
             </div>

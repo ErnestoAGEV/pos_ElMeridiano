@@ -137,7 +137,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
               value={busquedaProd}
               onChange={(e) => setBusquedaProd(e.target.value)}
               placeholder="Buscar producto..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-9 pr-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-9 pr-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
           <div className="flex-1 overflow-y-auto space-y-1">
@@ -152,10 +152,10 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
                   disabled={stock === 0 || !precio}
                   className={`w-full text-left flex items-center justify-between p-2.5 rounded-xl border transition-all text-sm ${
                     enCarrito
-                      ? 'border-gold-200 bg-gold-50'
+                      ? 'border-primary-200 bg-primary-50'
                       : stock === 0
                         ? 'border-ivory-200 bg-ivory-50 opacity-40 cursor-not-allowed'
-                        : 'border-ivory-200 bg-white hover:border-gold-200'
+                        : 'border-ivory-200 bg-white hover:border-primary-200'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -180,7 +180,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
             {clienteSeleccionado ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-ivory-50 border border-ivory-300">
                 <span className="text-sm font-medium text-warm-800 flex items-center gap-1.5">
-                  <User size={12} className="text-gold-500" /> {clienteSeleccionado.nombre}
+                  <User size={12} className="text-primary-500" /> {clienteSeleccionado.nombre}
                 </span>
                 <button onClick={() => setClienteSeleccionado(null)} className="text-warm-400 hover:text-red-500"><X size={12} /></button>
               </div>
@@ -192,7 +192,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
                   onChange={(e) => { setBusquedaCli(e.target.value); setClienteDropdown(true) }}
                   onFocus={() => setClienteDropdown(true)}
                   placeholder="Buscar cliente..."
-                  className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
+                  className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30"
                 />
                 {clienteDropdown && clientesFiltrados.length > 0 && (
                   <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-ivory-300 rounded-xl shadow-luxury-md max-h-32 overflow-y-auto">
@@ -263,7 +263,7 @@ export function NuevoApartadoModal({ isOpen, onClose, userId, onGuardado }) {
                     onClick={() => setMetodoPagoAnticipo(value)}
                     className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[10px] font-medium transition-all ${
                       metodoPagoAnticipo === value
-                        ? 'bg-gold-50 border-gold-200 text-gold-700'
+                        ? 'bg-primary-50 border-primary-200 text-primary-700'
                         : 'bg-white border-ivory-300 text-warm-500 hover:border-ivory-400'
                     }`}
                   >

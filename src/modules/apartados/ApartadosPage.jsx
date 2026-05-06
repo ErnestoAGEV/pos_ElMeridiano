@@ -104,8 +104,8 @@ export function ApartadosPage() {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gold-50 flex items-center justify-center">
-              <DollarSign size={18} className="text-gold-500" />
+            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+              <DollarSign size={18} className="text-primary-500" />
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Por cobrar</p>
@@ -136,7 +136,7 @@ export function ApartadosPage() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por folio, cliente o teléfono..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
           <div className="flex gap-1">
@@ -146,8 +146,8 @@ export function ApartadosPage() {
                 onClick={() => setFiltroEstado(e.value)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                   filtroEstado === e.value
-                    ? 'bg-gold-50 text-gold-600 border-gold-200'
-                    : 'bg-white text-warm-500 border-ivory-300 hover:border-gold-200'
+                    ? 'bg-primary-50 text-primary-600 border-primary-200'
+                    : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200'
                 }`}
               >
                 {e.label}
@@ -189,7 +189,7 @@ export function ApartadosPage() {
                     <td className="px-6 py-3.5">
                       <button
                         onClick={() => setDetalleModal({ open: true, apartado: ap })}
-                        className="font-mono text-sm font-semibold text-warm-800 hover:text-gold-600 transition-colors"
+                        className="font-mono text-sm font-semibold text-warm-800 hover:text-primary-600 transition-colors"
                       >
                         {ap.folio}
                       </button>

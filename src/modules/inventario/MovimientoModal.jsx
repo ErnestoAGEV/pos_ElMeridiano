@@ -106,7 +106,7 @@ export function MovimientoModal({ isOpen, onClose, inventario, userId, onGuardad
               onClick={() => setTipo(t.value)}
               className={`p-3 rounded-xl border text-center transition-all ${
                 tipo === t.value
-                  ? 'bg-gold-50 border-gold-200 text-gold-700 shadow-gold-sm'
+                  ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-primary-sm'
                   : 'bg-white border-ivory-300 text-warm-500 hover:border-ivory-400'
               }`}
             >
@@ -152,7 +152,7 @@ export function MovimientoModal({ isOpen, onClose, inventario, userId, onGuardad
             onChange={(e) => setMotivo(e.target.value)}
             rows={2}
             placeholder="Ej: Compra a proveedor, Conteo físico, Merma por daño..."
-            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all resize-none"
+            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
           />
         </div>
 

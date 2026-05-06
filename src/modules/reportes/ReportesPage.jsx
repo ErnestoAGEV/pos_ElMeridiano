@@ -59,7 +59,7 @@ function MiniBar({ data, maxVal }) {
   return (
     <div className="w-full bg-ivory-200 rounded-full h-2">
       <div
-        className="h-2 rounded-full bg-gradient-to-r from-gold-300 to-gold-500 transition-all duration-500"
+        className="h-2 rounded-full bg-gradient-to-r from-primary-300 to-primary-500 transition-all duration-500"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -127,7 +127,7 @@ export function ReportesPage() {
           <p className="text-warm-400 text-sm mt-1">Analisis de rendimiento de Meridiano Joyeria</p>
         </div>
         <div className="flex items-center gap-2">
-          <BarChart3 size={18} className="text-gold-500" />
+          <BarChart3 size={18} className="text-primary-500" />
         </div>
       </div>
 
@@ -141,8 +141,8 @@ export function ReportesPage() {
                 onClick={() => setPeriodo(p.value)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                   periodo === p.value
-                    ? 'bg-gold-50 text-gold-600 border-gold-200'
-                    : 'bg-white text-warm-500 border-ivory-300 hover:border-gold-200'
+                    ? 'bg-primary-50 text-primary-600 border-primary-200'
+                    : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200'
                 }`}
               >
                 {p.label}
@@ -158,7 +158,7 @@ export function ReportesPage() {
                   type="date"
                   value={desde}
                   onChange={(e) => setDesde(e.target.value)}
-                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -167,7 +167,7 @@ export function ReportesPage() {
                   type="date"
                   value={hasta}
                   onChange={(e) => setHasta(e.target.value)}
-                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
               </div>
             </>
@@ -182,10 +182,10 @@ export function ReportesPage() {
           {/* Main KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Ingreso neto */}
-            <div className="card-gold">
+            <div className="card-primary">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-300 to-gold-500 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-300 to-primary-500 flex items-center justify-center">
                     <DollarSign size={18} className="text-white" />
                   </div>
                   <span className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso Neto</span>
@@ -242,7 +242,7 @@ export function ReportesPage() {
             {/* Apartados summary */}
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-4">
-                <CreditCard size={16} className="text-gold-500" />
+                <CreditCard size={16} className="text-primary-500" />
                 <h2 className="text-sm font-semibold text-warm-800">Apartados</h2>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -268,7 +268,7 @@ export function ReportesPage() {
             {/* Payment methods */}
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-4">
-                <DollarSign size={16} className="text-gold-500" />
+                <DollarSign size={16} className="text-primary-500" />
                 <h2 className="text-sm font-semibold text-warm-800">Metodos de Pago</h2>
               </div>
               {ventas && Object.keys(ventas.porMetodo).length > 0 ? (
@@ -302,7 +302,7 @@ export function ReportesPage() {
             {/* Top products */}
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Package size={16} className="text-gold-500" />
+                <Package size={16} className="text-primary-500" />
                 <h2 className="text-sm font-semibold text-warm-800">Top Productos</h2>
               </div>
               {topProductos.length > 0 ? (
@@ -310,7 +310,7 @@ export function ReportesPage() {
                   {topProductos.map((item, idx) => (
                     <div key={item.producto.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-ivory-50">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        idx === 0 ? 'bg-gold-100 text-gold-600' :
+                        idx === 0 ? 'bg-primary-100 text-primary-600' :
                         idx === 1 ? 'bg-gray-200 text-gray-600' :
                         idx === 2 ? 'bg-amber-100 text-amber-700' :
                         'bg-ivory-200 text-warm-400'
@@ -336,7 +336,7 @@ export function ReportesPage() {
             {/* Top sellers */}
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Award size={16} className="text-gold-500" />
+                <Award size={16} className="text-primary-500" />
                 <h2 className="text-sm font-semibold text-warm-800">Vendedores</h2>
               </div>
               {topVendedores.length > 0 ? (
@@ -348,7 +348,7 @@ export function ReportesPage() {
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                              idx === 0 ? 'bg-gold-100 text-gold-600' : 'bg-ivory-200 text-warm-400'
+                              idx === 0 ? 'bg-primary-100 text-primary-600' : 'bg-ivory-200 text-warm-400'
                             }`}>
                               {idx + 1}
                             </div>
@@ -374,7 +374,7 @@ export function ReportesPage() {
           {ventas && Object.keys(ventas.porDia).length > 1 && (
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Calendar size={16} className="text-gold-500" />
+                <Calendar size={16} className="text-primary-500" />
                 <h2 className="text-sm font-semibold text-warm-800">Ventas por Dia</h2>
               </div>
               <div className="flex items-end gap-1.5 h-32">
@@ -388,7 +388,7 @@ export function ReportesPage() {
                         <div className="w-full flex flex-col items-center justify-end h-24">
                           <span className="text-[9px] font-semibold text-warm-600 mb-1">{fmt(monto)}</span>
                           <div
-                            className="w-full max-w-[40px] rounded-t-lg bg-gradient-to-t from-gold-400 to-gold-300 transition-all duration-500"
+                            className="w-full max-w-[40px] rounded-t-lg bg-gradient-to-t from-primary-400 to-primary-300 transition-all duration-500"
                             style={{ height: `${Math.max(pct, 4)}%` }}
                           />
                         </div>

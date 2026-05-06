@@ -52,29 +52,29 @@ export function LoginPage() {
       </div>
 
       {/* Warm ambient glow */}
-      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-gold-400/[0.04] rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] bg-gold-400/[0.03] rounded-full blur-[80px]" />
+      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-primary-400/[0.04] rounded-full blur-[100px]" />
+      <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] bg-primary-400/[0.03] rounded-full blur-[80px]" />
 
       <div className="relative w-full max-w-[400px]">
         {/* Brand */}
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center mb-5 shadow-gold-md">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center mb-5 shadow-primary-md">
             <Gem size={26} className="text-white" />
           </div>
           <h1 className="font-display text-4xl font-bold text-warm-900 tracking-tight">
             El Meridiano
           </h1>
           <div className="flex items-center gap-3 mt-2">
-            <div className="w-8 h-px bg-gradient-to-r from-transparent to-gold-400" />
+            <div className="w-8 h-px bg-gradient-to-r from-transparent to-primary-400" />
             <p className="text-[11px] uppercase tracking-[0.25em] text-warm-400 font-semibold">
               Joyeria
             </p>
-            <div className="w-8 h-px bg-gradient-to-l from-transparent to-gold-400" />
+            <div className="w-8 h-px bg-gradient-to-l from-transparent to-primary-400" />
           </div>
         </div>
 
         {/* Card */}
-        <div className="card-gold">
+        <div className="card-primary">
           <div className="p-8">
             <h2 className="font-display text-2xl font-semibold text-warm-900 mb-1">
               Bienvenido
@@ -95,7 +95,7 @@ export function LoginPage() {
                     placeholder="Ej: maria, admin"
                     autoComplete="username"
                     required
-                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                   />
                 </div>
               </div>
@@ -113,7 +113,7 @@ export function LoginPage() {
                     autoComplete="current-password"
                     required
                     maxLength={10}
-                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all tracking-[0.3em] text-center text-lg"
+                    className="w-full bg-white border border-ivory-400 rounded-xl pl-11 pr-4 py-3 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all tracking-[0.3em] text-center text-lg"
                   />
                 </div>
               </div>

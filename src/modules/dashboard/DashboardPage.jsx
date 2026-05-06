@@ -81,9 +81,9 @@ export function DashboardPage() {
       <>
       {/* Sales today highlight */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="card-gold lg:col-span-2">
+        <div className="card-primary lg:col-span-2">
           <div className="p-6 flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-300 to-gold-500 flex items-center justify-center shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-300 to-primary-500 flex items-center justify-center shrink-0">
               <ShoppingCart size={24} className="text-white" />
             </div>
             <div>
@@ -108,10 +108,10 @@ export function DashboardPage() {
       {/* Metrics grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Gold price */}
-        <div className="card-gold">
+        <div className="card-primary">
           <div className="p-5">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-300 to-primary-500 flex items-center justify-center">
                 <DollarSign size={14} className="text-white" />
               </div>
               <span className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Oro hoy</span>
@@ -122,7 +122,7 @@ export function DashboardPage() {
         </div>
 
         {/* Silver price */}
-        <div className="card-gold">
+        <div className="card-primary">
           <div className="p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">

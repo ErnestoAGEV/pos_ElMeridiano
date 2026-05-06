@@ -129,7 +129,7 @@ export function UsuariosPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => abrirEditar(u)}
-                        className="p-2 text-warm-400 hover:text-gold-500 hover:bg-gold-50 rounded-lg transition-all"
+                        className="p-2 text-warm-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-all"
                         title="Editar nombre y rol"
                       >
                         <Pencil size={15} />

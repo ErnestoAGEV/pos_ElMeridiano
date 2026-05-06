@@ -53,7 +53,7 @@ export function CortesPage() {
         </div>
         <button
           onClick={handleNuevoCorte}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gold-400 to-gold-500 text-white rounded-xl text-sm font-semibold shadow-gold-sm hover:shadow-gold-md transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-400 to-primary-500 text-white rounded-xl text-sm font-semibold shadow-primary-sm hover:shadow-primary-md transition-all"
         >
           <Calculator size={16} />
           {corteHoyExiste ? 'Ver corte de hoy' : 'Corte de hoy'}
@@ -71,7 +71,7 @@ export function CortesPage() {
               type="date"
               value={desde}
               onChange={(e) => setDesde(e.target.value)}
-              className="bg-ivory-50 border border-ivory-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
+              className="bg-ivory-50 border border-ivory-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function CortesPage() {
               type="date"
               value={hasta}
               onChange={(e) => setHasta(e.target.value)}
-              className="bg-ivory-50 border border-ivory-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
+              className="bg-ivory-50 border border-ivory-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30"
             />
           </div>
           {(desde || hasta) && (

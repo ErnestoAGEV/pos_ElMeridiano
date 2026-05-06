@@ -133,7 +133,7 @@ export function InventarioPage() {
           onClick={() => setTab('stock')}
           className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
             tab === 'stock'
-              ? 'border-gold-400 text-gold-600'
+              ? 'border-primary-400 text-primary-600'
               : 'border-transparent text-warm-400 hover:text-warm-600'
           }`}
         >
@@ -146,7 +146,7 @@ export function InventarioPage() {
           onClick={() => setTab('movimientos')}
           className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
             tab === 'movimientos'
-              ? 'border-gold-400 text-gold-600'
+              ? 'border-primary-400 text-primary-600'
               : 'border-transparent text-warm-400 hover:text-warm-600'
           }`}
         >
@@ -170,7 +170,7 @@ export function InventarioPage() {
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
                   placeholder="Buscar producto..."
-                  className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export function InventarioPage() {
                   type="checkbox"
                   checked={soloStockBajo}
                   onChange={(e) => setSoloStockBajo(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-ivory-400 text-gold-500 focus:ring-gold-400/30"
+                  className="w-3.5 h-3.5 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
                 />
                 Solo stock bajo
               </label>
@@ -266,7 +266,7 @@ export function InventarioPage() {
                           <td className="px-6 py-3.5 text-center">
                             <button
                               onClick={() => setMovModal({ open: true, inventario: inv })}
-                              className="text-xs text-gold-500 hover:text-gold-700 font-medium hover:bg-gold-50 px-3 py-1.5 rounded-lg transition-all"
+                              className="text-xs text-primary-500 hover:text-primary-700 font-medium hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-all"
                             >
                               <span className="flex items-center gap-1">
                                 <ArrowUpDown size={12} />

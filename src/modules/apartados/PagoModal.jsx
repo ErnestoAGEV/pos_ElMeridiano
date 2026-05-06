@@ -139,7 +139,7 @@ export function PagoModal({ isOpen, onClose, apartado, userId, onGuardado }) {
                 onClick={() => setMetodoPago(value)}
                 className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-xs font-medium transition-all ${
                   metodoPago === value
-                    ? 'bg-gold-50 border-gold-200 text-gold-700 shadow-gold-sm'
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-primary-sm'
                     : 'bg-white border-ivory-300 text-warm-500 hover:border-ivory-400'
                 }`}
               >

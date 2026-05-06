@@ -27,7 +27,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', closable 
         className={`relative bg-white rounded-2xl shadow-luxury-lg w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]`}
       >
         {/* Gold accent line */}
-        <div className="h-[3px] shrink-0 bg-gradient-to-r from-gold-400 via-gold-300 to-gold-400" />
+        <div className="h-[3px] shrink-0 bg-gradient-to-r from-primary-400 via-primary-300 to-primary-400" />
 
         <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-ivory-300">
           <h2 className="text-xl font-display font-semibold text-warm-900">{title}</h2>

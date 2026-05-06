@@ -2,7 +2,7 @@ import { Spinner } from './Spinner'
 
 const variants = {
   primary:
-    'bg-gradient-to-b from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 text-white font-semibold shadow-gold-sm hover:shadow-gold-md',
+    'bg-gradient-to-b from-primary-400 to-primary-500 hover:from-primary-300 hover:to-primary-400 text-white font-semibold shadow-primary-sm hover:shadow-primary-md',
   secondary:
     'bg-white hover:bg-ivory-200 text-warm-700 font-medium border border-ivory-400 shadow-luxury',
   danger:
@@ -29,7 +29,7 @@ export function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`inline-flex items-center gap-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold-400/40 focus:ring-offset-2 focus:ring-offset-ivory-100 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/40 focus:ring-offset-2 focus:ring-offset-ivory-100 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {loading && <Spinner size="sm" />}

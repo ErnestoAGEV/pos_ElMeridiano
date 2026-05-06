@@ -299,7 +299,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
             onChange={handleChange('descripcion')}
             rows={2}
             placeholder="Descripción opcional del producto..."
-            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all resize-none"
+            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
           />
         </div>
 
@@ -314,7 +314,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
                   value={form.imagen_url}
                   onChange={handleChange('imagen_url')}
                   placeholder="https://..."
-                  className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all font-sans"
+                  className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all font-sans"
                   disabled={uploading || saving || deleting}
                 />
               </div>
@@ -351,7 +351,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
               type="checkbox"
               checked={form.activo}
               onChange={(e) => setForm((f) => ({ ...f, activo: e.target.checked }))}
-              className="w-4 h-4 rounded border-ivory-400 text-gold-500 focus:ring-gold-400/30"
+              className="w-4 h-4 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
             />
             <span className="text-sm text-warm-600">Producto activo</span>
           </label>

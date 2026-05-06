@@ -223,7 +223,7 @@ export function VentasPage() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar producto por nombre o código..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-3 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
               autoFocus
             />
           </div>
@@ -263,10 +263,10 @@ export function VentasPage() {
                     disabled={sinStock || !precio}
                     className={`text-left p-3 rounded-xl border transition-all duration-150 ${
                       enCarrito
-                        ? 'border-gold-300 bg-gold-50 shadow-gold-sm'
+                        ? 'border-primary-300 bg-primary-50 shadow-primary-sm'
                         : sinStock
                           ? 'border-ivory-300 bg-ivory-50 opacity-50 cursor-not-allowed'
-                          : 'border-ivory-300 bg-white hover:border-gold-200 hover:shadow-luxury active:scale-[0.98]'
+                          : 'border-ivory-300 bg-white hover:border-primary-200 hover:shadow-luxury active:scale-[0.98]'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-1">
@@ -274,7 +274,7 @@ export function VentasPage() {
                         {prod.codigo}
                       </span>
                       {enCarrito && (
-                        <span className="text-[10px] font-bold text-gold-600 bg-gold-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold text-primary-600 bg-primary-100 px-1.5 py-0.5 rounded-full">
                           x{enCarrito.cantidad}
                         </span>
                       )}
@@ -303,7 +303,7 @@ export function VentasPage() {
               <ShoppingCart size={18} />
               Carrito
               {carrito.length > 0 && (
-                <span className="text-xs font-sans bg-gold-100 text-gold-600 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-sans bg-primary-100 text-primary-600 px-2 py-0.5 rounded-full">
                   {carrito.reduce((s, i) => s + i.cantidad, 0)}
                 </span>
               )}
@@ -368,7 +368,7 @@ export function VentasPage() {
             {clienteSeleccionado ? (
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-ivory-300">
                 <div className="flex items-center gap-2">
-                  <User size={14} className="text-gold-500" />
+                  <User size={14} className="text-primary-500" />
                   <span className="text-sm font-medium text-warm-800">{clienteSeleccionado.nombre}</span>
                 </div>
                 <button onClick={() => setClienteSeleccionado(null)} className="text-warm-400 hover:text-red-500">
@@ -383,7 +383,7 @@ export function VentasPage() {
                   onChange={(e) => { setClienteBusqueda(e.target.value); setClienteDropdown(true) }}
                   onFocus={() => setClienteDropdown(true)}
                   placeholder="Buscar cliente..."
-                  className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                  className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
                 />
                 {clienteDropdown && clientesFiltrados.length > 0 && (
                   <div className="absolute z-20 bottom-full mb-1 left-0 right-0 bg-white border border-ivory-300 rounded-xl shadow-luxury-md max-h-40 overflow-y-auto">
@@ -418,7 +418,7 @@ export function VentasPage() {
                   onClick={() => setMetodoPago(value)}
                   className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-xs font-medium transition-all ${
                     metodoPago === value
-                      ? 'bg-gold-50 border-gold-200 text-gold-700 shadow-gold-sm'
+                      ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-primary-sm'
                       : 'bg-white border-ivory-300 text-warm-500 hover:border-ivory-400'
                   }`}
                 >
@@ -439,7 +439,7 @@ export function VentasPage() {
               value={descuento}
               onChange={(e) => setDescuento(e.target.value)}
               placeholder="0.00"
-              className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+              className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
 

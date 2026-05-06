@@ -118,7 +118,7 @@ export function UsuarioModal({ isOpen, onClose, usuario, onSuccess }) {
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
                 placeholder="Ej: maria, juan.lopez, vendedor1"
                 required
-                className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all"
+                className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
               />
               <p className="text-[10px] text-warm-400">Solo letras, numeros, puntos y guiones. Sin espacios.</p>
             </div>
@@ -133,7 +133,7 @@ export function UsuarioModal({ isOpen, onClose, usuario, onSuccess }) {
                   placeholder="Minimo 4 digitos"
                   required
                   maxLength={10}
-                  className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all pr-10 tracking-[0.2em] text-center text-lg"
+                  className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all pr-10 tracking-[0.2em] text-center text-lg"
                 />
                 <button
                   type="button"

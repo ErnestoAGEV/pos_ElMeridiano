@@ -66,11 +66,11 @@ export function MetalesPage() {
       ) : precioHoy ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
           {/* Gold card */}
-          <div className="card-gold">
+          <div className="card-primary">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gold-300 to-gold-500" />
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-primary-300 to-primary-500" />
                   <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-warm-400">
                     Oro
                   </span>
@@ -91,7 +91,7 @@ export function MetalesPage() {
           </div>
 
           {/* Silver card */}
-          <div className="card-gold">
+          <div className="card-primary">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export function MetalesPage() {
                   type="date"
                   value={desde}
                   onChange={(e) => setDesde(e.target.value)}
-                  className="bg-white border border-ivory-400 rounded-lg px-3 py-1.5 text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400"
+                  className="bg-white border border-ivory-400 rounded-lg px-3 py-1.5 text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export function MetalesPage() {
                   type="date"
                   value={hasta}
                   onChange={(e) => setHasta(e.target.value)}
-                  className="bg-white border border-ivory-400 rounded-lg px-3 py-1.5 text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400"
+                  className="bg-white border border-ivory-400 rounded-lg px-3 py-1.5 text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400"
                 />
               </div>
               <Button variant="secondary" size="sm" onClick={cargarHistorial}>
