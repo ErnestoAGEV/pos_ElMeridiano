@@ -4,11 +4,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Playfair Display"', 'Georgia', 'serif'],
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)'],
+        sans: ['var(--font-sans)'],
       },
       colors: {
-        // Warm ivory palette
+        // Warm ivory palette (stays static - neutral background)
         ivory: {
           50: '#FEFDFB',
           100: '#FBF9F5',
@@ -17,20 +17,20 @@ export default {
           400: '#E2DDD2',
           500: '#D4CFC3',
         },
-        // Rich gold for jewelry
-        gold: {
-          50: '#FDF8EC',
-          100: '#F9EDCC',
-          200: '#F2D98A',
-          300: '#E8C44E',
-          400: '#D4AF37',
-          500: '#B8962E',
-          600: '#9A7D26',
-          700: '#7C641E',
-          800: '#5E4B16',
-          900: '#3D310F',
+        // Primary brand color - driven by CSS variables
+        primary: {
+          50: 'var(--color-primary-50)',
+          100: 'var(--color-primary-100)',
+          200: 'var(--color-primary-200)',
+          300: 'var(--color-primary-300)',
+          400: 'var(--color-primary-400)',
+          500: 'var(--color-primary-500)',
+          600: 'var(--color-primary-600)',
+          700: 'var(--color-primary-700)',
+          800: 'var(--color-primary-800)',
+          900: 'var(--color-primary-900)',
         },
-        // Warm neutrals
+        // Warm neutrals (stays static)
         warm: {
           50: '#FAF9F7',
           100: '#F0EEEA',
@@ -49,8 +49,8 @@ export default {
         'luxury': '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
         'luxury-md': '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)',
         'luxury-lg': '0 4px 12px rgba(0,0,0,0.05), 0 16px 48px rgba(0,0,0,0.08)',
-        'gold-sm': '0 0 0 1px rgba(212,175,55,0.08), 0 2px 8px rgba(212,175,55,0.06)',
-        'gold-md': '0 0 0 1px rgba(212,175,55,0.12), 0 4px 16px rgba(212,175,55,0.08)',
+        'primary-sm': '0 0 0 1px color-mix(in srgb, var(--color-primary-400) 8%, transparent), 0 2px 8px color-mix(in srgb, var(--color-primary-400) 6%, transparent)',
+        'primary-md': '0 0 0 1px color-mix(in srgb, var(--color-primary-400) 12%, transparent), 0 4px 16px color-mix(in srgb, var(--color-primary-400) 8%, transparent)',
       },
     },
   },
