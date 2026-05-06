@@ -77,14 +77,11 @@ export function TiendaProvider({ children }) {
   const updateConfig = useCallback(async (changes) => {
     const newConfig = { ...config, ...changes, updated_at: new Date().toISOString() }
 
-    // Single-row table — update by id if available, otherwise match the only row
-    let query = supabase.from('configuracion_tienda').update(changes)
-    if (config.id) {
-      query = query.eq('id', config.id)
-    } else {
-      query = query.limit(1)
-    }
-    const { error } = await query
+    // Single-row table — filter by id, or match any row if id unknown
+    const { error } = await supabase
+      .from('configuracion_tienda')
+      .update(changes)
+      .not('id', 'is', null)
 
     if (error) throw new Error(error.message)
 
