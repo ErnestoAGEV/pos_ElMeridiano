@@ -4,7 +4,7 @@ import {
   ShoppingCart, Package, Users, BarChart2,
   FileText, RotateCcw, Shield, LogOut,
   Gem, Tag, BookOpen, DollarSign, UserCog, Calculator,
-  ChevronsLeft, ChevronsRight,
+  ChevronsLeft, ChevronsRight, Paintbrush,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useTienda } from '../context/TiendaContext'
@@ -26,6 +26,7 @@ const adminLinks = [
   { to: '/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/reportes', icon: BookOpen, label: 'Reportes' },
   { to: '/usuarios', icon: UserCog, label: 'Usuarios' },
+  { to: '/personalizacion', icon: Paintbrush, label: 'Personalización' },
 ]
 
 const vendedorLinks = [

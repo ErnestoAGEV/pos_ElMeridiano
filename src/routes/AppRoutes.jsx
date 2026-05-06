@@ -8,6 +8,7 @@ import { VendedorLayout } from '../layouts/VendedorLayout'
 import { LoginPage } from '../modules/auth/LoginPage'
 import { DashboardPage } from '../modules/dashboard/DashboardPage'
 import { UsuariosPage } from '../modules/usuarios/UsuariosPage'
+import { PersonalizacionPage } from '../modules/personalizacion/PersonalizacionPage'
 import { MetalesPage } from '../modules/metales/MetalesPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
 import { CatalogoPage } from '../modules/catalogo/CatalogoPage'
@@ -52,6 +53,7 @@ export function AppRoutes() {
         <Route path="/auditoria" element={<AuditoriaPage />} />
         <Route path="/reportes" element={<ReportesPage />} />
         <Route path="/usuarios" element={<UsuariosPage />} />
+        <Route path="/personalizacion" element={<PersonalizacionPage />} />
       </Route>
 
       {/* Shared routes (admin + vendedor) */}
