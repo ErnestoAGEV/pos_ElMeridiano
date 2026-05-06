@@ -13,6 +13,7 @@ import {
   obtenerTopVendedores,
 } from './reportesService'
 import { Badge } from '../../components/ui/Badge'
+import { useTienda } from '../../context/TiendaContext'
 import { Spinner } from '../../components/ui/Spinner'
 
 const PERIODOS = [
@@ -67,6 +68,7 @@ function MiniBar({ data, maxVal }) {
 }
 
 export function ReportesPage() {
+  const { config } = useTienda()
   const [periodo, setPeriodo] = useState('mes')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
@@ -124,7 +126,7 @@ export function ReportesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl font-bold text-warm-900">Reportes</h1>
-          <p className="text-warm-400 text-sm mt-1">Analisis de rendimiento de Meridiano Joyeria</p>
+          <p className="text-warm-400 text-sm mt-1">Analisis de rendimiento de {config.nombre}</p>
         </div>
         <div className="flex items-center gap-2">
           <BarChart3 size={18} className="text-primary-500" />

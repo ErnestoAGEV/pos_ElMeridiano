@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
  * Convert a username to the internal fake email used by Supabase Auth
  */
 export function usernameToEmail(username) {
-  return `${username.toLowerCase().trim()}@meridiano.pos`
+  return `${username.toLowerCase().trim()}@pos.local`
 }
 
 export async function loginConUsuario(username, pin) {

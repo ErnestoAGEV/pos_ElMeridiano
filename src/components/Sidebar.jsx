@@ -7,6 +7,7 @@ import {
   ChevronsLeft, ChevronsRight,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useTienda } from '../context/TiendaContext'
 import { cerrarSesion } from '../modules/auth/authService'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
@@ -37,6 +38,7 @@ const vendedorLinks = [
 
 export function Sidebar() {
   const { perfil, isAdmin } = useAuth()
+  const { config } = useTienda()
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const navigate = useNavigate()
   const links = isAdmin ? adminLinks : vendedorLinks
@@ -72,17 +74,23 @@ export function Sidebar() {
       {/* Brand */}
       <div className={`pt-7 pb-5 ${collapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
-            <Gem size={18} className="text-white" />
-          </div>
+          {config.logo_url ? (
+            <img src={config.logo_url} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
+              <Gem size={18} className="text-white" />
+            </div>
+          )}
           {!collapsed && (
             <div>
               <h1 className="font-display text-xl font-bold text-warm-900 leading-tight tracking-tight">
-                El Meridiano
+                {config.nombre}
               </h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-warm-400 font-sans font-medium">
-                Joyería
-              </p>
+              {config.slogan && (
+                <p className="text-[10px] uppercase tracking-[0.2em] text-warm-400 font-sans font-medium">
+                  {config.slogan}
+                </p>
+              )}
             </div>
           )}
         </div>

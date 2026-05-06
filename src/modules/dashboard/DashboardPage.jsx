@@ -4,11 +4,13 @@ import {
   ShoppingCart, CreditCard, TrendingUp, RotateCcw,
 } from 'lucide-react'
 import { usePrecioDelDia } from '../metales/usePrecioDelDia'
+import { useTienda } from '../../context/TiendaContext'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/Spinner'
 
 export function DashboardPage() {
   const { precioHoy } = usePrecioDelDia()
+  const { config } = useTienda()
   const fmt = (n) => n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '—'
 
   const [stats, setStats] = useState({
@@ -63,7 +65,7 @@ export function DashboardPage() {
   return (
     <div className="p-8">
       <h1 className="font-display text-3xl font-bold text-warm-900 mb-2">Dashboard</h1>
-      <p className="text-warm-400 text-sm mb-8">Resumen general de Meridiano Joyeria</p>
+      <p className="text-warm-400 text-sm mb-8">Resumen general de {config.nombre}</p>
 
       {loading && (
         <div className="flex items-center justify-center h-48">

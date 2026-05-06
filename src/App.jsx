@@ -107,7 +107,7 @@ export default function App() {
               boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
             },
             success: {
-              iconTheme: { primary: '#D4AF37', secondary: '#FDF8EC' },
+              iconTheme: { primary: 'var(--color-primary-400)', secondary: 'var(--color-primary-50)' },
             },
             error: {
               iconTheme: { primary: '#ef4444', secondary: '#fef2f2' },

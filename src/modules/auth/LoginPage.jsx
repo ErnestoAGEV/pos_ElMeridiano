@@ -4,6 +4,7 @@ import { Gem, User, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { loginConUsuario } from './authService'
 import { useAuth } from '../../hooks/useAuth'
+import { useTienda } from '../../context/TiendaContext'
 import { Button } from '../../components/ui/Button'
 
 export function LoginPage() {
@@ -11,6 +12,7 @@ export function LoginPage() {
   const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
   const { user, isAdmin, loading: authLoading } = useAuth()
+  const { config } = useTienda()
 
   if (!authLoading && user) {
     return <Navigate to={isAdmin ? '/dashboard' : '/ventas'} replace />
@@ -40,11 +42,11 @@ export function LoginPage() {
   return (
     <div className="min-h-screen bg-ivory-100 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background ornamental pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] text-primary-400">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="diamonds" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M30 0 L60 30 L30 60 L0 30 Z" fill="none" stroke="#D4AF37" strokeWidth="0.5" />
+              <path d="M30 0 L60 30 L30 60 L0 30 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#diamonds)" />
@@ -62,12 +64,12 @@ export function LoginPage() {
             <Gem size={26} className="text-white" />
           </div>
           <h1 className="font-display text-4xl font-bold text-warm-900 tracking-tight">
-            El Meridiano
+            {config.nombre}
           </h1>
           <div className="flex items-center gap-3 mt-2">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-primary-400" />
             <p className="text-[11px] uppercase tracking-[0.25em] text-warm-400 font-semibold">
-              Joyeria
+              {config.slogan || 'Joyeria'}
             </p>
             <div className="w-8 h-px bg-gradient-to-l from-transparent to-primary-400" />
           </div>
@@ -131,7 +133,7 @@ export function LoginPage() {
         </div>
 
         <p className="text-center text-warm-300 text-xs mt-8 tracking-wide">
-          Meridiano Joyeria &middot; Sistema POS &middot; {new Date().getFullYear()}
+          {config.nombre} &middot; Sistema POS &middot; {new Date().getFullYear()}
         </p>
       </div>
     </div>

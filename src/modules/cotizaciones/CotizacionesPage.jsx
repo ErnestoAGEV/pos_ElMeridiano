@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
+import { useTienda } from '../../context/TiendaContext'
 import { obtenerCotizaciones, actualizarEstadoCotizacion } from './cotizacionesService'
 import { registrarEnAuditoria } from '../auth/authService'
 import { Button } from '../../components/ui/Button'
@@ -23,6 +24,7 @@ const ESTADO_VARIANT = { pendiente: 'amber', convertida: 'emerald', cancelada: '
 
 export function CotizacionesPage() {
   const { perfil, isAdmin } = useAuth()
+  const { config } = useTienda()
 
   const [cotizaciones, setCotizaciones] = useState([])
   const [loading, setLoading] = useState(true)
@@ -93,8 +95,10 @@ export function CotizacionesPage() {
           </style>
         </head>
         <body>
-          <h1>MERIDIANO JOYERÍA</h1>
+          <h1>${config.nombre.toUpperCase()}</h1>
           <h2>Cotización ${cot.folio}</h2>
+          ${config.direccion ? `<p>${config.direccion}</p>` : ''}
+          ${config.telefono ? `<p>Tel: ${config.telefono}</p>` : ''}
           <div class="info">
             <p>Fecha: ${fecha.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             ${cot.cliente ? `<p>Cliente: ${cot.cliente.nombre}</p>` : ''}

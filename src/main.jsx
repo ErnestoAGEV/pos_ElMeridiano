@@ -1,10 +1,13 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import { TiendaProvider } from './context/TiendaContext'
 import App from './App.jsx'
 
-// StrictMode removed: causes Supabase auth lock timeout in dev
-// (double-mount orphans the lock and delays auth by 5s)
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(
+  <TiendaProvider>
+    <App />
+  </TiendaProvider>
+)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

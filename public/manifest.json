@@ -1,7 +1,7 @@
 {
-  "name": "Meridiano - Joyeria POS",
-  "short_name": "Meridiano POS",
-  "description": "Sistema de punto de venta para Joyeria Meridiano",
+  "name": "Joyeria POS",
+  "short_name": "Joyeria POS",
+  "description": "Sistema de punto de venta para joyerias",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

@@ -2,8 +2,10 @@ import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Printer, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useTienda } from '../../context/TiendaContext'
 
 export function TicketModal({ isOpen, onClose, venta }) {
+  const { config } = useTienda()
   if (!venta) return null
 
   const fmt = (n) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
@@ -53,10 +55,12 @@ export function TicketModal({ isOpen, onClose, venta }) {
       {/* Printable ticket content */}
       <div id="ticket-content" className="bg-ivory-50 rounded-xl p-4 text-xs font-mono text-warm-700 space-y-2">
         <div className="center text-center">
-          <p className="bold font-bold text-sm">MERIDIANO JOYERÍA</p>
+          <p className="bold font-bold text-sm">{config.nombre.toUpperCase()}</p>
           <p>Ticket de Venta</p>
           <p>{fecha.toLocaleDateString('es-MX')} {fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
           <p>Folio: {venta.folio}</p>
+          {config.direccion && <p>{config.direccion}</p>}
+          {config.telefono && <p>Tel: {config.telefono}</p>}
         </div>
 
         <div className="line border-t border-dashed border-warm-400 my-2" />

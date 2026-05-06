@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { calcularResumenDelDia, guardarCorte } from './cortesService'
+import { useTienda } from '../../context/TiendaContext'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
 
@@ -18,6 +19,7 @@ function formatFechaDisplay(fechaStr) {
 }
 
 export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId, forzado = false }) {
+  const { config } = useTienda()
   const [loading, setLoading] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [resumen, setResumen] = useState(null)
@@ -367,8 +369,8 @@ export function CorteCajaModal({ isOpen, onClose, onCompletado, fecha, usuarioId
             {resumen && (
               <>
                 <div className="center">
-                  <p className="title">EL MERIDIANO</p>
-                  <p className="subtitle">Joyeria</p>
+                  <p className="title">{config.nombre.toUpperCase()}</p>
+                  <p className="subtitle">{config.slogan || 'Joyeria'}</p>
                   <div className="divider"></div>
                   <p className="bold big">CORTE DE CAJA</p>
                   <p>{fecha && formatFechaDisplay(fecha)}</p>
