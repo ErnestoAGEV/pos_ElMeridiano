@@ -3,8 +3,8 @@ import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
-import { Upload, Trash2, TrendingUp } from 'lucide-react'
-import { crearProducto, actualizarProducto, eliminarProducto, subirImagenProducto } from './catalogoService'
+import { Trash2, TrendingUp } from 'lucide-react'
+import { crearProducto, actualizarProducto, eliminarProducto } from './catalogoService'
 import { registrarEnAuditoria } from '../auth/authService'
 import { usePrecioDelDia } from '../metales/usePrecioDelDia'
 
@@ -30,12 +30,10 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
     costo_mano_obra: '',
     precio_fijo: '',
     costo_compra: '',
-    imagen_url: '',
     stock_actual: '',
     activo: true,
   })
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
@@ -51,7 +49,6 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           costo_mano_obra: producto.costo_mano_obra ?? '',
           precio_fijo: producto.precio_fijo ?? '',
           costo_compra: producto.costo_compra ?? '',
-          imagen_url: producto.imagen_url || '',
           stock_actual: producto.inv?.[0]?.stock_actual ?? producto.inv?.stock_actual ?? 0,
           activo: producto.activo ?? true,
         })
@@ -66,8 +63,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           costo_mano_obra: '',
           precio_fijo: '',
           costo_compra: '',
-          imagen_url: '',
-          stock_actual: '',
+                stock_actual: '',
           activo: true,
         })
       }
@@ -76,22 +72,6 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
 
   function handleChange(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
-  }
-
-  async function handleImageUpload(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-    try {
-      const url = await subirImagenProducto(file)
-      setForm((f) => ({ ...f, imagen_url: url }))
-      toast.success('Imagen subida automáticamente')
-    } catch (err) {
-      toast.error(err.message)
-    } finally {
-      setUploading(false)
-    }
   }
 
   async function handleDelete() {
@@ -192,7 +172,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
             value={form.codigo}
             onChange={handleChange('codigo')}
             placeholder="AN-001"
-            disabled={saving || uploading || deleting}
+            disabled={saving || deleting}
           />
           <div className="col-span-2">
             <Input
@@ -303,36 +283,8 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           />
         </div>
 
-        {/* Row 4: Image URL and Initial Stock */}
+        {/* Stock */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">URL / Subir una Imagen</label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={form.imagen_url}
-                  onChange={handleChange('imagen_url')}
-                  placeholder="https://..."
-                  className="w-full bg-white border border-ivory-400 rounded-xl px-4 py-2 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all font-sans"
-                  disabled={uploading || saving || deleting}
-                />
-              </div>
-              <label 
-                className={`shrink-0 flex items-center justify-center bg-ivory-200 text-warm-600 rounded-xl px-4 py-2 border border-ivory-400 transition-colors ${uploading || saving || deleting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-ivory-300'}`}
-                title="Subir archivo"
-              >
-                {uploading ? <span className="w-5 h-5 border-2 border-warm-400 border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploading || saving || deleting}
-                />
-              </label>
-            </div>
-          </div>
           <Input
             label={esEdicion ? "Stock actual" : "Stock inicial"}
             type="number"
@@ -363,7 +315,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
             <button
               type="button"
               onClick={handleDelete}
-              disabled={deleting || saving || uploading}
+              disabled={deleting || saving}
               className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
               {deleting ? <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 size={16} />}
@@ -374,10 +326,10 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           )}
 
           <div className="flex items-center gap-3">
-            <Button variant="secondary" type="button" onClick={onClose} disabled={saving || deleting || uploading}>
+            <Button variant="secondary" type="button" onClick={onClose} disabled={saving || deleting}>
               Cancelar
             </Button>
-            <Button type="submit" loading={saving} disabled={deleting || uploading}>
+            <Button type="submit" loading={saving} disabled={deleting}>
               {esEdicion ? 'Guardar cambios' : 'Crear producto'}
             </Button>
           </div>

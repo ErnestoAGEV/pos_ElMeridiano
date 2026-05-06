@@ -272,22 +272,6 @@ export function CatalogoPage() {
                   )}
                 </div>
 
-                {/* Product Image */}
-                {prod.imagen_url ? (
-                  <div className="w-full h-40 mb-4 bg-ivory-100 rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
-                    <img
-                      src={prod.imagen_url}
-                      alt={prod.nombre}
-                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-40 mb-4 bg-ivory-50 rounded-xl border border-dashed border-ivory-300 flex flex-col items-center justify-center text-warm-300">
-                    <Gem size={28} className="mb-2 opacity-50" />
-                    <span className="text-xs text-warm-400 font-medium tracking-wide">SIN IMAGEN</span>
-                  </div>
-                )}
-
                 {/* Category + Metal badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {prod.categoria && (
