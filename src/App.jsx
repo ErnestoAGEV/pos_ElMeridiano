@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter, BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useInitAuth, useAuth } from './hooks/useAuth'
 import { useAuthStore } from './stores/authStore'
@@ -88,7 +88,7 @@ function PrecioDelDiaGate({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthInitializer>
         <CortePendienteGate>
           <PrecioDelDiaGate>
@@ -115,6 +115,6 @@ export default function App() {
           }}
         />
       </AuthInitializer>
-    </BrowserRouter>
+    </HashRouter>
   )
 }

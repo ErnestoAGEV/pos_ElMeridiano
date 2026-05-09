@@ -9,7 +9,8 @@ createRoot(document.getElementById('root')).render(
   </TiendaProvider>
 )
 
-if ('serviceWorker' in navigator) {
+const isElectron = window.electronAPI?.isElectron
+if (!isElectron && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
   })

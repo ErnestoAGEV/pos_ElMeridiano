@@ -27,7 +27,7 @@ export async function fetchPreciosMetalesAPI() {
  * Fetch USD→MXN exchange rate from open.er-api.com
  */
 export async function fetchTipoCambioUSDMXN() {
-  const res = await fetch('/api/exchange')
+  const res = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw new Error('No se pudo consultar el tipo de cambio')
   const data = await res.json()
   if (!data?.rates?.MXN) {
