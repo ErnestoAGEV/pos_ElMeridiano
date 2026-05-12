@@ -11,7 +11,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Spinner } from '../../components/ui/Spinner'
 import { ProductoModal } from './ProductoModal'
-import { CategoriaModal } from './CategoriaModal'
+import { GestionCategoriasModal } from './GestionCategoriasModal'
 
 const METALES_LABEL = { oro: 'Oro', plata: 'Plata', ambos: 'Oro + Plata', fantasia: 'Fantasía', ninguno: 'Sin metal' }
 const METALES_VARIANT = { oro: 'gold', plata: 'default', ambos: 'gold', fantasia: 'default', ninguno: 'default' }
@@ -32,7 +32,7 @@ export function CatalogoPage() {
 
   // Modals
   const [productoModal, setProductoModal] = useState({ open: false, producto: null })
-  const [categoriaModal, setCategoriaModal] = useState({ open: false, categoria: null })
+  const [gestionCategoriasOpen, setGestionCategoriasOpen] = useState(false)
 
   const cargarCategorias = useCallback(async () => {
     try {
@@ -85,17 +85,6 @@ export function CatalogoPage() {
   const formatMXN = (n) =>
     n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '—'
 
-  function handleEliminarCategoria(cat) {
-    if (!confirm(`¿Eliminar la categoría "${cat.nombre}"? Los productos no se eliminarán, solo quedarán sin categoría.`)) return
-    eliminarCategoria(cat.id)
-      .then(() => {
-        toast.success('Categoría eliminada')
-        cargarCategorias()
-        cargarProductos()
-      })
-      .catch((err) => toast.error(err.message))
-  }
-
   const stock = (prod) => prod.inv?.[0]?.stock_actual ?? prod.inv?.stock_actual ?? 0
   const stockMin = (prod) => prod.inv?.[0]?.stock_minimo ?? prod.inv?.stock_minimo ?? 3
 
@@ -112,7 +101,7 @@ export function CatalogoPage() {
         </div>
         {isAdmin && (
           <div className="flex gap-2">
-            <Button variant="secondary" size="md" onClick={() => setCategoriaModal({ open: true, categoria: null })}>
+            <Button variant="secondary" size="md" onClick={() => setGestionCategoriasOpen(true)}>
               <FolderOpen size={15} />
               Categorías
             </Button>
@@ -340,15 +329,14 @@ export function CatalogoPage() {
         onGuardado={() => { cargarProductos(); cargarCategorias() }}
       />
 
-      <CategoriaModal
-        isOpen={categoriaModal.open}
-        onClose={() => setCategoriaModal({ open: false, categoria: null })}
-        categoria={categoriaModal.categoria}
-        onGuardado={cargarCategorias}
+      <GestionCategoriasModal
+        isOpen={gestionCategoriasOpen}
+        onClose={() => setGestionCategoriasOpen(false)}
+        onGuardado={() => {
+          cargarCategorias()
+          cargarProductos() // Recargar productos por si cambió la asignación de categorías al borrar
+        }}
       />
-
-      {/* Category management (admin only — floating panel) */}
-      {isAdmin && categoriaModal.open === false && categorias.length > 0 && null}
     </div>
   )
 }
