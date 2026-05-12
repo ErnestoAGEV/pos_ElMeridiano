@@ -23,7 +23,7 @@ BEGIN
   JOIN roles r ON r.id = p.rol_id
   WHERE p.id = auth.uid();
 
-  IF v_caller_rol IS NULL OR v_caller_rol != 'admin' THEN
+  IF v_caller_rol IS NULL OR v_caller_rol != 'administrador' THEN
     RAISE EXCEPTION 'Solo administradores pueden crear usuarios';
   END IF;
 
@@ -95,7 +95,7 @@ BEGIN
   JOIN roles r ON r.id = p.rol_id
   WHERE p.id = auth.uid();
 
-  IF v_caller_rol IS NULL OR v_caller_rol != 'admin' THEN
+  IF v_caller_rol IS NULL OR v_caller_rol != 'administrador' THEN
     RAISE EXCEPTION 'Solo administradores pueden eliminar usuarios';
   END IF;
 

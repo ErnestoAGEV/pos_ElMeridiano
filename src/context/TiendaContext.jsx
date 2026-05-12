@@ -48,7 +48,7 @@ export function TiendaProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function load() {
+    async function loadConfig() {
       try {
         const { data, error } = await supabase
           .from('configuracion_tienda')
@@ -71,25 +71,36 @@ export function TiendaProvider({ children }) {
         setLoading(false)
       }
     }
-    load()
+
+    // Wait for auth session to be restored before querying
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        loadConfig()
+      }
+    })
+
+    // Also apply defaults immediately so UI doesn't flash
+    applyColorPreset(ENV_DEFAULTS.color_preset)
+    applyFontPreset(ENV_DEFAULTS.fuente_preset)
   }, [])
 
   const updateConfig = useCallback(async (changes) => {
-    const newConfig = { ...config, ...changes, updated_at: new Date().toISOString() }
+    if (!config.id) throw new Error('Configuracion no inicializada. Contacta al administrador.')
 
-    // Single-row table — filter by id, or match any row if id unknown
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('configuracion_tienda')
       .update(changes)
-      .not('id', 'is', null)
+      .eq('id', config.id)
+      .select()
 
     if (error) throw new Error(error.message)
+    if (!data || data.length === 0) throw new Error('No tienes permisos para modificar la configuracion')
 
-    setConfig(newConfig)
+    setConfig(data[0])
     if (changes.color_preset) applyColorPreset(changes.color_preset)
     if (changes.fuente_preset) applyFontPreset(changes.fuente_preset)
-    return newConfig
-  }, [config])
+    return data[0]
+  }, [config.id])
 
   return (
     <TiendaContext.Provider value={{ config, loading, updateConfig }}>

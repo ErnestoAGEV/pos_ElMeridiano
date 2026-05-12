@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS configuracion_tienda (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Seed with default row
-INSERT INTO configuracion_tienda (nombre) VALUES ('Mi Joyeria');
+-- Seed with default row if empty
+INSERT INTO configuracion_tienda (nombre)
+SELECT 'Mi Joyeria'
+WHERE NOT EXISTS (SELECT 1 FROM configuracion_tienda);
 
 -- RLS
 ALTER TABLE configuracion_tienda ENABLE ROW LEVEL SECURITY;
@@ -30,11 +32,7 @@ CREATE POLICY "Authenticated users can read config"
 CREATE POLICY "Only admins can update config"
   ON configuracion_tienda FOR UPDATE
   TO authenticated USING (
-    EXISTS (
-      SELECT 1 FROM perfiles p
-      JOIN roles r ON r.id = p.rol_id
-      WHERE p.id = auth.uid() AND r.nombre = 'admin'
-    )
+    get_user_rol() = 'administrador'
   );
 
 -- Storage bucket for logos
@@ -50,20 +48,12 @@ CREATE POLICY "Admins can upload logos"
   ON storage.objects FOR INSERT
   TO authenticated WITH CHECK (
     bucket_id = 'logos' AND
-    EXISTS (
-      SELECT 1 FROM perfiles p
-      JOIN roles r ON r.id = p.rol_id
-      WHERE p.id = auth.uid() AND r.nombre = 'admin'
-    )
+    get_user_rol() = 'administrador'
   );
 
 CREATE POLICY "Admins can delete logos"
   ON storage.objects FOR DELETE
   TO authenticated USING (
     bucket_id = 'logos' AND
-    EXISTS (
-      SELECT 1 FROM perfiles p
-      JOIN roles r ON r.id = p.rol_id
-      WHERE p.id = auth.uid() AND r.nombre = 'admin'
-    )
+    get_user_rol() = 'administrador'
   );

@@ -14,7 +14,24 @@
       "Bash(CLAUDECODE= claude skill add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git 2>&1)",
       "Bash(CLAUDECODE= claude skill install https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git 2>&1)",
       "Bash(git push:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -5)",
+      "Bash(rustc --version 2>/dev/null || echo \"NOT_INSTALLED\")",
+      "Bash(grep -r \"electron\\\\|tauri\\\\|capacitor\\\\|cordova\" /c/Users/vevle/OneDrive/Documentos/POS_MERIDIANO --include=\"*.json\" --include=\"*.js\" 2>/dev/null | head -10)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm install)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx electron-builder --win 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && rm -rf release && npx electron-builder --win 2>&1)",
+      "Read(//c/Users/vevle/AppData/Local/electron/**)",
+      "Read(//c/Users/vevle/AppData/Local/**)",
+      "Bash(powershell -Command \"Start-Process powershell -Verb runAs -ArgumentList '-Command Add-MpPreference -ExclusionPath C:\\\\pos-meridiano-build'\" 2>&1; echo \"Solicitando permisos de administrador...\")",
+      "Bash(sleep 5 && rm -rf /c/pos-meridiano-build && cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx electron-builder --win 2>&1)",
+      "Bash(sleep 8 && rm -rf /c/pos-meridiano-build && cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx electron-builder --win 2>&1)",
+      "Bash(powershell -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead\\('C:\\\\Users\\\\vevle\\\\AppData\\\\Local\\\\electron\\\\Cache\\\\electron-v35.7.5-win32-x64.zip'\\).Entries | Where-Object { \\\\$_.Name -like '*.exe' } | Select-Object FullName, Length\" 2>&1)",
+      "Bash(powershell -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\vevle\\\\AppData\\\\Local\\\\electron\\\\Cache\\\\electron-v35.7.5-win32-x64.zip\"\\); $zip.Entries | Where-Object { $_.Name -like \"*.exe\" } | Select-Object FullName, Length; $zip.Dispose\\(\\)')",
+      "Bash(powershell -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\vevle\\\\AppData\\\\Local\\\\electron\\\\Cache\\\\electron-v35.7.5-win32-x64.zip\"\\); $zip.Entries.Count; $zip.Entries | Select-Object -First 5 FullName; $zip.Dispose\\(\\)')",
+      "Bash(rm -rf /c/Users/vevle/AppData/Local/electron/Cache/electron-v35.7.5-win32-x64.zip && rm -rf /c/pos-meridiano-build)",
+      "Bash(rm -rf /c/pos-meridiano-build && cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx electron-builder --win 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -3)"
     ]
   }
 }
