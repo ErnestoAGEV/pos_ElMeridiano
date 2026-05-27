@@ -2,107 +2,162 @@ import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Printer, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useTienda } from '../../context/TiendaContext'
 
-export function TicketModal({ isOpen, onClose, venta }) {
-  const { config } = useTienda()
+/**
+ * TicketModal – post-sale ticket view.
+ *
+ * Props:
+ *   venta   – venta object from completarVenta + carritoSnapshot
+ *   config  – tienda config from useTienda
+ *   onClose – callback
+ */
+export default function TicketModal({ venta, config, onClose }) {
   if (!venta) return null
 
-  const fmt = (n) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+  const fmt = (n) =>
+    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n ?? 0)
 
+  const fecha = new Date(venta.created_at || Date.now())
+  const fechaStr = fecha.toLocaleDateString('es-MX', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  })
+  const horaStr = fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+
+  const nombreTienda = config?.nombre ?? 'Tienda'
+
+  // Map metodo_pago back to display label
+  const METODO_LABELS = {
+    efectivo:      'Efectivo',
+    tarjeta:       'Tarjeta',
+    transferencia: 'Transferencia',
+    otro:          'Otro',
+  }
+  const metodoLabel = METODO_LABELS[venta.metodo_pago] ?? venta.metodo_pago ?? '—'
+
+  // Items come from carritoSnapshot (UI cart items)
+  const items = venta.carritoSnapshot ?? []
+
+  // Recalculate totals from the venta object (authoritative)
+  const subtotalVenta = venta.subtotal ?? items.reduce((s, i) => s + i.precioUnitario * i.cantidad, 0)
+  const descuentoVenta = venta.descuento ?? 0
+  const totalVenta = venta.total ?? Math.max(0, subtotalVenta - descuentoVenta)
+
+  // ── Print ──────────────────────────────────────────────────────
   function handleImprimir() {
-    const printArea = document.getElementById('ticket-content')
+    const printArea = document.getElementById('ticket-print-area')
     if (!printArea) return
-    const win = window.open('', '_blank', 'width=360,height=600')
+
+    const win = window.open('', '_blank', 'width=360,height=620')
     if (!win) {
-      toast.error('El navegador bloqueo la ventana de impresion. Permite los popups para este sitio.')
+      toast.error('El navegador bloqueó la ventana de impresión. Permite popups para este sitio.')
       return
     }
+
     win.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Ticket ${venta.folio}</title>
+          <meta charset="utf-8" />
+          <title>Ticket ${venta.folio ?? ''}</title>
           <style>
-            body { font-family: 'Courier New', monospace; font-size: 12px; width: 280px; margin: 0 auto; padding: 10px; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              font-size: 12px;
+              width: 280px;
+              margin: 0 auto;
+              padding: 12px 8px;
+              color: #111;
+            }
             .center { text-align: center; }
             .bold { font-weight: bold; }
-            .line { border-top: 1px dashed #000; margin: 8px 0; }
-            .row { display: flex; justify-content: space-between; }
-            h1 { font-size: 16px; margin: 4px 0; }
-            h2 { font-size: 13px; margin: 4px 0; }
+            .line { border-top: 1px dashed #555; margin: 8px 0; }
+            .row { display: flex; justify-content: space-between; margin: 2px 0; }
+            .item-name { margin-top: 4px; font-weight: 600; }
+            .total-row { font-size: 14px; font-weight: bold; margin-top: 4px; }
+            h1 { font-size: 15px; margin: 4px 0 2px; }
           </style>
         </head>
         <body>
           ${printArea.innerHTML}
-          <script>window.print();window.close();<\/script>
+          <script>
+            window.onload = function() { window.print(); window.close(); };
+          <\/script>
         </body>
       </html>
     `)
     win.document.close()
   }
 
-  const fecha = new Date(venta.created_at || Date.now())
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Venta Completada" size="sm">
-      <div className="text-center mb-4">
-        <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-          <Check size={24} className="text-emerald-600" />
+    <Modal isOpen={true} onClose={onClose} title="Venta Completada" size="sm">
+      {/* Success header */}
+      <div className="text-center mb-5">
+        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+          <Check size={28} className="text-emerald-600" />
         </div>
-        <p className="text-sm text-warm-600">Folio: <strong className="text-warm-900">{venta.folio}</strong></p>
+        <p className="text-lg font-display font-bold text-warm-900">¡Venta registrada!</p>
+        <p className="text-sm text-warm-500 mt-0.5">
+          Folio: <strong className="text-warm-800">{venta.folio ?? '—'}</strong>
+        </p>
       </div>
 
-      {/* Printable ticket content */}
-      <div id="ticket-content" className="bg-ivory-50 rounded-xl p-4 text-xs font-mono text-warm-700 space-y-2">
-        <div className="center text-center">
-          <p className="bold font-bold text-sm">{config.nombre.toUpperCase()}</p>
+      {/* ── Printable ticket area ── */}
+      <div
+        id="ticket-print-area"
+        className="bg-ivory-50 rounded-xl p-4 text-xs font-mono text-warm-700 space-y-1 border border-ivory-200"
+      >
+        {/* Store header */}
+        <div className="text-center space-y-0.5">
+          <h1 className="font-bold text-sm">{nombreTienda.toUpperCase()}</h1>
           <p>Ticket de Venta</p>
-          <p>{fecha.toLocaleDateString('es-MX')} {fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
-          <p>Folio: {venta.folio}</p>
-          {config.direccion && <p>{config.direccion}</p>}
-          {config.telefono && <p>Tel: {config.telefono}</p>}
+          <p>{fechaStr} {horaStr}</p>
+          <p>Folio: {venta.folio ?? '—'}</p>
         </div>
 
-        <div className="line border-t border-dashed border-warm-400 my-2" />
-
-        {venta.cliente && (
-          <p>Cliente: {venta.cliente.nombre}</p>
-        )}
-
-        <div className="line border-t border-dashed border-warm-400 my-2" />
+        {/* Separator */}
+        <div className="border-t border-dashed border-warm-400 my-2" />
 
         {/* Items */}
-        {venta.items?.map((item, i) => (
-          <div key={i}>
-            <p className="truncate">{item.nombre}</p>
-            <div className="row flex justify-between">
-              <span>{item.cantidad} x {fmt(item.precio_unitario)}</span>
-              <span>{fmt(item.subtotal)}</span>
+        <div className="space-y-1.5">
+          {items.map((item, idx) => (
+            <div key={idx}>
+              <p className="font-semibold truncate">{item.producto?.nombre ?? item.nombre ?? '—'}</p>
+              <div className="flex justify-between text-warm-500">
+                <span>{item.cantidad} × {fmt(item.precioUnitario)}</span>
+                <span>{fmt(item.precioUnitario * item.cantidad)}</span>
+              </div>
             </div>
-          </div>
-        ))}
-
-        <div className="line border-t border-dashed border-warm-400 my-2" />
-
-        <div className="row flex justify-between">
-          <span>Subtotal:</span>
-          <span>{fmt(venta.subtotal)}</span>
-        </div>
-        {venta.descuento > 0 && (
-          <div className="row flex justify-between">
-            <span>Descuento:</span>
-            <span>-{fmt(venta.descuento)}</span>
-          </div>
-        )}
-        <div className="row flex justify-between bold font-bold text-sm">
-          <span>TOTAL:</span>
-          <span>{fmt(venta.total)}</span>
+          ))}
         </div>
 
-        <div className="line border-t border-dashed border-warm-400 my-2" />
+        {/* Separator */}
+        <div className="border-t border-dashed border-warm-400 my-2" />
 
-        <p className="center text-center">Método: {venta.metodo_pago}</p>
-        <p className="center text-center mt-2">¡Gracias por su compra!</p>
+        {/* Totals */}
+        <div className="space-y-0.5">
+          <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>{fmt(subtotalVenta)}</span>
+          </div>
+          {descuentoVenta > 0 && (
+            <div className="flex justify-between">
+              <span>Descuento:</span>
+              <span>−{fmt(descuentoVenta)}</span>
+            </div>
+          )}
+          <div className="flex justify-between font-bold text-sm pt-0.5">
+            <span>TOTAL:</span>
+            <span>{fmt(totalVenta)}</span>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="border-t border-dashed border-warm-400 my-2" />
+
+        {/* Footer */}
+        <p className="text-center">Método de pago: {metodoLabel}</p>
+        <p className="text-center font-semibold mt-1">¡Gracias por su compra!</p>
       </div>
 
       {/* Actions */}
@@ -111,7 +166,7 @@ export function TicketModal({ isOpen, onClose, venta }) {
           Cerrar
         </Button>
         <Button className="flex-1 justify-center" onClick={handleImprimir}>
-          <Printer size={14} />
+          <Printer size={14} className="mr-1" />
           Imprimir
         </Button>
       </div>
