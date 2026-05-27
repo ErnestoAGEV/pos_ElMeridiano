@@ -1,29 +1,23 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
 import { colorPresets, defaultColorPreset } from '../lib/colorPresets'
 import { fontPresets, defaultFontPreset } from '../lib/fontPresets'
 
 const TiendaContext = createContext(null)
 
-const ENV_DEFAULTS = {
-  nombre: import.meta.env.VITE_STORE_NAME || 'Mi Joyeria',
-  slogan: import.meta.env.VITE_STORE_SLOGAN || null,
-  logo_url: null,
-  color_preset: import.meta.env.VITE_COLOR_PRESET || defaultColorPreset,
-  fuente_preset: import.meta.env.VITE_FONT_PRESET || defaultFontPreset,
-  direccion: null,
-  telefono: null,
-  email_contacto: null,
-  horario: null,
+const DEFAULTS = {
+  nombre: 'Mi Joyeria',
+  slogan: null,
+  logo_path: null,
+  color_preset: defaultColorPreset,
+  fuente_preset: defaultFontPreset,
 }
 
 function applyColorPreset(presetName) {
   const palette = colorPresets[presetName] || colorPresets[defaultColorPreset]
   const root = document.documentElement.style
-  const shades = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900']
-  shades.forEach((shade) => {
+  for (const shade of ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900']) {
     root.setProperty(`--color-primary-${shade}`, palette[shade])
-  })
+  }
 }
 
 function applyFontPreset(presetName) {
@@ -31,8 +25,6 @@ function applyFontPreset(presetName) {
   const root = document.documentElement.style
   root.setProperty('--font-display', fonts.display)
   root.setProperty('--font-sans', fonts.sans)
-
-  // Update Google Fonts link
   let link = document.getElementById('google-fonts-link')
   if (!link) {
     link = document.createElement('link')
@@ -44,63 +36,34 @@ function applyFontPreset(presetName) {
 }
 
 export function TiendaProvider({ children }) {
-  const [config, setConfig] = useState(ENV_DEFAULTS)
+  const [config, setConfig] = useState(DEFAULTS)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadConfig() {
-      try {
-        const { data, error } = await supabase
-          .from('configuracion_tienda')
-          .select('*')
-          .limit(1)
-          .single()
+    applyColorPreset(DEFAULTS.color_preset)
+    applyFontPreset(DEFAULTS.fuente_preset)
 
-        if (!error && data) {
-          setConfig(data)
-          applyColorPreset(data.color_preset)
-          applyFontPreset(data.fuente_preset)
-        } else {
-          applyColorPreset(ENV_DEFAULTS.color_preset)
-          applyFontPreset(ENV_DEFAULTS.fuente_preset)
-        }
-      } catch {
-        applyColorPreset(ENV_DEFAULTS.color_preset)
-        applyFontPreset(ENV_DEFAULTS.fuente_preset)
-      } finally {
-        setLoading(false)
-      }
+    if (!window.api) {
+      setLoading(false)
+      return
     }
 
-    // Wait for auth session to be restored before querying
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-        loadConfig()
+    window.api.config.obtener().then((data) => {
+      if (data) {
+        setConfig(data)
+        applyColorPreset(data.color_preset || DEFAULTS.color_preset)
+        applyFontPreset(data.fuente_preset || DEFAULTS.fuente_preset)
       }
-    })
-
-    // Also apply defaults immediately so UI doesn't flash
-    applyColorPreset(ENV_DEFAULTS.color_preset)
-    applyFontPreset(ENV_DEFAULTS.fuente_preset)
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   const updateConfig = useCallback(async (changes) => {
-    if (!config.id) throw new Error('Configuracion no inicializada. Contacta al administrador.')
-
-    const { data, error } = await supabase
-      .from('configuracion_tienda')
-      .update(changes)
-      .eq('id', config.id)
-      .select()
-
-    if (error) throw new Error(error.message)
-    if (!data || data.length === 0) throw new Error('No tienes permisos para modificar la configuracion')
-
-    setConfig(data[0])
+    const data = await window.api.config.actualizar(changes)
+    setConfig(data)
     if (changes.color_preset) applyColorPreset(changes.color_preset)
     if (changes.fuente_preset) applyFontPreset(changes.fuente_preset)
-    return data[0]
-  }, [config.id])
+    return data
+  }, [])
 
   return (
     <TiendaContext.Provider value={{ config, loading, updateConfig }}>

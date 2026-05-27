@@ -1,48 +1,29 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  ShoppingCart, Package, Users, BarChart2,
-  FileText, RotateCcw, Shield, LogOut,
-  Gem, Tag, BookOpen, DollarSign, UserCog, Calculator,
-  ChevronsLeft, ChevronsRight, Paintbrush,
+  BarChart2, DollarSign, Gem, ShoppingCart, Calculator,
+  BookOpen, Paintbrush, LogOut, ChevronsLeft, ChevronsRight,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useTienda } from '../context/TiendaContext'
-import { cerrarSesion } from '../modules/auth/authService'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 
-const adminLinks = [
+const links = [
   { to: '/dashboard', icon: BarChart2, label: 'Dashboard' },
   { to: '/metales', icon: DollarSign, label: 'Precios Metales' },
-  { to: '/catalogo', icon: Gem, label: 'Catálogo' },
-  { to: '/inventario', icon: Package, label: 'Inventario' },
-  { to: '/clientes', icon: Users, label: 'Clientes' },
+  { to: '/catalogo', icon: Gem, label: 'Catalogo' },
   { to: '/ventas', icon: ShoppingCart, label: 'Punto de Venta' },
-  { to: '/apartados', icon: Tag, label: 'Apartados' },
-  { to: '/cotizaciones', icon: FileText, label: 'Cotizaciones' },
   { to: '/cortes', icon: Calculator, label: 'Corte de Caja' },
-  { to: '/devoluciones', icon: RotateCcw, label: 'Devoluciones' },
-  { to: '/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/reportes', icon: BookOpen, label: 'Reportes' },
-  { to: '/usuarios', icon: UserCog, label: 'Usuarios' },
-  { to: '/personalizacion', icon: Paintbrush, label: 'Personalización' },
-]
-
-const vendedorLinks = [
-  { to: '/ventas', icon: ShoppingCart, label: 'Punto de Venta' },
-  { to: '/apartados', icon: Tag, label: 'Apartados' },
-  { to: '/cotizaciones', icon: FileText, label: 'Cotizaciones' },
-  { to: '/clientes', icon: Users, label: 'Clientes' },
-  { to: '/cortes', icon: Calculator, label: 'Corte de Caja' },
+  { to: '/personalizacion', icon: Paintbrush, label: 'Personalizacion' },
 ]
 
 export function Sidebar() {
-  const { perfil, isAdmin } = useAuth()
+  const { user } = useAuth()
   const { config } = useTienda()
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const navigate = useNavigate()
-  const links = isAdmin ? adminLinks : vendedorLinks
 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('sidebar-collapsed') === 'true' } catch { return false }
@@ -56,14 +37,10 @@ export function Sidebar() {
     })
   }
 
-  async function handleLogout() {
-    try {
-      await cerrarSesion()
-      clearAuth()
-      navigate('/login')
-    } catch {
-      toast.error('Error al cerrar sesión')
-    }
+  function handleLogout() {
+    clearAuth()
+    navigate('/login')
+    toast.success('Sesion cerrada')
   }
 
   return (
@@ -75,8 +52,8 @@ export function Sidebar() {
       {/* Brand */}
       <div className={`pt-7 pb-5 ${collapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          {config.logo_url ? (
-            <img src={config.logo_url} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+          {config.logo_path ? (
+            <img src={`file://${config.logo_path}`} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
           ) : (
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
               <Gem size={18} className="text-white" />
@@ -97,26 +74,10 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Ornamental divider */}
       <div className={`divider-primary ${collapsed ? 'mx-3' : 'mx-5'}`} />
 
-      {/* Role badge */}
-      {!collapsed && (
-        <div className="px-6 py-3">
-          <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-semibold ${
-              isAdmin
-                ? 'bg-primary-50 text-primary-600 border border-primary-200'
-                : 'bg-sky-50 text-sky-600 border border-sky-200'
-            }`}
-          >
-            {isAdmin ? 'Administrador' : 'Vendedor'}
-          </span>
-        </div>
-      )}
-
       {/* Navigation */}
-      <nav className={`flex-1 py-2 space-y-0.5 overflow-y-auto ${collapsed ? 'px-2' : 'px-3'}`}>
+      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${collapsed ? 'px-2' : 'px-3'}`}>
         {links.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -141,18 +102,17 @@ export function Sidebar() {
         {!collapsed && (
           <div className="px-3 py-2 mb-1">
             <p className="text-sm font-semibold text-warm-800 truncate">
-              {perfil?.nombre || 'Usuario'}
+              {user?.nombre || 'Usuario'}
             </p>
-            <p className="text-[11px] text-warm-400">{isAdmin ? 'Administrador' : 'Vendedor'}</p>
           </div>
         )}
         <button
           onClick={handleLogout}
-          title={collapsed ? 'Cerrar sesión' : undefined}
+          title={collapsed ? 'Cerrar sesion' : undefined}
           className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2 w-full rounded-xl text-[13px] font-medium text-warm-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200`}
         >
           <LogOut size={16} strokeWidth={1.8} />
-          {!collapsed && 'Cerrar sesión'}
+          {!collapsed && 'Cerrar sesion'}
         </button>
       </div>
 
@@ -162,10 +122,7 @@ export function Sidebar() {
           onClick={toggleCollapsed}
           className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2 w-full rounded-xl text-[13px] font-medium text-warm-400 hover:bg-ivory-200 hover:text-warm-700 transition-all duration-200`}
         >
-          {collapsed
-            ? <ChevronsRight size={16} strokeWidth={1.8} />
-            : <ChevronsLeft size={16} strokeWidth={1.8} />
-          }
+          {collapsed ? <ChevronsRight size={16} strokeWidth={1.8} /> : <ChevronsLeft size={16} strokeWidth={1.8} />}
           {!collapsed && 'Compactar'}
         </button>
       </div>
