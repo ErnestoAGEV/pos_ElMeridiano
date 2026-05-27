@@ -1,23 +1,52 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Plus, Search, Gem, PenLine, FolderOpen, Filter,
-  Package, Weight, Banknote, Tag, TrendingUp,
+  Plus, Search, PenLine, FolderOpen, Filter,
+  Package, Weight, Banknote, Tag, Trash2,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useAuth } from '../../hooks/useAuth'
-import { usePrecioDelDia } from '../metales/usePrecioDelDia'
-import { obtenerProductos, obtenerCategorias, eliminarCategoria } from './catalogoService'
+import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
+import {
+  obtenerProductos,
+  obtenerCategorias,
+  eliminarProducto,
+  calcularPrecioProducto,
+} from './catalogoService'
 import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
 import { Spinner } from '../../components/ui/Spinner'
 import { ProductoModal } from './ProductoModal'
-import { GestionCategoriasModal } from './GestionCategoriasModal'
+import { CategoriaModal } from './CategoriaModal'
 
-const METALES_LABEL = { oro: 'Oro', plata: 'Plata', ambos: 'Oro + Plata', fantasia: 'Fantasía', ninguno: 'Sin metal' }
-const METALES_VARIANT = { oro: 'gold', plata: 'default', ambos: 'gold', fantasia: 'default', ninguno: 'default' }
+const METAL_OPTIONS = [
+  { value: 'oro_24k', label: 'Oro 24k' },
+  { value: 'oro_14k', label: 'Oro 14k' },
+  { value: 'oro_10k', label: 'Oro 10k' },
+  { value: 'plata', label: 'Plata' },
+  { value: 'chapa', label: 'Chapa' },
+  { value: 'acero', label: 'Acero' },
+]
+
+const METAL_LABELS = {
+  oro_24k: 'Oro 24k',
+  oro_14k: 'Oro 14k',
+  oro_10k: 'Oro 10k',
+  plata: 'Plata',
+  chapa: 'Chapa',
+  acero: 'Acero',
+}
+
+const METAL_COLORS = {
+  oro_24k: 'bg-amber-100 text-amber-700',
+  oro_14k: 'bg-yellow-100 text-yellow-700',
+  oro_10k: 'bg-orange-100 text-orange-700',
+  plata: 'bg-gray-100 text-gray-600',
+  chapa: 'bg-rose-100 text-rose-700',
+  acero: 'bg-blue-100 text-blue-700',
+}
+
+const formatMXN = (n) =>
+  n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '--'
 
 export function CatalogoPage() {
-  const { perfil, isAdmin } = useAuth()
   const { precioHoy } = usePrecioDelDia()
 
   const [productos, setProductos] = useState([])
@@ -28,11 +57,10 @@ export function CatalogoPage() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroMetal, setFiltroMetal] = useState('')
-  const [mostrarInactivos, setMostrarInactivos] = useState(false)
 
   // Modals
   const [productoModal, setProductoModal] = useState({ open: false, producto: null })
-  const [gestionCategoriasOpen, setGestionCategoriasOpen] = useState(false)
+  const [categoriasOpen, setCategoriasOpen] = useState(false)
 
   const cargarCategorias = useCallback(async () => {
     try {
@@ -50,7 +78,7 @@ export function CatalogoPage() {
         categoriaId: filtroCategoria || undefined,
         metal: filtroMetal || undefined,
         busqueda: busqueda || undefined,
-        soloActivos: !mostrarInactivos,
+        soloActivos: true,
       })
       setProductos(data)
     } catch (err) {
@@ -58,7 +86,7 @@ export function CatalogoPage() {
     } finally {
       setLoading(false)
     }
-  }, [filtroCategoria, filtroMetal, busqueda, mostrarInactivos])
+  }, [filtroCategoria, filtroMetal, busqueda])
 
   useEffect(() => {
     cargarCategorias()
@@ -68,25 +96,23 @@ export function CatalogoPage() {
     cargarProductos()
   }, [cargarProductos])
 
-  function calcularPrecio(prod) {
-    if (prod.precio_fijo) return prod.precio_fijo
-    if (!precioHoy || !prod.peso_gramos || prod.metal === 'ninguno' || prod.metal === 'fantasia') return null
+  async function handleEliminar(e, prod) {
+    e.stopPropagation()
+    if (!window.confirm(`¿Eliminar el producto "${prod.nombre}"?`)) return
 
-    let precioMetal = 0
-    if (prod.metal === 'oro') precioMetal = precioHoy.oro_por_gramo
-    else if (prod.metal === 'plata') precioMetal = precioHoy.plata_por_gramo
-    else if (prod.metal === 'ambos') precioMetal = precioHoy.oro_por_gramo // default to gold for "ambos"
-
-    const precioBase = (prod.peso_gramos * precioMetal) + (prod.costo_mano_obra || 0)
-    // Redondear siempre hacia arriba al múltiplo de 5 más cercano (ej. 1860.006 -> 1865)
-    return Math.ceil(precioBase / 5) * 5
+    try {
+      await eliminarProducto(prod.id)
+      toast.success('Producto eliminado')
+      cargarProductos()
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
-  const formatMXN = (n) =>
-    n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '—'
-
-  const stock = (prod) => prod.inv?.[0]?.stock_actual ?? prod.inv?.stock_actual ?? 0
-  const stockMin = (prod) => prod.inv?.[0]?.stock_minimo ?? prod.inv?.stock_minimo ?? 3
+  function handleReload() {
+    cargarProductos()
+    cargarCategorias()
+  }
 
   return (
     <div className="p-8">
@@ -99,18 +125,16 @@ export function CatalogoPage() {
             {filtroCategoria || filtroMetal || busqueda ? ' (filtrado)' : ''}
           </p>
         </div>
-        {isAdmin && (
-          <div className="flex gap-2">
-            <Button variant="secondary" size="md" onClick={() => setGestionCategoriasOpen(true)}>
-              <FolderOpen size={15} />
-              Categorías
-            </Button>
-            <Button size="md" onClick={() => setProductoModal({ open: true, producto: null })}>
-              <Plus size={15} />
-              Nuevo Producto
-            </Button>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Button variant="secondary" size="md" onClick={() => setCategoriasOpen(true)}>
+            <FolderOpen size={15} />
+            Categorías
+          </Button>
+          <Button size="md" onClick={() => setProductoModal({ open: true, producto: null })}>
+            <Plus size={15} />
+            Nuevo Producto
+          </Button>
+        </div>
       </div>
 
       {/* Filters bar */}
@@ -138,7 +162,9 @@ export function CatalogoPage() {
             >
               <option value="">Todas las categorías</option>
               {categorias.map((c) => (
-                <option key={c.id} value={c.id}>{c.nombre}</option>
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
               ))}
             </select>
           </div>
@@ -150,29 +176,16 @@ export function CatalogoPage() {
             className="select-luxury text-sm py-2.5"
           >
             <option value="">Todos los metales</option>
-            <option value="oro">Oro</option>
-            <option value="plata">Plata</option>
-            <option value="ambos">Ambos</option>
-            <option value="fantasia">Fantasía</option>
-            <option value="ninguno">Sin metal</option>
+            {METAL_OPTIONS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
           </select>
-
-          {/* Show inactive toggle */}
-          {isAdmin && (
-            <label className="flex items-center gap-2 text-sm text-warm-500 cursor-pointer whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={mostrarInactivos}
-                onChange={(e) => setMostrarInactivos(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
-              />
-              Inactivos
-            </label>
-          )}
         </div>
       </div>
 
-      {/* Categories chips (quick filter) */}
+      {/* Category chips (quick filter) */}
       {categorias.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
           <button
@@ -213,19 +226,15 @@ export function CatalogoPage() {
           <p className="text-sm text-warm-400">
             {busqueda || filtroCategoria || filtroMetal
               ? 'No se encontraron productos con esos filtros.'
-              : isAdmin
-                ? 'Agrega tu primer producto al catálogo.'
-                : 'El administrador aún no ha agregado productos.'}
+              : 'Agrega tu primer producto al catálogo.'}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {productos.map((prod) => {
-            const precio = calcularPrecio(prod)
-            const stockActual = stock(prod)
-            const stockMinimo = stockMin(prod)
-            const stockBajo = stockActual <= stockMinimo && stockActual > 0
-            const sinStock = stockActual === 0
+            const precio = calcularPrecioProducto(prod, precioHoy)
+            const sinStock = (prod.stock ?? 0) === 0
+            const stockBajo = (prod.stock ?? 0) > 0 && (prod.stock ?? 0) <= 3
 
             return (
               <div
@@ -233,45 +242,61 @@ export function CatalogoPage() {
                 className={`card p-5 group hover:shadow-luxury-md transition-all duration-200 cursor-pointer ${
                   !prod.activo ? 'opacity-50' : ''
                 }`}
-                onClick={() => isAdmin && setProductoModal({ open: true, producto: prod })}
+                onClick={() => setProductoModal({ open: true, producto: prod })}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    {/* Component Header / Code */}
+                    {/* Code badge */}
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[10px] font-mono uppercase tracking-wider text-warm-400 bg-ivory-100 px-2 py-0.5 rounded-md">
                         {prod.codigo}
                       </span>
-                      {!prod.activo && <Badge variant="red">Inactivo</Badge>}
+                      {!prod.activo && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 border border-red-200">
+                          Inactivo
+                        </span>
+                      )}
                     </div>
                     <h3 className="font-display text-lg font-semibold text-warm-900 truncate">
                       {prod.nombre}
                     </h3>
                   </div>
-                  {isAdmin && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         setProductoModal({ open: true, producto: prod })
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
+                      className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
                     >
                       <PenLine size={14} />
                     </button>
-                  )}
+                    <button
+                      onClick={(e) => handleEliminar(e, prod)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-warm-400 hover:text-red-500 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Category + Metal badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {prod.categoria && (
-                    <Badge variant="default">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-ivory-200 text-warm-600 border border-ivory-400">
                       <Tag size={10} />
-                      {prod.categoria.nombre}
-                    </Badge>
+                      {typeof prod.categoria === 'string' ? prod.categoria : prod.categoria.nombre}
+                    </span>
                   )}
-                  <Badge variant={METALES_VARIANT[prod.metal]}>
-                    {METALES_LABEL[prod.metal]}
-                  </Badge>
+                  {prod.metal && (
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        METAL_COLORS[prod.metal] || 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {METAL_LABELS[prod.metal] || prod.metal}
+                    </span>
+                  )}
                 </div>
 
                 {/* Details */}
@@ -284,9 +309,26 @@ export function CatalogoPage() {
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 text-xs">
-                      <Package size={12} className={sinStock ? 'text-red-400' : stockBajo ? 'text-amber-400' : 'text-warm-400'} />
-                      <span className={sinStock ? 'text-red-500 font-medium' : stockBajo ? 'text-amber-500 font-medium' : 'text-warm-400'}>
-                        {stockActual} en stock
+                      <Package
+                        size={12}
+                        className={
+                          sinStock
+                            ? 'text-red-400'
+                            : stockBajo
+                              ? 'text-amber-400'
+                              : 'text-warm-400'
+                        }
+                      />
+                      <span
+                        className={
+                          sinStock
+                            ? 'text-red-500 font-medium'
+                            : stockBajo
+                              ? 'text-amber-500 font-medium'
+                              : 'text-warm-400'
+                        }
+                      >
+                        {prod.stock ?? 0} en stock
                       </span>
                     </div>
                   </div>
@@ -294,23 +336,13 @@ export function CatalogoPage() {
                   <div className="text-right">
                     <div className="flex items-center gap-1 text-[10px] text-warm-300 mb-0.5">
                       <Banknote size={10} />
-                      {prod.precio_fijo ? 'Precio fijo' : 'Precio dinámico'}
+                      {['oro_10k', 'oro_14k', 'oro_24k', 'plata'].includes(prod.metal)
+                        ? 'Precio dinámico'
+                        : 'Precio fijo'}
                     </div>
                     <p className="font-display text-xl font-bold text-warm-900">
                       {formatMXN(precio)}
                     </p>
-                    {isAdmin && precio && prod.costo_compra > 0 && (() => {
-                      const ganancia = precio - prod.costo_compra
-                      const pct = ((ganancia / prod.costo_compra) * 100).toFixed(0)
-                      return (
-                        <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] font-medium ${
-                          ganancia > 0 ? 'text-emerald-600' : 'text-red-500'
-                        }`}>
-                          <TrendingUp size={10} className={ganancia <= 0 ? 'rotate-180' : ''} />
-                          {pct}% utilidad
-                        </div>
-                      )
-                    })()}
                   </div>
                 </div>
               </div>
@@ -325,17 +357,13 @@ export function CatalogoPage() {
         onClose={() => setProductoModal({ open: false, producto: null })}
         producto={productoModal.producto}
         categorias={categorias}
-        userId={perfil?.id}
-        onGuardado={() => { cargarProductos(); cargarCategorias() }}
+        onSaved={handleReload}
       />
 
-      <GestionCategoriasModal
-        isOpen={gestionCategoriasOpen}
-        onClose={() => setGestionCategoriasOpen(false)}
-        onGuardado={() => {
-          cargarCategorias()
-          cargarProductos() // Recargar productos por si cambió la asignación de categorías al borrar
-        }}
+      <CategoriaModal
+        isOpen={categoriasOpen}
+        onClose={() => setCategoriasOpen(false)}
+        onChanged={handleReload}
       />
     </div>
   )

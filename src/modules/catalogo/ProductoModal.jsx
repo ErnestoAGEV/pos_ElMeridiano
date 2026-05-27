@@ -1,38 +1,41 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { Trash2 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
-import { Trash2, TrendingUp } from 'lucide-react'
 import { crearProducto, actualizarProducto, eliminarProducto } from './catalogoService'
-import { registrarEnAuditoria } from '../auth/authService'
-import { usePrecioDelDia } from '../metales/usePrecioDelDia'
 
-const METALES = [
-  { value: 'oro', label: 'Oro' },
+const METAL_OPTIONS = [
+  { value: 'oro_24k', label: 'Oro 24k' },
+  { value: 'oro_14k', label: 'Oro 14k' },
+  { value: 'oro_10k', label: 'Oro 10k' },
   { value: 'plata', label: 'Plata' },
-  { value: 'ambos', label: 'Ambos' },
-  { value: 'fantasia', label: 'Fantasía' },
-  { value: 'ninguno', label: 'Ninguno' },
+  { value: 'chapa', label: 'Chapa' },
+  { value: 'acero', label: 'Acero' },
 ]
 
-export function ProductoModal({ isOpen, onClose, producto, categorias, userId, onGuardado }) {
-  const esEdicion = !!producto
-  const { precioHoy } = usePrecioDelDia()
+const METALES_DINAMICOS = ['oro_10k', 'oro_14k', 'oro_24k', 'plata']
+const METALES_FIJOS = ['chapa', 'acero']
 
-  const [form, setForm] = useState({
-    codigo: '',
-    nombre: '',
-    descripcion: '',
-    categoria_id: '',
-    metal: 'ninguno',
-    peso_gramos: '',
-    costo_mano_obra: '',
-    precio_fijo: '',
-    costo_compra: '',
-    stock_actual: '',
-    activo: true,
-  })
+const INITIAL_FORM = {
+  codigo: '',
+  nombre: '',
+  descripcion: '',
+  categoria_id: '',
+  metal: 'oro_14k',
+  peso_gramos: '',
+  costo_mano_obra: '',
+  costo_compra: '',
+  precio_fijo: '',
+  stock: '',
+  activo: true,
+}
+
+export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }) {
+  const esEdicion = !!producto
+
+  const [form, setForm] = useState(INITIAL_FORM)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -44,52 +47,35 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
           nombre: producto.nombre || '',
           descripcion: producto.descripcion || '',
           categoria_id: producto.categoria_id || '',
-          metal: producto.metal || 'ninguno',
+          metal: producto.metal || 'oro_14k',
           peso_gramos: producto.peso_gramos ?? '',
           costo_mano_obra: producto.costo_mano_obra ?? '',
-          precio_fijo: producto.precio_fijo ?? '',
           costo_compra: producto.costo_compra ?? '',
-          stock_actual: producto.inv?.[0]?.stock_actual ?? producto.inv?.stock_actual ?? 0,
+          precio_fijo: producto.precio_fijo ?? '',
+          stock: producto.stock ?? 0,
           activo: producto.activo ?? true,
         })
       } else {
-        setForm({
-          codigo: '',
-          nombre: '',
-          descripcion: '',
-          categoria_id: '',
-          metal: 'ninguno',
-          peso_gramos: '',
-          costo_mano_obra: '',
-          precio_fijo: '',
-          costo_compra: '',
-                stock_actual: '',
-          activo: true,
-        })
+        setForm(INITIAL_FORM)
       }
     }
   }, [isOpen, producto])
+
+  const esDinamico = METALES_DINAMICOS.includes(form.metal)
+  const esFijo = METALES_FIJOS.includes(form.metal)
 
   function handleChange(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
   }
 
   async function handleDelete() {
-    if (!window.confirm('¿Estás seguro de que quieres borrar este producto? Esto eliminará también su registro de inventario base.')) return
-    
+    if (!window.confirm('¿Estás seguro de que quieres borrar este producto?')) return
+
     setDeleting(true)
     try {
       await eliminarProducto(producto.id)
       toast.success('Producto borrado correctamente')
-      
-      registrarEnAuditoria({
-        usuarioId: userId,
-        accion: 'borrar_producto',
-        modulo: 'catalogo',
-        detalle: { codigo: form.codigo, nombre: form.nombre },
-      })
-
-      onGuardado()
+      onSaved?.()
       onClose()
     } catch (err) {
       toast.error(err.message)
@@ -97,8 +83,6 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
       setDeleting(false)
     }
   }
-
-  const necesitaPeso = form.metal !== 'ninguno' && form.metal !== 'fantasia'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -108,29 +92,30 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
       return
     }
 
-    if (necesitaPeso && (!form.peso_gramos || parseFloat(form.peso_gramos) <= 0)) {
-      toast.error('Indica el peso en gramos para productos con metal')
+    if (esDinamico && (!form.peso_gramos || parseFloat(form.peso_gramos) <= 0)) {
+      toast.error('Indica el peso en gramos para este tipo de metal')
       return
     }
 
-    // Must have either peso+metal (dynamic price) or precio_fijo
-    if (!necesitaPeso && !form.precio_fijo) {
-      toast.error('Productos sin metal necesitan un precio fijo')
+    if (esFijo && (!form.precio_fijo || parseFloat(form.precio_fijo) <= 0)) {
+      toast.error('Indica el precio fijo para este tipo de producto')
       return
     }
 
     setSaving(true)
     try {
       const payload = {
-        ...form,
-        peso_gramos: form.peso_gramos ? parseFloat(form.peso_gramos) : null,
-        costo_mano_obra: form.costo_mano_obra ? parseFloat(form.costo_mano_obra) : 0,
-        precio_fijo: form.precio_fijo ? parseFloat(form.precio_fijo) : null,
-        costo_compra: form.costo_compra ? parseFloat(form.costo_compra) : 0,
+        codigo: form.codigo.trim(),
+        nombre: form.nombre.trim(),
+        descripcion: form.descripcion.trim() || null,
         categoria_id: form.categoria_id || null,
-        stock_inicial: form.stock_actual !== '' ? parseInt(form.stock_actual, 10) : 0,
-        stock_actual: form.stock_actual !== '' ? parseInt(form.stock_actual, 10) : 0,
-        usuario_id: userId,
+        metal: form.metal,
+        peso_gramos: esDinamico && form.peso_gramos ? parseFloat(form.peso_gramos) : null,
+        costo_mano_obra: esDinamico && form.costo_mano_obra ? parseFloat(form.costo_mano_obra) : 0,
+        costo_compra: esFijo && form.costo_compra ? parseFloat(form.costo_compra) : 0,
+        precio_fijo: esFijo && form.precio_fijo ? parseFloat(form.precio_fijo) : null,
+        stock: form.stock !== '' ? parseInt(form.stock, 10) : 0,
+        activo: form.activo,
       }
 
       if (esEdicion) {
@@ -141,14 +126,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
         toast.success('Producto creado')
       }
 
-      registrarEnAuditoria({
-        usuarioId: userId,
-        accion: esEdicion ? 'editar_producto' : 'crear_producto',
-        modulo: 'catalogo',
-        detalle: { codigo: form.codigo, nombre: form.nombre },
-      })
-
-      onGuardado()
+      onSaved?.()
       onClose()
     } catch (err) {
       toast.error(err.message)
@@ -165,7 +143,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Row 1: Code + Name */}
+        {/* Row 1: Codigo + Nombre */}
         <div className="grid grid-cols-3 gap-4">
           <Input
             label="Código *"
@@ -180,98 +158,12 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
               value={form.nombre}
               onChange={handleChange('nombre')}
               placeholder="Anillo Solitario Oro 14k"
+              disabled={saving || deleting}
             />
           </div>
         </div>
 
-        {/* Row 2: Category + Metal */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Categoría</label>
-            <select
-              value={form.categoria_id}
-              onChange={handleChange('categoria_id')}
-              className="select-luxury"
-            >
-              <option value="">Sin categoría</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={c.id}>{c.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Metal</label>
-            <select
-              value={form.metal}
-              onChange={handleChange('metal')}
-              className="select-luxury"
-            >
-              {METALES.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Row 3: Weight + Labor cost + Fixed price */}
-        <div className="grid grid-cols-3 gap-4">
-          <Input
-            label={`Peso (gramos) ${necesitaPeso ? '*' : ''}`}
-            type="number"
-            step="0.001"
-            value={form.peso_gramos}
-            onChange={handleChange('peso_gramos')}
-            placeholder="0.000"
-          />
-          <Input
-            label="Mano de obra"
-            type="number"
-            step="0.01"
-            value={form.costo_mano_obra}
-            onChange={handleChange('costo_mano_obra')}
-            placeholder="$0.00"
-          />
-          <Input
-            label={`Precio fijo ${!necesitaPeso ? '*' : ''}`}
-            type="number"
-            step="0.01"
-            value={form.precio_fijo}
-            onChange={handleChange('precio_fijo')}
-            placeholder="$0.00"
-          />
-        </div>
-
-        {/* Row: Cost + Utility */}
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Costo de compra"
-            type="number"
-            step="0.01"
-            value={form.costo_compra}
-            onChange={handleChange('costo_compra')}
-            placeholder="$0.00"
-          />
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Utilidad estimada</label>
-            <UtilidadIndicator form={form} necesitaPeso={necesitaPeso} precioHoy={precioHoy} />
-          </div>
-        </div>
-
-        {/* Pricing explanation */}
-        <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
-          {necesitaPeso ? (
-            <>
-              <strong className="text-warm-600">Precio dinámico:</strong> (peso x precio del metal del día) + mano de obra.
-              {form.precio_fijo && ' El precio fijo se usará como alternativa si se establece.'}
-            </>
-          ) : (
-            <>
-              <strong className="text-warm-600">Precio fijo:</strong> este producto no usa metal, se venderá al precio fijo indicado.
-            </>
-          )}
-        </div>
-
-        {/* Description */}
+        {/* Row 2: Descripcion */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-warm-600">Descripción</label>
           <textarea
@@ -280,23 +172,127 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
             rows={2}
             placeholder="Descripción opcional del producto..."
             className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
+            disabled={saving || deleting}
           />
+        </div>
+
+        {/* Row 3: Categoria + Metal */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-warm-600">Categoría</label>
+            <select
+              value={form.categoria_id}
+              onChange={handleChange('categoria_id')}
+              className="select-luxury"
+              disabled={saving || deleting}
+            >
+              <option value="">Sin categoría</option>
+              {categorias?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-warm-600">Metal *</label>
+            <select
+              value={form.metal}
+              onChange={handleChange('metal')}
+              className="select-luxury"
+              disabled={saving || deleting}
+            >
+              {METAL_OPTIONS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Dynamic metal fields: peso + mano de obra */}
+        {esDinamico && (
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Peso (gramos) *"
+              type="number"
+              step="0.001"
+              min="0"
+              value={form.peso_gramos}
+              onChange={handleChange('peso_gramos')}
+              placeholder="0.000"
+              disabled={saving || deleting}
+            />
+            <Input
+              label="Mano de obra"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.costo_mano_obra}
+              onChange={handleChange('costo_mano_obra')}
+              placeholder="$0.00"
+              disabled={saving || deleting}
+            />
+          </div>
+        )}
+
+        {/* Fixed price metal fields: costo_compra + precio_fijo */}
+        {esFijo && (
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Costo de compra"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.costo_compra}
+              onChange={handleChange('costo_compra')}
+              placeholder="$0.00"
+              disabled={saving || deleting}
+            />
+            <Input
+              label="Precio fijo *"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.precio_fijo}
+              onChange={handleChange('precio_fijo')}
+              placeholder="$0.00"
+              disabled={saving || deleting}
+            />
+          </div>
+        )}
+
+        {/* Pricing explanation */}
+        <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
+          {esDinamico ? (
+            <>
+              <strong className="text-warm-600">Precio dinámico:</strong> (peso x precio del metal
+              del día) + mano de obra. El precio se recalcula cada día.
+            </>
+          ) : (
+            <>
+              <strong className="text-warm-600">Precio fijo:</strong> este producto se venderá
+              siempre al precio fijo indicado.
+            </>
+          )}
         </div>
 
         {/* Stock */}
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label={esEdicion ? "Stock actual" : "Stock inicial"}
+            label={esEdicion ? 'Stock actual' : 'Stock inicial'}
             type="number"
             min="0"
             step="1"
-            value={form.stock_actual}
-            onChange={handleChange('stock_actual')}
+            value={form.stock}
+            onChange={handleChange('stock')}
             placeholder="0"
+            disabled={saving || deleting}
           />
         </div>
 
-        {/* Active toggle (only on edit) */}
+        {/* Active toggle (only in edit mode) */}
         {esEdicion && (
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -304,6 +300,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
               checked={form.activo}
               onChange={(e) => setForm((f) => ({ ...f, activo: e.target.checked }))}
               className="w-4 h-4 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
+              disabled={saving || deleting}
             />
             <span className="text-sm text-warm-600">Producto activo</span>
           </label>
@@ -318,7 +315,11 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
               disabled={deleting || saving}
               className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
-              {deleting ? <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 size={16} />}
+              {deleting ? (
+                <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={16} />
+              )}
               Borrar producto
             </button>
           ) : (
@@ -336,57 +337,5 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, userId, o
         </div>
       </form>
     </Modal>
-  )
-}
-
-function UtilidadIndicator({ form, necesitaPeso, precioHoy }) {
-  const costo = parseFloat(form.costo_compra) || 0
-  if (costo <= 0) {
-    return (
-      <div className="flex items-center h-[42px] px-4 rounded-xl bg-ivory-50 border border-ivory-300 text-sm text-warm-300">
-        Ingresa el costo de compra
-      </div>
-    )
-  }
-
-  // Calculate selling price
-  let precioVenta = null
-  if (form.precio_fijo) {
-    precioVenta = parseFloat(form.precio_fijo)
-  } else if (necesitaPeso && precioHoy && form.peso_gramos) {
-    let precioMetal = 0
-    if (form.metal === 'oro') precioMetal = precioHoy.oro_por_gramo
-    else if (form.metal === 'plata') precioMetal = precioHoy.plata_por_gramo
-    else if (form.metal === 'ambos') precioMetal = precioHoy.oro_por_gramo
-    const base = (parseFloat(form.peso_gramos) * precioMetal) + (parseFloat(form.costo_mano_obra) || 0)
-    precioVenta = Math.ceil(base / 5) * 5
-  }
-
-  if (!precioVenta || precioVenta <= 0) {
-    return (
-      <div className="flex items-center h-[42px] px-4 rounded-xl bg-ivory-50 border border-ivory-300 text-sm text-warm-300">
-        Sin precio de venta
-      </div>
-    )
-  }
-
-  const ganancia = precioVenta - costo
-  const porcentaje = ((ganancia / costo) * 100).toFixed(1)
-  const esPositivo = ganancia > 0
-
-  return (
-    <div className={`flex items-center gap-3 h-[42px] px-4 rounded-xl border ${
-      esPositivo ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
-    }`}>
-      <TrendingUp size={16} className={esPositivo ? 'text-emerald-500' : 'text-red-500 rotate-180'} />
-      <div className="flex items-baseline gap-2">
-        <span className={`text-lg font-bold ${esPositivo ? 'text-emerald-700' : 'text-red-700'}`}>
-          {porcentaje}%
-        </span>
-        <span className={`text-xs ${esPositivo ? 'text-emerald-500' : 'text-red-500'}`}>
-          ${Math.abs(ganancia).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-        </span>
-      </div>
-    </div>
   )
 }
