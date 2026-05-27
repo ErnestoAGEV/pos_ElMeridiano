@@ -1,262 +1,201 @@
 import { useState, useEffect } from 'react'
-import { AlertTriangle, Globe, PenLine } from 'lucide-react'
+import { RefreshCw, Check, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import {
+  fetchPreciosMetalesAPI, fetchTipoCambioUSDMXN,
+  convertirAGramoMXN, calcularKilates, guardarPrecioDelDia,
+} from './metalesService'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
-import {
-  fetchPreciosMetalesAPI,
-  fetchTipoCambioUSDMXN,
-  convertirAGramoMXN,
-  guardarPrecioDelDia,
-  obtenerUltimoPrecio,
-} from './metalesService'
-import { registrarEnAuditoria } from '../auth/authService'
 
-export function PrecioDelDiaModal({ isOpen, onClose, userId, onConfirmado }) {
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [apiError, setApiError] = useState(null)
+export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
+  const [oro24k, setOro24k] = useState('')
+  const [oro14k, setOro14k] = useState('')
+  const [oro10k, setOro10k] = useState('')
+  const [plata, setPlata] = useState('')
+  const [fuente, setFuente] = useState('manual')
+  const [loading, setLoading] = useState(false)
+  const [fetchingApi, setFetchingApi] = useState(false)
 
-  // Raw API values (for display)
-  const [xauUsd, setXauUsd] = useState(null)
-  const [xagUsd, setXagUsd] = useState(null)
-  const [tipoCambio, setTipoCambio] = useState('')
-
-  // Final editable MXN/gram values
-  const [oroGramo, setOroGramo] = useState('')
-  const [plataGramo, setPlataGramo] = useState('')
-
-  // Track if user manually edited values
-  const [editadoManual, setEditadoManual] = useState(false)
-  const [usandoUltimo, setUsandoUltimo] = useState(false)
-
+  // Reset state when modal opens
   useEffect(() => {
-    if (!isOpen) return
-    cargarDesdeAPIs()
+    if (isOpen) {
+      setOro24k('')
+      setOro14k('')
+      setOro10k('')
+      setPlata('')
+      setFuente('manual')
+    }
   }, [isOpen])
 
-  async function cargarDesdeAPIs() {
-    setLoading(true)
-    setApiError(null)
-    setUsandoUltimo(false)
+  async function handleConsultarAPI() {
+    setFetchingApi(true)
+    try {
+      const [metales, mxnRate] = await Promise.all([
+        fetchPreciosMetalesAPI(),
+        fetchTipoCambioUSDMXN(),
+      ])
+      const xau = metales.xau
+      const xag = metales.xag
+      const oro24kMxnGram = convertirAGramoMXN(xau, mxnRate)
+      const plataGram = convertirAGramoMXN(xag, mxnRate)
+      const kilates = calcularKilates(oro24kMxnGram)
 
-    // Fetch independently so one failure doesn't block the other
-    const [metalesResult, tcResult] = await Promise.allSettled([
-      fetchPreciosMetalesAPI(),
-      fetchTipoCambioUSDMXN(),
-    ])
+      setOro24k(kilates.oro_24k.toFixed(2))
+      setOro14k(kilates.oro_14k.toFixed(2))
+      setOro10k(kilates.oro_10k.toFixed(2))
+      setPlata(plataGram.toFixed(2))
+      setFuente('api')
 
-    const metalesOk = metalesResult.status === 'fulfilled'
-    const tcOk = tcResult.status === 'fulfilled'
-
-    if (metalesOk && tcOk) {
-      const metales = metalesResult.value
-      const tc = tcResult.value
-      setXauUsd(metales.xau)
-      setXagUsd(metales.xag)
-      setTipoCambio(tc.toFixed(2))
-      setOroGramo(convertirAGramoMXN(metales.xau, tc).toFixed(2))
-      setPlataGramo(convertirAGramoMXN(metales.xag, tc).toFixed(2))
-    } else {
-      // API failed — try to load last saved price as fallback
-      if (tcOk) setTipoCambio(tcResult.value.toFixed(2))
-
-      try {
-        const ultimo = await obtenerUltimoPrecio()
-        if (ultimo) {
-          setOroGramo(Number(ultimo.oro_por_gramo).toFixed(2))
-          setPlataGramo(Number(ultimo.plata_por_gramo).toFixed(2))
-          setUsandoUltimo(true)
-          setApiError(`No se pudo consultar la API. Se cargó el último precio registrado (${ultimo.fecha}).`)
-        } else {
-          setApiError('No se pudo consultar la API y no hay precios previos. Ingresa los precios manualmente.')
-        }
-      } catch {
-        setApiError('No se pudo consultar la API ni cargar precios previos. Ingresa los precios manualmente.')
-      }
-      setEditadoManual(true)
+      toast.success('Precios actualizados desde la API')
+    } catch (err) {
+      toast.error(err.message || 'No se pudo consultar la API de metales')
+    } finally {
+      setFetchingApi(false)
     }
-
-    setLoading(false)
   }
 
-  function handleRecalcular() {
-    if (!xauUsd || !xagUsd || !tipoCambio) return
-    const tc = parseFloat(tipoCambio)
-    if (isNaN(tc) || tc <= 0) return
-    setOroGramo(convertirAGramoMXN(xauUsd, tc).toFixed(2))
-    setPlataGramo(convertirAGramoMXN(xagUsd, tc).toFixed(2))
-  }
-
-  function handleEditField(setter) {
-    return (e) => {
-      setter(e.target.value)
-      setEditadoManual(true)
+  function handleOro24kChange(e) {
+    const val = e.target.value
+    setOro24k(val)
+    setFuente('manual')
+    const num = parseFloat(val)
+    if (!isNaN(num) && num > 0) {
+      const kilates = calcularKilates(num)
+      setOro14k(kilates.oro_14k.toFixed(2))
+      setOro10k(kilates.oro_10k.toFixed(2))
     }
   }
 
   async function handleConfirmar() {
-    const oro = parseFloat(oroGramo)
-    const plata = parseFloat(plataGramo)
-    if (isNaN(oro) || oro <= 0 || isNaN(plata) || plata <= 0) {
-      toast.error('Ingresa precios válidos para oro y plata')
+    const v24k = parseFloat(oro24k)
+    const v14k = parseFloat(oro14k)
+    const v10k = parseFloat(oro10k)
+    const vPlata = parseFloat(plata)
+
+    if (
+      isNaN(v24k) || v24k <= 0 ||
+      isNaN(v14k) || v14k <= 0 ||
+      isNaN(v10k) || v10k <= 0 ||
+      isNaN(vPlata) || vPlata <= 0
+    ) {
+      toast.error('Ingresa precios válidos (mayores a 0) para todos los metales')
       return
     }
 
-    setSaving(true)
+    setLoading(true)
     try {
-      await guardarPrecioDelDia({
-        oroPorGramo: oro,
-        plataPorGramo: plata,
-        fuente: editadoManual ? 'manual' : 'api',
-        confirmadoPor: userId,
-      })
-
-      registrarEnAuditoria({
-        usuarioId: userId,
-        accion: 'confirmar_precio_metales',
-        modulo: 'metales',
-        detalle: { oro_por_gramo: oro, plata_por_gramo: plata, fuente: editadoManual ? 'manual' : 'api' },
-      })
-
-      toast.success('Precio del día confirmado')
+      await guardarPrecioDelDia({ oro24k: v24k, oro14k: v14k, oro10k: v10k, plata: vPlata, fuente })
+      toast.success('Precios del día confirmados')
       onConfirmado()
       onClose()
     } catch (err) {
-      toast.error(err.message)
+      toast.error(err.message || 'Error al guardar los precios')
     } finally {
-      setSaving(false)
+      setLoading(false)
     }
   }
 
-  const hoy = new Date().toLocaleDateString('es-MX', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const inputClass =
+    'w-full bg-ivory-50 border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all'
+
+  const fields = [
+    { label: 'Oro 24k', value: oro24k, onChange: handleOro24kChange },
+    {
+      label: 'Oro 14k',
+      value: oro14k,
+      onChange: (e) => { setOro14k(e.target.value); setFuente('manual') },
+    },
+    {
+      label: 'Oro 10k',
+      value: oro10k,
+      onChange: (e) => { setOro10k(e.target.value); setFuente('manual') },
+    },
+    {
+      label: 'Plata',
+      value: plata,
+      onChange: (e) => { setPlata(e.target.value); setFuente('manual') },
+    },
+  ]
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Precio del Día" closable={false} size="md">
-      <p className="text-sm text-warm-400 mb-5 capitalize">{hoy}</p>
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-ivory-400 border-t-primary-400" />
-          <p className="text-sm text-warm-400">Consultando precios internacionales...</p>
-        </div>
-      ) : (
-        <div className="space-y-5">
-          {/* API Error Banner */}
-          {apiError && (
-            <div className={`flex items-start gap-3 p-4 rounded-xl ${
-              usandoUltimo
-                ? 'bg-blue-50 border border-blue-200'
-                : 'bg-amber-50 border border-amber-200'
+    <Modal isOpen={isOpen} onClose={onClose} title="Confirmar precios del dia" size="md">
+      <div className="space-y-5">
+        {/* API fetch button + source badge */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-warm-400">Fuente:</span>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+              fuente === 'api'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-primary-100 text-primary-700'
             }`}>
-              <AlertTriangle size={18} className={`mt-0.5 shrink-0 ${usandoUltimo ? 'text-blue-500' : 'text-amber-500'}`} />
-              <div>
-                <p className={`text-sm font-medium ${usandoUltimo ? 'text-blue-800' : 'text-amber-800'}`}>
-                  {usandoUltimo ? 'Usando último precio registrado' : 'No se pudo consultar la API'}
-                </p>
-                <p className={`text-xs mt-1 ${usandoUltimo ? 'text-blue-600' : 'text-amber-600'}`}>{apiError}</p>
-                <p className={`text-xs mt-1 ${usandoUltimo ? 'text-blue-600' : 'text-amber-600'}`}>
-                  {usandoUltimo ? 'Puedes ajustar los precios si es necesario.' : 'Ingresa los precios manualmente.'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* API reference values */}
-          {!apiError && xauUsd && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-ivory-100 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Oro (XAU)</p>
-                <p className="text-sm font-semibold text-warm-700 mt-1">${xauUsd.toLocaleString()} USD/oz</p>
-              </div>
-              <div className="p-3 rounded-xl bg-ivory-100 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Plata (XAG)</p>
-                <p className="text-sm font-semibold text-warm-700 mt-1">${xagUsd.toLocaleString()} USD/oz</p>
-              </div>
-              <div className="p-3 rounded-xl bg-ivory-100 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">USD/MXN</p>
-                <div className="flex items-center justify-center gap-1 mt-1">
-                  <span className="text-sm font-semibold text-warm-700">$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={tipoCambio}
-                    onChange={(e) => { setTipoCambio(e.target.value); setEditadoManual(true) }}
-                    onBlur={handleRecalcular}
-                    className="w-16 text-sm font-semibold text-warm-700 bg-transparent text-center outline-none border-b border-dashed border-warm-300 focus:border-primary-400"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Ornamental divider */}
-          <div className="divider-primary" />
-
-          {/* Editable final prices */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-warm-600 mb-1.5 flex items-center gap-2">
-                Oro MXN/gramo
-                <Globe size={12} className="text-warm-300" />
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={oroGramo}
-                  onChange={handleEditField(setOroGramo)}
-                  placeholder="0.00"
-                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-warm-600 mb-1.5 flex items-center gap-2">
-                Plata MXN/gramo
-                <Globe size={12} className="text-warm-300" />
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={plataGramo}
-                  onChange={handleEditField(setPlataGramo)}
-                  placeholder="0.00"
-                  className="w-full bg-white border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
-                />
-              </div>
-            </div>
+              {fuente === 'api' ? 'API' : 'Manual'}
+            </span>
           </div>
-
-          {editadoManual && (
-            <div className="flex items-center gap-2 text-xs text-warm-400">
-              <PenLine size={12} />
-              Se guardará como precio <span className="font-semibold text-warm-600">manual</span>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              variant="primary"
-              size="lg"
-              loading={saving}
-              onClick={handleConfirmar}
-              disabled={!oroGramo || !plataGramo}
-            >
-              Confirmar precio del día
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleConsultarAPI}
+            loading={fetchingApi}
+            disabled={fetchingApi}
+          >
+            <RefreshCw size={13} />
+            Consultar API
+          </Button>
         </div>
-      )}
+
+        {/* Info note */}
+        <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-500" />
+          <p className="text-xs text-amber-700">
+            Al cambiar <strong>Oro 24k</strong> manualmente se recalculan Oro 14k (×0.583) y Oro 10k (×0.417) de forma automática.
+          </p>
+        </div>
+
+        <div className="divider-primary" />
+
+        {/* Price inputs — 2×2 grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {fields.map(({ label, value, onChange }) => (
+            <div key={label}>
+              <label className="block text-sm font-medium text-warm-600 mb-1.5">
+                {label}
+                <span className="ml-1 text-xs font-normal text-warm-400">/gramo MXN</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400 text-sm select-none">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={value}
+                  onChange={onChange}
+                  placeholder="0.00"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" size="md" onClick={onClose} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            loading={loading}
+            onClick={handleConfirmar}
+            disabled={!oro24k || !oro14k || !oro10k || !plata || loading}
+          >
+            <Check size={15} />
+            Confirmar
+          </Button>
+        </div>
+      </div>
     </Modal>
   )
 }
