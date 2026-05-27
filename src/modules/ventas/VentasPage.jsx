@@ -12,7 +12,7 @@ import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { useTienda } from '../../context/TiendaContext'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
-import TicketModal from './TicketModal'
+import { TicketModal } from './TicketModal'
 
 const METODOS_PAGO = [
   { id: 'efectivo',      label: 'Efectivo',      Icon: Banknote },
@@ -27,7 +27,7 @@ const fmt = (n) =>
 const fmtG = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n ?? 0)
 
-export default function VentasPage() {
+export function VentasPage() {
   const { config } = useTienda()
   const { precioHoy, loading: loadingPrecios, faltaConfirmacion } = usePrecioDelDia()
 

@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
  *   config  – tienda config from useTienda
  *   onClose – callback
  */
-export default function TicketModal({ venta, config, onClose }) {
+export function TicketModal({ venta, config, onClose }) {
   if (!venta) return null
 
   const fmt = (n) =>
