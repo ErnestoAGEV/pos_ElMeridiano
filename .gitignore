@@ -2,6 +2,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.db
 
 # Environment variables — NEVER commit
 .env
