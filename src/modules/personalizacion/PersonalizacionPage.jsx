@@ -1,231 +1,304 @@
 import { useState } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Phone } from 'lucide-react'
+import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
 import { colorPresets } from '../../lib/colorPresets'
 import { fontPresets } from '../../lib/fontPresets'
-import { supabase } from '../../lib/supabase'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 
 export function PersonalizacionPage() {
   const { config, updateConfig } = useTienda()
-  const [form, setForm] = useState({ ...config })
+
+  const [form, setForm] = useState({
+    nombre: config?.nombre ?? '',
+    slogan: config?.slogan ?? '',
+    logo_path: config?.logo_path ?? '',
+    color_preset: config?.color_preset ?? '',
+    fuente_preset: config?.fuente_preset ?? '',
+  })
+
+  const [logoPreview, setLogoPreview] = useState(config?.logo_path ?? '')
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [backingUp, setBackingUp] = useState(false)
+  const [restoring, setRestoring] = useState(false)
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  async function handleLogoUpload(e) {
+  function handleLogoChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
+
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('El logo debe ser menor a 2MB')
-      return
-    }
-    if (!['image/png', 'image/svg+xml', 'image/webp'].includes(file.type)) {
-      toast.error('Formato no soportado. Usa PNG, SVG o WEBP')
+      toast.error('El logo no puede superar los 2 MB.')
       return
     }
 
-    setUploading(true)
-    try {
-      const ext = file.name.split('.').pop()
-      const path = `logo-${Date.now()}.${ext}`
-
-      if (config.logo_url) {
-        const oldPath = config.logo_url.split('/logos/')[1]
-        if (oldPath) await supabase.storage.from('logos').remove([oldPath])
-      }
-
-      const { error: uploadErr } = await supabase.storage.from('logos').upload(path, file)
-      if (uploadErr) throw uploadErr
-
-      const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(path)
-      handleChange('logo_url', publicUrl)
-      toast.success('Logo subido')
-    } catch (err) {
-      toast.error('Error al subir logo: ' + err.message)
-    } finally {
-      setUploading(false)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result
+      setLogoPreview(dataUrl)
+      setForm((prev) => ({ ...prev, logo_path: dataUrl }))
     }
+    reader.readAsDataURL(file)
   }
 
-  function handleRemoveLogo() {
-    handleChange('logo_url', null)
+  function handleClearLogo() {
+    setLogoPreview('')
+    setForm((prev) => ({ ...prev, logo_path: '' }))
   }
 
   async function handleSave() {
     setSaving(true)
     try {
-      const { id, created_at, updated_at, ...changes } = form
+      const { ...changes } = form
       await updateConfig(changes)
-      toast.success('Configuracion guardada')
+      toast.success('Configuración guardada.')
     } catch (err) {
-      toast.error('Error: ' + err.message)
+      console.error(err)
+      toast.error('Error al guardar la configuración.')
     } finally {
       setSaving(false)
     }
   }
 
+  async function handleBackup() {
+    setBackingUp(true)
+    try {
+      const result = await window.api.backup.exportar()
+      if (result?.canceled) return
+      if (result?.success) {
+        toast.success(`Respaldo guardado en:\n${result.path}`)
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Error al crear el respaldo.')
+    } finally {
+      setBackingUp(false)
+    }
+  }
+
+  async function handleRestore() {
+    const confirmed = window.confirm(
+      '¿Estás seguro? Esto reemplazará todos los datos actuales con los del respaldo.'
+    )
+    if (!confirmed) return
+
+    setRestoring(true)
+    try {
+      const result = await window.api.backup.restaurar()
+      if (result?.canceled) return
+      if (result?.success) {
+        toast.success('Respaldo restaurado. Reiniciando...')
+        setTimeout(() => window.location.reload(), 1500)
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Error al restaurar el respaldo. Asegúrate de que el archivo es válido.')
+    } finally {
+      setRestoring(false)
+    }
+  }
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl mx-auto space-y-8 p-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold text-warm-900">Personalizacion</h1>
-          <p className="text-warm-400 text-sm mt-1">Configura la identidad visual de tu joyeria</p>
+          <h1 className="font-display text-3xl text-warm-900">Personalización</h1>
+          <p className="text-warm-500 mt-1">Configura la identidad visual de tu joyería.</p>
         </div>
-        <Button onClick={handleSave} loading={saving}>
-          <Save size={14} />
-          Guardar cambios
+        <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
+          <Save size={16} />
+          {saving ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       </div>
 
-      <div className="space-y-8">
-        {/* Identity */}
-        <section className="card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Store size={18} className="text-primary-500" />
-            <h2 className="font-display text-xl font-semibold text-warm-900">Identidad</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Nombre de la joyeria"
-              value={form.nombre}
-              onChange={(e) => handleChange('nombre', e.target.value)}
-            />
-            <Input
-              label="Slogan / Subtitulo"
-              value={form.slogan || ''}
-              onChange={(e) => handleChange('slogan', e.target.value || null)}
-              placeholder="Ej: Alta Joyeria"
-            />
-          </div>
-          <div className="mt-4">
-            <label className="text-xs uppercase tracking-wider text-warm-400 font-semibold mb-2 block">Logo</label>
-            <div className="flex items-center gap-4">
-              {form.logo_url ? (
-                <div className="relative">
-                  <img src={form.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-ivory-300" />
-                  <button
-                    onClick={handleRemoveLogo}
-                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center"
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-16 h-16 rounded-xl bg-ivory-200 border border-dashed border-ivory-400 flex items-center justify-center">
-                  <Upload size={18} className="text-warm-400" />
-                </div>
-              )}
-              <label className="cursor-pointer text-sm text-primary-500 hover:text-primary-600 font-medium">
-                {uploading ? 'Subiendo...' : 'Subir logo'}
-                <input type="file" accept=".png,.svg,.webp" onChange={handleLogoUpload} className="hidden" disabled={uploading} />
+      {/* Section 1: Identidad */}
+      <section className="card rounded-xl p-6 space-y-6">
+        <div className="flex items-center gap-3">
+          <Store size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Identidad de la joyería</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input
+            label="Nombre de la joyería"
+            value={form.nombre}
+            onChange={(e) => handleChange('nombre', e.target.value)}
+            placeholder="Ej. Joyería Meridiano"
+          />
+          <Input
+            label="Slogan / Subtítulo"
+            value={form.slogan}
+            onChange={(e) => handleChange('slogan', e.target.value)}
+            placeholder="Ej. Elegancia en cada pieza"
+          />
+        </div>
+
+        {/* Logo picker */}
+        <div>
+          <p className="text-sm font-medium text-warm-700 mb-2">Logo de la tienda</p>
+          <div className="flex items-start gap-4">
+            {logoPreview ? (
+              <div className="relative shrink-0">
+                <img
+                  src={logoPreview}
+                  alt="Logo de la tienda"
+                  className="h-24 w-24 rounded-lg object-contain border border-warm-200 bg-ivory-50"
+                />
+                <button
+                  type="button"
+                  onClick={handleClearLogo}
+                  className="absolute -top-2 -right-2 bg-warm-800 text-white rounded-full p-0.5 hover:bg-warm-900 transition-colors"
+                  title="Quitar logo"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="h-24 w-24 shrink-0 rounded-lg border-2 border-dashed border-warm-300 bg-ivory-50 flex items-center justify-center text-warm-400">
+                <Upload size={24} />
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <label className="cursor-pointer">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-warm-300 bg-white text-warm-700 text-sm font-medium hover:bg-ivory-50 transition-colors">
+                  <Upload size={14} />
+                  Seleccionar imagen
+                </span>
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
               </label>
-              <span className="text-xs text-warm-300">PNG, SVG o WEBP. Max 2MB.</span>
+              <p className="text-xs text-warm-400">PNG, JPG, WEBP o SVG. Máximo 2 MB.</p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Colors */}
-        <section className="card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Palette size={18} className="text-primary-500" />
-            <h2 className="font-display text-xl font-semibold text-warm-900">Color</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {Object.entries(colorPresets).map(([key, preset]) => (
+      {/* Section 2: Color */}
+      <section className="card rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Palette size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Color</h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {Object.entries(colorPresets).map(([key, preset]) => {
+            const isSelected = form.color_preset === key
+            const swatches = ['300', '400', '500', '600']
+            return (
               <button
                 key={key}
+                type="button"
                 onClick={() => handleChange('color_preset', key)}
-                className={`p-3 rounded-xl border-2 transition-all ${
-                  form.color_preset === key
-                    ? 'border-warm-900 shadow-luxury-md'
+                className={`rounded-xl p-3 border-2 transition-all text-left bg-white ${
+                  isSelected
+                    ? 'border-warm-900 shadow-md'
                     : 'border-ivory-300 hover:border-ivory-400'
                 }`}
               >
                 <div className="flex gap-1 mb-2">
-                  {['300', '400', '500', '600'].map((shade) => (
-                    <div
+                  {swatches.map((shade) => (
+                    <span
                       key={shade}
-                      className="w-5 h-5 rounded-full"
+                      className="h-5 w-5 rounded-full border border-warm-100"
                       style={{ backgroundColor: preset[shade] }}
                     />
                   ))}
                 </div>
-                <p className="text-xs font-medium text-warm-700">{preset.label}</p>
+                <p className="text-xs font-medium text-warm-700 truncate">{preset.label}</p>
               </button>
-            ))}
-          </div>
-        </section>
+            )
+          })}
+        </div>
+      </section>
 
-        {/* Fonts */}
-        <section className="card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Type size={18} className="text-primary-500" />
-            <h2 className="font-display text-xl font-semibold text-warm-900">Tipografia</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(fontPresets).map(([key, preset]) => (
+      {/* Section 3: Tipografía */}
+      <section className="card rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Type size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Tipografía</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {Object.entries(fontPresets).map(([key, preset]) => {
+            const isSelected = form.fuente_preset === key
+            return (
               <button
                 key={key}
+                type="button"
                 onClick={() => handleChange('fuente_preset', key)}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  form.fuente_preset === key
-                    ? 'border-warm-900 shadow-luxury-md'
+                className={`rounded-xl p-4 border-2 transition-all text-left bg-white ${
+                  isSelected
+                    ? 'border-warm-900 shadow-md'
                     : 'border-ivory-300 hover:border-ivory-400'
                 }`}
               >
-                <p className="text-lg font-bold text-warm-900 mb-1" style={{ fontFamily: preset.display }}>
-                  {form.nombre || 'Mi Joyeria'}
+                <p
+                  className="text-lg text-warm-900 leading-tight"
+                  style={{ fontFamily: preset.display }}
+                >
+                  {form.nombre || 'Joyería Meridiano'}
                 </p>
-                <p className="text-sm text-warm-500" style={{ fontFamily: preset.sans }}>
+                <p
+                  className="text-sm text-warm-500 mt-1"
+                  style={{ fontFamily: preset.sans }}
+                >
                   Texto de ejemplo para el cuerpo
                 </p>
                 <p className="text-xs text-warm-300 mt-2">{preset.label}</p>
               </button>
-            ))}
-          </div>
-        </section>
+            )
+          })}
+        </div>
+      </section>
 
-        {/* Contact */}
-        <section className="card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Phone size={18} className="text-primary-500" />
-            <h2 className="font-display text-xl font-semibold text-warm-900">Datos de contacto</h2>
-          </div>
-          <p className="text-xs text-warm-400 mb-4">Estos datos aparecen en tickets y cotizaciones impresas</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Direccion"
-              value={form.direccion || ''}
-              onChange={(e) => handleChange('direccion', e.target.value || null)}
-              placeholder="Av. Juarez 123, Centro"
-            />
-            <Input
-              label="Telefono"
-              value={form.telefono || ''}
-              onChange={(e) => handleChange('telefono', e.target.value || null)}
-              placeholder="(555) 123-4567"
-            />
-            <Input
-              label="Email de contacto"
-              value={form.email_contacto || ''}
-              onChange={(e) => handleChange('email_contacto', e.target.value || null)}
-              placeholder="contacto@joyeria.com"
-            />
-            <Input
-              label="Horario"
-              value={form.horario || ''}
-              onChange={(e) => handleChange('horario', e.target.value || null)}
-              placeholder="Lun-Sab 10:00-20:00"
-            />
-          </div>
-        </section>
-      </div>
+      {/* Section 4: Respaldos */}
+      <section className="card rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Database size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Respaldos</h2>
+        </div>
+
+        <p className="text-sm text-warm-600">
+          Los respaldos son copias de tu base de datos local. Puedes guardar un respaldo en
+          cualquier carpeta y restaurarlo más adelante en caso de pérdida de datos.
+        </p>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+          <Button
+            onClick={handleBackup}
+            disabled={backingUp}
+            className="flex items-center gap-2"
+          >
+            <Download size={16} />
+            {backingUp ? 'Creando respaldo...' : 'Respaldar datos'}
+          </Button>
+
+          <button
+            type="button"
+            onClick={handleRestore}
+            disabled={restoring}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-red-700 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <UploadCloud size={16} />
+            {restoring ? 'Restaurando...' : 'Restaurar respaldo'}
+          </button>
+        </div>
+
+        <p className="text-xs text-warm-400">
+          Al restaurar un respaldo se reemplazarán todos los datos actuales. Esta acción no se
+          puede deshacer.
+        </p>
+      </section>
     </div>
   )
 }
