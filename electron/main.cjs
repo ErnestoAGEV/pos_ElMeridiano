@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow } = require('electron')
+const path = require('path')
+const { getDb, seedDefaultUser, closeDb } = require('./database.cjs')
 
-let mainWindow;
+let mainWindow
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -17,30 +18,42 @@ function createWindow() {
     },
     autoHideMenuBar: true,
     title: 'Joyeria POS',
-  });
+  })
 
-  // En desarrollo, conectar al servidor de Vite
   if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+    mainWindow.webContents.openDevTools()
   } else {
-    // En produccion, cargar el build
-    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
   }
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.on('closed', () => { mainWindow = null })
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Init database and seed default user
+  getDb()
+  seedDefaultUser()
+
+  // Register all IPC handlers
+  require('./ipc/auth.cjs')
+  require('./ipc/categorias.cjs')
+  require('./ipc/productos.cjs')
+  require('./ipc/precios.cjs')
+  require('./ipc/ventas.cjs')
+  require('./ipc/cortes.cjs')
+  require('./ipc/config.cjs')
+  require('./ipc/backup.cjs')
+  require('./ipc/reportes.cjs')
+
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
-  app.quit();
-});
+  closeDb()
+  app.quit()
+})
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+  if (BrowserWindow.getAllWindows().length === 0) createWindow()
+})
