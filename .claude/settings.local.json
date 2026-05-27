@@ -31,7 +31,9 @@
       "Bash(powershell -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\vevle\\\\AppData\\\\Local\\\\electron\\\\Cache\\\\electron-v35.7.5-win32-x64.zip\"\\); $zip.Entries.Count; $zip.Entries | Select-Object -First 5 FullName; $zip.Dispose\\(\\)')",
       "Bash(rm -rf /c/Users/vevle/AppData/Local/electron/Cache/electron-v35.7.5-win32-x64.zip && rm -rf /c/pos-meridiano-build)",
       "Bash(rm -rf /c/pos-meridiano-build && cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npx electron-builder --win 2>&1)",
-      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -3)"
+      "Bash(cd \"C:\\\\Users\\\\vevle\\\\OneDrive\\\\Documentos\\\\POS_MERIDIANO\" && npm run build 2>&1 | tail -3)",
+      "Bash(cd \"C:/Users/vevle/OneDrive/Documentos/POS_MERIDIANO\" && rm -rf node_modules package-lock.json)",
+      "Bash(cd \"C:/Users/vevle/OneDrive/Documentos/POS_MERIDIANO\" && npm install 2>&1)"
     ]
   }
 }
