@@ -17,7 +17,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
   const [loading, setLoading] = useState(false)
   const [fetchingApi, setFetchingApi] = useState(false)
 
-  // Reset state when modal opens
+  // Reset state and auto-fetch from API when modal opens
   useEffect(() => {
     if (isOpen) {
       setOro24k('')
@@ -25,8 +25,10 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setOro10k('')
       setPlata('')
       setFuente('manual')
+      // Auto-fetch prices from API
+      handleConsultarAPI()
     }
-  }, [isOpen])
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleConsultarAPI() {
     setFetchingApi(true)

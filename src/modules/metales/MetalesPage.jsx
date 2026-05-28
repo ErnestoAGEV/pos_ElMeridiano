@@ -17,6 +17,13 @@ export function MetalesPage() {
   const [loadingHist, setLoadingHist] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  // Auto-open modal when no price confirmed for today
+  useEffect(() => {
+    if (!loadingHoy && faltaConfirmacion) {
+      setModalOpen(true)
+    }
+  }, [loadingHoy, faltaConfirmacion])
+
   async function cargarHistorial() {
     setLoadingHist(true)
     try {

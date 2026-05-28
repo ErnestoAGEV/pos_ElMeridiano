@@ -158,10 +158,10 @@ export function VentasPage() {
 
     const preciosUsados = precioHoy
       ? {
-          oro_24k: precioHoy.oro_24k_por_gramo,
-          oro_14k: precioHoy.oro_14k_por_gramo,
-          oro_10k: precioHoy.oro_10k_por_gramo,
-          plata:   precioHoy.plata_por_gramo,
+          oro_24k: precioHoy.oro_24k,
+          oro_14k: precioHoy.oro_14k,
+          oro_10k: precioHoy.oro_10k,
+          plata:   precioHoy.plata,
         }
       : null
 
@@ -223,10 +223,10 @@ export function VentasPage() {
               <Spinner size="sm" />
             ) : precioHoy ? (
               <>
-                <PrecioBadge label="Oro 24k" valor={precioHoy.oro_24k_por_gramo} />
-                <PrecioBadge label="Oro 14k" valor={precioHoy.oro_14k_por_gramo} />
-                <PrecioBadge label="Oro 10k" valor={precioHoy.oro_10k_por_gramo} />
-                <PrecioBadge label="Plata"   valor={precioHoy.plata_por_gramo} />
+                <PrecioBadge label="Oro 24k" valor={precioHoy.oro_24k} />
+                <PrecioBadge label="Oro 14k" valor={precioHoy.oro_14k} />
+                <PrecioBadge label="Oro 10k" valor={precioHoy.oro_10k} />
+                <PrecioBadge label="Plata"   valor={precioHoy.plata} />
                 {faltaConfirmacion && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold uppercase tracking-wider">
                     <AlertTriangle size={10} />

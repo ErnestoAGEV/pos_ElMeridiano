@@ -52,10 +52,10 @@ export function DashboardPage() {
       {/* Metal prices */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Oro 24k', value: precioHoy?.oro_24k_por_gramo, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Oro 14k', value: precioHoy?.oro_14k_por_gramo, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Oro 10k', value: precioHoy?.oro_10k_por_gramo, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Plata', value: precioHoy?.plata_por_gramo, icon: Gem, gradient: 'from-gray-300 to-gray-400' },
+          { label: 'Oro 24k', value: precioHoy?.oro_24k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
+          { label: 'Oro 14k', value: precioHoy?.oro_14k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
+          { label: 'Oro 10k', value: precioHoy?.oro_10k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
+          { label: 'Plata', value: precioHoy?.plata, icon: Gem, gradient: 'from-gray-300 to-gray-400' },
         ].map(({ label, value, icon: Icon, gradient }) => (
           <div key={label} className="card-primary">
             <div className="p-5">

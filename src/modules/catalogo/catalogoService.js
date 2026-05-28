@@ -49,10 +49,10 @@ export function calcularPrecioProducto(producto, precioHoy) {
   if (!precioHoy || !producto.peso_gramos) return null
 
   let precioMetal = 0
-  if (producto.metal === 'oro_24k') precioMetal = precioHoy.oro_24k_por_gramo
-  else if (producto.metal === 'oro_14k') precioMetal = precioHoy.oro_14k_por_gramo
-  else if (producto.metal === 'oro_10k') precioMetal = precioHoy.oro_10k_por_gramo
-  else if (producto.metal === 'plata') precioMetal = precioHoy.plata_por_gramo
+  if (producto.metal === 'oro_24k') precioMetal = precioHoy.oro_24k
+  else if (producto.metal === 'oro_14k') precioMetal = precioHoy.oro_14k
+  else if (producto.metal === 'oro_10k') precioMetal = precioHoy.oro_10k
+  else if (producto.metal === 'plata') precioMetal = precioHoy.plata
 
   const base = (parseFloat(producto.peso_gramos) * precioMetal) + (parseFloat(producto.costo_mano_obra) || 0)
   return Math.ceil(base / 5) * 5
