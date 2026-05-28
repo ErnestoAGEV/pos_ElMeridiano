@@ -3,12 +3,10 @@ const { getDb } = require('../database.cjs')
 
 ipcMain.handle('reportes:ventas', (_event, { desde, hasta }) => {
   const db = getDb()
-  const desdeTs = `${desde}T00:00:00`
-  const hastaTs = `${hasta}T23:59:59.999`
 
   const ventas = db.prepare(
-    "SELECT id, total, metodo_pago, descuento, created_at FROM ventas WHERE created_at >= ? AND created_at <= ?"
-  ).all(desdeTs, hastaTs)
+    "SELECT id, total, metodo_pago, descuento, created_at FROM ventas WHERE date(created_at, 'localtime') >= ? AND date(created_at, 'localtime') <= ?"
+  ).all(desde, hasta)
 
   const totalVentas = ventas.reduce((s, v) => s + v.total, 0)
   const totalDescuentos = ventas.reduce((s, v) => s + (v.descuento || 0), 0)
@@ -21,7 +19,9 @@ ipcMain.handle('reportes:ventas', (_event, { desde, hasta }) => {
 
   const porDia = {}
   for (const v of ventas) {
-    const dia = v.created_at.slice(0, 10)
+    const ts = v.created_at || ''
+    const d = new Date(ts.replace(' ', 'T') + 'Z')
+    const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     porDia[dia] = (porDia[dia] || 0) + v.total
   }
 
@@ -44,10 +44,10 @@ ipcMain.handle('reportes:piezas-por-categoria', (_event, { desde, hasta }) => {
     JOIN ventas v ON dv.venta_id = v.id
     LEFT JOIN productos p ON dv.producto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE v.created_at >= ? AND v.created_at <= ?
+    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
     GROUP BY c.id, c.nombre
     ORDER BY piezas DESC
-  `).all(`${desde}T00:00:00`, `${hasta}T23:59:59.999`)
+  `).all(desde, hasta)
   return rows.map(r => ({ ...r, categoria: r.categoria || 'Sin categoria' }))
 })
 
@@ -62,8 +62,8 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
     JOIN ventas v ON dv.venta_id = v.id
     LEFT JOIN productos p ON dv.producto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE v.created_at >= ? AND v.created_at <= ?
-  `).all(`${desde}T00:00:00`, `${hasta}T23:59:59.999`)
+    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+  `).all(desde, hasta)
 
   let gananciaTotal = 0
   const porCategoria = {}
@@ -109,25 +109,22 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
 
 ipcMain.handle('reportes:dashboard', (_event) => {
   const db = getDb()
-  const hoy = new Date().toISOString().slice(0, 10)
-  const desde = `${hoy}T00:00:00`
-  const hasta = `${hoy}T23:59:59.999`
+  const now = new Date()
+  const hoy = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const ventas = db.prepare(
-    "SELECT total FROM ventas WHERE created_at >= ? AND created_at <= ?"
-  ).all(desde, hasta)
+    "SELECT total FROM ventas WHERE date(created_at, 'localtime') = ?"
+  ).all(hoy)
   const totalHoy = ventas.reduce((s, v) => s + v.total, 0)
 
   const piezas = db.prepare(`
     SELECT COALESCE(SUM(dv.cantidad), 0) as total
     FROM detalle_ventas dv
     JOIN ventas v ON dv.venta_id = v.id
-    WHERE v.created_at >= ? AND v.created_at <= ?
-  `).get(desde, hasta)
+    WHERE date(v.created_at, 'localtime') = ?
+  `).get(hoy)
 
   const productosCount = db.prepare('SELECT COUNT(*) as total FROM productos WHERE activo = 1').get()
-
-  const stockBajo = db.prepare('SELECT COUNT(*) as total FROM productos WHERE activo = 1 AND stock <= 3 AND stock > 0').get()
 
   return {
     ventasHoy: ventas.length,
@@ -135,6 +132,5 @@ ipcMain.handle('reportes:dashboard', (_event) => {
     piezasHoy: piezas.total,
     ticketPromedio: ventas.length > 0 ? totalHoy / ventas.length : 0,
     productosActivos: productosCount.total,
-    stockBajo: stockBajo.total,
   }
 })

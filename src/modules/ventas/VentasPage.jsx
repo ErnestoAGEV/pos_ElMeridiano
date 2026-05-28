@@ -1,17 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
-  Search, Plus, Minus, Trash2, ShoppingCart,
+  Search, Trash2, ShoppingCart,
   CreditCard, Banknote, ArrowRightLeft, Receipt,
-  Check, AlertTriangle, MoreHorizontal,
+  Check, AlertTriangle, MoreHorizontal, Plus, Weight, TrendingUp,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import { obtenerProductos, calcularPrecioProducto } from '../catalogo/catalogoService'
+import { obtenerProductos, esDinamico, getPrecioMetal, calcularCostoBase } from '../catalogo/catalogoService'
 import { completarVenta } from './ventasService'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { useTienda } from '../../context/TiendaContext'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
+import { Modal } from '../../components/ui/Modal'
 import { TicketModal } from './TicketModal'
 
 const METODOS_PAGO = [
@@ -21,11 +22,18 @@ const METODOS_PAGO = [
   { id: 'otro',          label: 'Otro',           Icon: MoreHorizontal },
 ]
 
+const METAL_LABELS = {
+  oro_24k: 'Oro 24k', oro_14k: 'Oro 14k', oro_10k: 'Oro 10k',
+  plata: 'Plata', chapa: 'Chapa', acero: 'Acero',
+}
+
 const fmt = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n ?? 0)
 
 const fmtG = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n ?? 0)
+
+let cartIdCounter = 0
 
 export function VentasPage() {
   const { config } = useTienda()
@@ -36,8 +44,8 @@ export function VentasPage() {
   const [loadingProductos, setLoadingProductos] = useState(true)
   const [busqueda, setBusqueda] = useState('')
 
-  // Cart
-  const [carrito, setCarrito] = useState([]) // [{ producto, cantidad, precioUnitario }]
+  // Cart: [{ cartId, producto, cantidad, precioUnitario, peso_gramos?, costoManoObra?, costoBase? }]
+  const [carrito, setCarrito] = useState([])
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [descuento, setDescuento] = useState('')
   const [notas, setNotas] = useState('')
@@ -46,7 +54,10 @@ export function VentasPage() {
   const [procesando, setProcesando] = useState(false)
   const [ventaCompletada, setVentaCompletada] = useState(null)
 
-  // ── Load products ──────────────────────────────────────────────
+  // Modal for adding dynamic metal pieces
+  const [piezaModal, setPiezaModal] = useState({ open: false, producto: null })
+
+  // -- Load products --
   const cargarProductos = useCallback(async () => {
     try {
       setLoadingProductos(true)
@@ -62,74 +73,72 @@ export function VentasPage() {
 
   useEffect(() => { cargarProductos() }, [cargarProductos])
 
-  // ── Filtered products ──────────────────────────────────────────
+  // -- Filtered products --
   const productosFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase()
     if (!q) return productos
     return productos.filter(
       (p) =>
-        p.nombre.toLowerCase().includes(q) ||
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
         (p.codigo && p.codigo.toLowerCase().includes(q)),
     )
   }, [productos, busqueda])
 
-  // ── Price helper ───────────────────────────────────────────────
-  const getPrecio = useCallback(
-    (producto) => calcularPrecioProducto(producto, precioHoy),
-    [precioHoy],
-  )
-
-  // ── Cart helpers ───────────────────────────────────────────────
-  const getItemEnCarrito = (productoId) =>
-    carrito.find((i) => i.producto.id === productoId)
-
-  function agregarAlCarrito(producto) {
-    const precio = getPrecio(producto)
-    if (precio === null || precio === undefined) {
-      toast.error('No se puede calcular el precio sin precios del día')
-      return
-    }
-    if (producto.stock <= 0) {
-      toast.error('Sin stock disponible')
-      return
-    }
-    setCarrito((prev) => {
-      const existing = prev.find((i) => i.producto.id === producto.id)
-      if (existing) {
-        if (existing.cantidad >= producto.stock) {
-          toast.error('No hay más stock disponible')
-          return prev
-        }
-        return prev.map((i) =>
-          i.producto.id === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i,
-        )
+  // -- Handle product click --
+  function handleProductoClick(producto) {
+    if (esDinamico(producto.metal)) {
+      if (!precioHoy) {
+        toast.error('Confirma los precios del dia antes de vender metales')
+        return
       }
-      return [...prev, { producto, cantidad: 1, precioUnitario: precio }]
-    })
+      setPiezaModal({ open: true, producto })
+    } else {
+      // Fixed price - add directly to cart
+      const precio = parseFloat(producto.precio_fijo)
+      if (!precio) {
+        toast.error('Este producto no tiene precio fijo configurado')
+        return
+      }
+      setCarrito((prev) => {
+        const existing = prev.find((i) => i.producto.id === producto.id && !i.peso_gramos)
+        if (existing) {
+          return prev.map((i) =>
+            i.cartId === existing.cartId ? { ...i, cantidad: i.cantidad + 1 } : i,
+          )
+        }
+        return [...prev, {
+          cartId: ++cartIdCounter,
+          producto,
+          cantidad: 1,
+          precioUnitario: precio,
+          peso_gramos: null,
+          costoManoObra: null,
+          costoBase: null,
+        }]
+      })
+    }
   }
 
-  function cambiarCantidad(productoId, delta) {
-    setCarrito((prev) =>
-      prev
-        .map((i) => {
-          if (i.producto.id !== productoId) return i
-          const nueva = i.cantidad + delta
-          if (nueva <= 0) return null
-          if (nueva > i.producto.stock) {
-            toast.error('No hay más stock disponible')
-            return i
-          }
-          return { ...i, cantidad: nueva }
-        })
-        .filter(Boolean),
-    )
+  // -- Add dynamic piece from modal --
+  function handleAgregarPieza({ producto, peso_gramos, costoManoObra, costoBase, precioVenta }) {
+    setCarrito((prev) => [...prev, {
+      cartId: ++cartIdCounter,
+      producto,
+      cantidad: 1,
+      precioUnitario: precioVenta,
+      peso_gramos,
+      costoManoObra,
+      costoBase,
+    }])
+    setPiezaModal({ open: false, producto: null })
   }
 
-  function eliminarDelCarrito(productoId) {
-    setCarrito((prev) => prev.filter((i) => i.producto.id !== productoId))
+  // -- Remove from cart --
+  function eliminarDelCarrito(cartId) {
+    setCarrito((prev) => prev.filter((i) => i.cartId !== cartId))
   }
 
-  // ── Totals ─────────────────────────────────────────────────────
+  // -- Totals --
   const subtotal = useMemo(
     () => carrito.reduce((acc, i) => acc + i.precioUnitario * i.cantidad, 0),
     [carrito],
@@ -137,10 +146,10 @@ export function VentasPage() {
   const descuentoNum = parseFloat(descuento) || 0
   const total = Math.max(0, subtotal - descuentoNum)
 
-  // ── Complete sale ──────────────────────────────────────────────
+  // -- Complete sale --
   async function handleCompletarVenta() {
     if (carrito.length === 0) {
-      toast.error('El carrito está vacío')
+      toast.error('El carrito esta vacio')
       return
     }
 
@@ -149,10 +158,9 @@ export function VentasPage() {
       cantidad:        i.cantidad,
       precio_unitario: i.precioUnitario,
       subtotal:        i.precioUnitario * i.cantidad,
-      // snapshot data for historical profit calculation
       metal:           i.producto.metal,
-      peso_gramos:     i.producto.peso_gramos,
-      costo_mano_obra: i.producto.costo_mano_obra,
+      peso_gramos:     i.peso_gramos,
+      costo_mano_obra: i.costoManoObra,
       costo_compra:    i.producto.costo_compra,
     }))
 
@@ -177,16 +185,12 @@ export function VentasPage() {
         preciosUsados,
       })
 
-      // Store venta + cart snapshot for the ticket
       setVentaCompletada({ ...venta, carritoSnapshot: carrito })
-
-      // Reset cart
       setCarrito([])
       setDescuento('')
       setNotas('')
       setMetodoPago('efectivo')
 
-      await cargarProductos()
       toast.success(`Venta ${venta.folio} completada`)
     } catch (err) {
       console.error(err)
@@ -196,11 +200,11 @@ export function VentasPage() {
     }
   }
 
-  // ── Render ─────────────────────────────────────────────────────
+  // -- Render --
   return (
     <div className="flex h-full gap-0 overflow-hidden">
 
-      {/* ═══ LEFT: product search + grid ═══ */}
+      {/* LEFT: product search + grid */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden border-r border-ivory-300">
 
         {/* Search bar + metal prices */}
@@ -209,7 +213,7 @@ export function VentasPage() {
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-300" />
             <input
               type="text"
-              placeholder="Buscar producto por nombre o código..."
+              placeholder="Buscar producto por codigo o nombre..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               autoFocus
@@ -237,7 +241,7 @@ export function VentasPage() {
             ) : (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold uppercase tracking-wider">
                 <AlertTriangle size={10} />
-                Sin precios del día
+                Sin precios del dia
               </span>
             )}
           </div>
@@ -257,25 +261,20 @@ export function VentasPage() {
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
               {productosFiltrados.map((producto) => {
-                const precio = getPrecio(producto)
-                const sinStock = producto.stock <= 0
-                const enCarrito = getItemEnCarrito(producto.id)
+                const dinamico = esDinamico(producto.metal)
+                const enCarrito = carrito.some((i) => i.producto.id === producto.id)
 
                 return (
                   <button
                     key={producto.id}
-                    onClick={() => !sinStock && agregarAlCarrito(producto)}
-                    disabled={sinStock}
+                    onClick={() => handleProductoClick(producto)}
                     className={[
                       'relative text-left p-3 rounded-xl border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-400/40',
-                      sinStock
-                        ? 'border-ivory-300 bg-ivory-50 opacity-50 cursor-not-allowed'
-                        : enCarrito
-                          ? 'border-primary-300 bg-primary-50 shadow-sm'
-                          : 'border-ivory-300 bg-white hover:border-primary-200 hover:shadow-sm active:scale-[0.98]',
+                      enCarrito
+                        ? 'border-primary-300 bg-primary-50 shadow-sm'
+                        : 'border-ivory-300 bg-white hover:border-primary-200 hover:shadow-sm active:scale-[0.98]',
                     ].join(' ')}
                   >
-                    {/* In-cart indicator */}
                     {enCarrito && (
                       <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
                         <Check size={11} className="text-white" />
@@ -284,33 +283,29 @@ export function VentasPage() {
 
                     {/* Codigo */}
                     <span className="text-[9px] font-mono uppercase text-warm-400 bg-ivory-100 px-1.5 py-0.5 rounded">
-                      {producto.codigo || '—'}
+                      {producto.codigo}
                     </span>
 
                     {/* Name */}
-                    <p className="text-sm font-semibold text-warm-800 truncate mt-1">
-                      {producto.nombre}
-                    </p>
+                    {producto.nombre && (
+                      <p className="text-sm font-semibold text-warm-800 truncate mt-1">
+                        {producto.nombre}
+                      </p>
+                    )}
 
-                    {/* Stock + metal */}
+                    {/* Metal */}
                     <p className="text-[10px] text-warm-400 mt-0.5">
-                      {producto.stock} disp.
-                      {producto.metal ? ` · ${producto.metal.replace(/_/g, ' ')}` : ''}
+                      {METAL_LABELS[producto.metal] || producto.metal}
                     </p>
 
-                    {/* Price */}
+                    {/* Price (only for fixed) */}
                     <div className="flex items-end justify-between mt-2">
                       <span className="font-display text-base font-bold text-warm-900">
-                        {precio !== null && precio !== undefined
-                          ? fmt(precio)
-                          : <span className="text-amber-500 text-xs font-sans font-normal">Sin precio</span>
+                        {dinamico
+                          ? <span className="text-[10px] font-sans font-normal text-warm-400">Precio al vender</span>
+                          : fmt(producto.precio_fijo)
                         }
                       </span>
-                      {enCarrito && (
-                        <span className="text-[10px] font-bold text-primary-600 bg-primary-100 px-1.5 py-0.5 rounded-full">
-                          ×{enCarrito.cantidad}
-                        </span>
-                      )}
                     </div>
                   </button>
                 )
@@ -320,7 +315,7 @@ export function VentasPage() {
         </div>
       </div>
 
-      {/* ═══ RIGHT: cart + checkout ═══ */}
+      {/* RIGHT: cart + checkout */}
       <div className="w-[380px] flex flex-col bg-white shrink-0 overflow-hidden">
 
         {/* Cart header */}
@@ -331,7 +326,7 @@ export function VentasPage() {
               Carrito
               {carrito.length > 0 && (
                 <span className="text-xs font-sans bg-primary-100 text-primary-600 px-2 py-0.5 rounded-full">
-                  {carrito.reduce((s, i) => s + i.cantidad, 0)}
+                  {carrito.length}
                 </span>
               )}
             </h2>
@@ -357,47 +352,42 @@ export function VentasPage() {
             <div className="space-y-2">
               {carrito.map((item) => (
                 <div
-                  key={item.producto.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-ivory-50"
+                  key={item.cartId}
+                  className="p-3 rounded-xl bg-ivory-50"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-warm-800 truncate">
-                      {item.producto.nombre}
-                    </p>
-                    <p className="text-[10px] text-warm-400">{fmt(item.precioUnitario)} c/u</p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-warm-800 truncate">
+                        {item.producto.codigo}
+                        {item.producto.nombre ? ` - ${item.producto.nombre}` : ''}
+                      </p>
+                      <p className="text-[10px] text-warm-400">
+                        {METAL_LABELS[item.producto.metal]}
+                        {item.peso_gramos ? ` · ${item.peso_gramos}g` : ''}
+                        {item.cantidad > 1 ? ` · x${item.cantidad}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <p className="text-sm font-bold text-warm-900">
+                        {fmt(item.precioUnitario * item.cantidad)}
+                      </p>
+                      <button
+                        onClick={() => eliminarDelCarrito(item.cartId)}
+                        className="p-1 rounded hover:bg-red-50 text-warm-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Qty controls */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => cambiarCantidad(item.producto.id, -1)}
-                      className="w-6 h-6 rounded-md bg-ivory-200 hover:bg-ivory-300 flex items-center justify-center text-warm-500 transition-colors"
-                    >
-                      <Minus size={11} />
-                    </button>
-                    <span className="w-7 text-center text-sm font-semibold text-warm-800">
-                      {item.cantidad}
-                    </span>
-                    <button
-                      onClick={() => cambiarCantidad(item.producto.id, +1)}
-                      className="w-6 h-6 rounded-md bg-ivory-200 hover:bg-ivory-300 flex items-center justify-center text-warm-500 transition-colors"
-                    >
-                      <Plus size={11} />
-                    </button>
-                  </div>
-
-                  {/* Item subtotal */}
-                  <p className="text-sm font-bold text-warm-900 w-20 text-right shrink-0">
-                    {fmt(item.precioUnitario * item.cantidad)}
-                  </p>
-
-                  {/* Remove */}
-                  <button
-                    onClick={() => eliminarDelCarrito(item.producto.id)}
-                    className="p-1 rounded hover:bg-red-50 text-warm-300 hover:text-red-500 transition-colors shrink-0"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                  {/* Show ganancia for dynamic metals */}
+                  {item.costoBase != null && (
+                    <div className="flex items-center gap-2 mt-1.5 text-[10px]">
+                      <span className="text-warm-400">Costo: {fmt(item.costoBase)}</span>
+                      <span className="text-emerald-600 font-semibold">
+                        Ganancia: {fmt(item.precioUnitario - item.costoBase)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -410,7 +400,7 @@ export function VentasPage() {
           {/* Payment methods */}
           <div>
             <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1.5 block">
-              Método de pago
+              Metodo de pago
             </label>
             <div className="grid grid-cols-2 gap-2">
               {METODOS_PAGO.map(({ id, label, Icon }) => (
@@ -471,7 +461,7 @@ export function VentasPage() {
             {descuentoNum > 0 && (
               <div className="flex justify-between text-sm text-green-600">
                 <span>Descuento</span>
-                <span>−{fmt(descuentoNum)}</span>
+                <span>-{fmt(descuentoNum)}</span>
               </div>
             )}
             <div className="flex justify-between items-end pt-1">
@@ -494,6 +484,15 @@ export function VentasPage() {
         </div>
       </div>
 
+      {/* Modal: add dynamic metal piece */}
+      <AgregarPiezaModal
+        isOpen={piezaModal.open}
+        producto={piezaModal.producto}
+        precioHoy={precioHoy}
+        onClose={() => setPiezaModal({ open: false, producto: null })}
+        onAgregar={handleAgregarPieza}
+      />
+
       {/* Ticket modal */}
       {ventaCompletada && (
         <TicketModal
@@ -506,12 +505,189 @@ export function VentasPage() {
   )
 }
 
-// ── Sub-component: metal price badge ─────────────────────────────
+// -- Sub-component: metal price badge --
 function PrecioBadge({ label, valor }) {
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-ivory-100 text-warm-600 text-[10px] font-semibold uppercase tracking-wider">
       <span className="text-warm-400">{label}</span>
       <span>{fmtG(valor)}/g</span>
     </span>
+  )
+}
+
+// -- Sub-component: Modal to add dynamic metal piece --
+function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) {
+  const [peso, setPeso] = useState('')
+  const [manoObra, setManoObra] = useState('')
+  const [precioVenta, setPrecioVenta] = useState('')
+
+  useEffect(() => {
+    if (isOpen) {
+      setPeso('')
+      setManoObra('')
+      setPrecioVenta('')
+    }
+  }, [isOpen])
+
+  if (!producto) return null
+
+  const precioMetalGramo = getPrecioMetal(producto.metal, precioHoy)
+  const pesoNum = parseFloat(peso) || 0
+  const manoObraNum = parseFloat(manoObra) || 0
+  const costoBase = calcularCostoBase(pesoNum, manoObraNum, precioMetalGramo)
+  const precioVentaNum = parseFloat(precioVenta) || 0
+  const ganancia = precioVentaNum - costoBase
+
+  const canAdd = pesoNum > 0 && precioVentaNum > 0
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (!canAdd) {
+      toast.error('Ingresa peso y precio de venta')
+      return
+    }
+    onAgregar({
+      producto,
+      peso_gramos: pesoNum,
+      costoManoObra: manoObraNum,
+      costoBase,
+      precioVenta: precioVentaNum,
+    })
+  }
+
+  const inputClass =
+    'w-full bg-ivory-50 border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all'
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Agregar pieza" size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Product info */}
+        <div className="flex items-center gap-3 p-3 bg-ivory-50 rounded-xl">
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] font-mono uppercase text-warm-400 bg-ivory-200 px-1.5 py-0.5 rounded">
+              {producto.codigo}
+            </span>
+            {producto.nombre && (
+              <p className="text-sm font-semibold text-warm-800 mt-0.5 truncate">{producto.nombre}</p>
+            )}
+          </div>
+          <span className="text-xs font-medium text-warm-500 bg-ivory-200 px-2 py-0.5 rounded-full">
+            {METAL_LABELS[producto.metal]}
+          </span>
+        </div>
+
+        {/* Metal price info */}
+        <div className="text-xs text-warm-400 bg-primary-50 rounded-xl p-3">
+          Precio {METAL_LABELS[producto.metal]} hoy:{' '}
+          <strong className="text-warm-700">{fmt(precioMetalGramo)}/g</strong>
+        </div>
+
+        {/* Inputs: peso + mano de obra */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-warm-600 mb-1.5">
+              Peso (gramos) *
+            </label>
+            <div className="relative">
+              <Weight size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400" />
+              <input
+                type="number"
+                step="0.001"
+                min="0"
+                value={peso}
+                onChange={(e) => setPeso(e.target.value)}
+                placeholder="0.000"
+                className={inputClass}
+                autoFocus
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-warm-600 mb-1.5">
+              Mano de obra
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={manoObra}
+                onChange={(e) => setManoObra(e.target.value)}
+                placeholder="0.00"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Costo base (calculated) */}
+        {pesoNum > 0 && (
+          <div className="p-3 bg-ivory-100 rounded-xl space-y-1">
+            <div className="flex justify-between text-xs text-warm-500">
+              <span>Metal: {pesoNum}g x {fmt(precioMetalGramo)}</span>
+              <span>{fmt(pesoNum * precioMetalGramo)}</span>
+            </div>
+            {manoObraNum > 0 && (
+              <div className="flex justify-between text-xs text-warm-500">
+                <span>Mano de obra</span>
+                <span>{fmt(manoObraNum)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-semibold text-warm-800 pt-1 border-t border-ivory-300">
+              <span>Costo base</span>
+              <span>{fmt(costoBase)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Precio de venta */}
+        <div>
+          <label className="block text-sm font-medium text-warm-600 mb-1.5">
+            Precio de venta *
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={precioVenta}
+              onChange={(e) => setPrecioVenta(e.target.value)}
+              placeholder="0.00"
+              className={`${inputClass} text-lg`}
+            />
+          </div>
+        </div>
+
+        {/* Ganancia preview */}
+        {canAdd && (
+          <div className={`flex items-center justify-between p-3 rounded-xl ${
+            ganancia >= 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              <TrendingUp size={16} className={ganancia >= 0 ? 'text-emerald-600' : 'text-red-500'} />
+              <span className={`text-sm font-medium ${ganancia >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                Ganancia
+              </span>
+            </div>
+            <span className={`font-display text-xl font-bold ${ganancia >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+              {fmt(ganancia)}
+            </span>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" size="md" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button size="md" type="submit" disabled={!canAdd}>
+            <Plus size={15} />
+            Agregar al carrito
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

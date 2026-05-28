@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { DollarSign, Gem, RefreshCw, History } from 'lucide-react'
+import { DollarSign, Gem, RefreshCw, History, ArrowRightLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { obtenerHistorialPrecios } from './metalesService'
+import { obtenerHistorialPrecios, fetchTipoCambioUSDMXN } from './metalesService'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { PrecioDelDiaModal } from './PrecioDelDiaModal'
 import { useTienda } from '../../context/TiendaContext'
@@ -16,6 +16,7 @@ export function MetalesPage() {
   const [historial, setHistorial] = useState([])
   const [loadingHist, setLoadingHist] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const [tipoCambio, setTipoCambio] = useState(null)
 
   // Auto-open modal when no price confirmed for today
   useEffect(() => {
@@ -38,6 +39,9 @@ export function MetalesPage() {
 
   useEffect(() => {
     cargarHistorial()
+    fetchTipoCambioUSDMXN()
+      .then(setTipoCambio)
+      .catch(() => {})
   }, [])
 
   function handleConfirmado() {
@@ -103,7 +107,25 @@ export function MetalesPage() {
           <Spinner size="lg" />
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          {/* Exchange rate card */}
+          <div className="card border-blue-200 bg-blue-50">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600" />
+                  <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-blue-500">
+                    USD/MXN
+                  </span>
+                </div>
+                <ArrowRightLeft size={18} className="text-blue-400" />
+              </div>
+              <p className="font-display text-2xl font-bold text-blue-800">
+                {tipoCambio ? `$${tipoCambio.toFixed(2)}` : '—'}
+              </p>
+              <p className="text-xs text-blue-400 mt-1">Tipo de cambio</p>
+            </div>
+          </div>
           {metalCards.map(({ label, value, icon, dot }) => (
             <div key={label} className="card-primary">
               <div className="p-5">

@@ -51,7 +51,7 @@ function MiniBar({ pct }) {
 }
 
 export function ReportesPage() {
-  const { tienda } = useTienda()
+  const { config } = useTienda()
   const [periodo, setPeriodo] = useState('mes')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
@@ -212,17 +212,17 @@ export function ReportesPage() {
       {/* Section 1: Main KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Ventas */}
-        <div className="card-primary rounded-xl p-5">
+        <div className="card rounded-xl p-5 border border-primary-200">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] uppercase tracking-wider text-primary-200 font-semibold">
+            <span className="text-[10px] uppercase tracking-wider text-primary-500 font-semibold">
               Total Ventas
             </span>
-            <DollarSign className="w-4 h-4 text-primary-200" />
+            <DollarSign className="w-4 h-4 text-primary-400" />
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-warm-900">
             {formatMoney(estadisticas?.totalVentas)}
           </p>
-          <p className="text-xs text-primary-200 mt-1">
+          <p className="text-xs text-primary-400 mt-1">
             {estadisticas?.cantidad ?? 0} transacciones
           </p>
         </div>

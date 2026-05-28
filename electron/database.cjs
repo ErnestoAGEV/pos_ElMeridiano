@@ -38,7 +38,7 @@ function initSchema() {
     CREATE TABLE IF NOT EXISTS productos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       codigo TEXT UNIQUE NOT NULL,
-      nombre TEXT NOT NULL,
+      nombre TEXT DEFAULT '',
       descripcion TEXT,
       categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL,
       metal TEXT NOT NULL DEFAULT 'chapa',

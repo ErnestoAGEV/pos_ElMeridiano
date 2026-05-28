@@ -45,15 +45,14 @@ ipcMain.handle('productos:obtener-por-id', (_event, { id }) => {
 ipcMain.handle('productos:crear', (_event, producto) => {
   const db = getDb()
   const result = db.prepare(`
-    INSERT INTO productos (codigo, nombre, descripcion, categoria_id, metal, peso_gramos,
-      costo_mano_obra, costo_compra, precio_fijo, stock, imagen_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO productos (codigo, nombre, categoria_id, metal,
+      costo_compra, precio_fijo, imagen_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(
-    producto.codigo, producto.nombre, producto.descripcion || null,
+    producto.codigo, producto.nombre || '',
     producto.categoria_id || null, producto.metal || 'chapa',
-    producto.peso_gramos || null, producto.costo_mano_obra || 0,
     producto.costo_compra || 0, producto.precio_fijo || null,
-    producto.stock || 0, producto.imagen_url || null
+    producto.imagen_url || null
   )
   return db.prepare('SELECT * FROM productos WHERE id = ?').get(result.lastInsertRowid)
 })
@@ -61,16 +60,15 @@ ipcMain.handle('productos:crear', (_event, producto) => {
 ipcMain.handle('productos:actualizar', (_event, { id, ...producto }) => {
   const db = getDb()
   db.prepare(`
-    UPDATE productos SET codigo = ?, nombre = ?, descripcion = ?, categoria_id = ?,
-      metal = ?, peso_gramos = ?, costo_mano_obra = ?, costo_compra = ?,
-      precio_fijo = ?, stock = ?, activo = ?, imagen_url = ?
+    UPDATE productos SET codigo = ?, nombre = ?, categoria_id = ?,
+      metal = ?, costo_compra = ?, precio_fijo = ?,
+      activo = ?, imagen_url = ?
     WHERE id = ?
   `).run(
-    producto.codigo, producto.nombre, producto.descripcion || null,
+    producto.codigo, producto.nombre || '',
     producto.categoria_id || null, producto.metal || 'chapa',
-    producto.peso_gramos || null, producto.costo_mano_obra || 0,
     producto.costo_compra || 0, producto.precio_fijo || null,
-    producto.stock ?? 0, producto.activo ?? 1, producto.imagen_url || null, id
+    producto.activo ?? 1, producto.imagen_url || null, id
   )
   return db.prepare('SELECT * FROM productos WHERE id = ?').get(id)
 })

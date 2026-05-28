@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, TrendingUp, DollarSign, Gem, Package, AlertTriangle } from 'lucide-react'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { useTienda } from '../../context/TiendaContext'
@@ -6,7 +7,8 @@ import { obtenerDashboard } from './dashboardService'
 import { Spinner } from '../../components/ui/Spinner'
 
 export function DashboardPage() {
-  const { precioHoy } = usePrecioDelDia()
+  const navigate = useNavigate()
+  const { precioHoy, faltaConfirmacion } = usePrecioDelDia()
   const { config } = useTienda()
   const fmt = (n) => n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '--'
 
@@ -23,6 +25,20 @@ export function DashboardPage() {
     <div className="p-8">
       <h1 className="font-display text-3xl font-bold text-warm-900 mb-2">Dashboard</h1>
       <p className="text-warm-400 text-sm mb-8">Resumen del dia - {config.nombre}</p>
+
+      {/* Alert: prices not confirmed */}
+      {faltaConfirmacion && (
+        <button
+          onClick={() => navigate('/metales')}
+          className="flex items-center gap-3 w-full p-4 mb-6 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors text-left"
+        >
+          <AlertTriangle size={20} className="text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-800">No has confirmado los precios del dia</p>
+            <p className="text-xs text-amber-600 mt-0.5">Haz clic aqui para confirmar los precios de metales de hoy.</p>
+          </div>
+        </button>
+      )}
 
       {/* Sales today */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -72,27 +88,12 @@ export function DashboardPage() {
         ))}
       </div>
 
-      {/* Alerts */}
-      <div className="flex flex-wrap gap-4">
-        {(stats?.stockBajo || 0) > 0 && (
-          <div className="card p-5 border-amber-200 bg-amber-50 flex-1 min-w-[280px]">
-            <div className="flex items-center gap-3">
-              <AlertTriangle size={20} className="text-amber-500 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-amber-800">{stats.stockBajo} productos con stock bajo</p>
-                <p className="text-xs text-amber-600 mt-0.5">Revisa el catalogo para reponer.</p>
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="card p-5 flex-1 min-w-[280px]">
-          <div className="flex items-center gap-3">
-            <Package size={20} className="text-primary-500 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-warm-800">{stats?.productosActivos || 0} productos activos</p>
-              <p className="text-xs text-warm-400 mt-0.5">en el catalogo</p>
-            </div>
-          </div>
+      {/* Info */}
+      <div className="card p-5 inline-flex items-center gap-3">
+        <Package size={20} className="text-primary-500 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-warm-800">{stats?.productosActivos || 0} productos activos</p>
+          <p className="text-xs text-warm-400 mt-0.5">en el catalogo</p>
         </div>
       </div>
     </div>

@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Search, PenLine, FolderOpen, Filter,
-  Package, Weight, Banknote, Tag, Trash2,
+  Package, Banknote, Tag, Trash2,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import {
   obtenerProductos,
   obtenerCategorias,
   eliminarProducto,
-  calcularPrecioProducto,
+  esDinamico,
 } from './catalogoService'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
@@ -47,8 +46,6 @@ const formatMXN = (n) =>
   n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '--'
 
 export function CatalogoPage() {
-  const { precioHoy } = usePrecioDelDia()
-
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [loading, setLoading] = useState(true)
@@ -98,7 +95,7 @@ export function CatalogoPage() {
 
   async function handleEliminar(e, prod) {
     e.stopPropagation()
-    if (!window.confirm(`¿Eliminar el producto "${prod.nombre}"?`)) return
+    if (!window.confirm(`Eliminar el producto "${prod.codigo}"?`)) return
 
     try {
       await eliminarProducto(prod.id)
@@ -119,7 +116,7 @@ export function CatalogoPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-3xl font-bold text-warm-900">Catálogo de Productos</h1>
+          <h1 className="font-display text-3xl font-bold text-warm-900">Catalogo de Productos</h1>
           <p className="text-warm-400 text-sm mt-1">
             {productos.length} producto{productos.length !== 1 && 's'}
             {filtroCategoria || filtroMetal || busqueda ? ' (filtrado)' : ''}
@@ -128,7 +125,7 @@ export function CatalogoPage() {
         <div className="flex gap-2">
           <Button variant="secondary" size="md" onClick={() => setCategoriasOpen(true)}>
             <FolderOpen size={15} />
-            Categorías
+            Categorias
           </Button>
           <Button size="md" onClick={() => setProductoModal({ open: true, producto: null })}>
             <Plus size={15} />
@@ -147,7 +144,7 @@ export function CatalogoPage() {
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre o código..."
+              placeholder="Buscar por nombre o codigo..."
               className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
           </div>
@@ -160,7 +157,7 @@ export function CatalogoPage() {
               onChange={(e) => setFiltroCategoria(e.target.value)}
               className="select-luxury text-sm py-2.5"
             >
-              <option value="">Todas las categorías</option>
+              <option value="">Todas las categorias</option>
               {categorias.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nombre}
@@ -226,15 +223,13 @@ export function CatalogoPage() {
           <p className="text-sm text-warm-400">
             {busqueda || filtroCategoria || filtroMetal
               ? 'No se encontraron productos con esos filtros.'
-              : 'Agrega tu primer producto al catálogo.'}
+              : 'Agrega tu primer producto al catalogo.'}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {productos.map((prod) => {
-            const precio = calcularPrecioProducto(prod, precioHoy)
-            const sinStock = (prod.stock ?? 0) === 0
-            const stockBajo = (prod.stock ?? 0) > 0 && (prod.stock ?? 0) <= 3
+            const dinamico = esDinamico(prod.metal)
 
             return (
               <div
@@ -257,9 +252,11 @@ export function CatalogoPage() {
                         </span>
                       )}
                     </div>
-                    <h3 className="font-display text-lg font-semibold text-warm-900 truncate">
-                      {prod.nombre}
-                    </h3>
+                    {prod.nombre && (
+                      <h3 className="font-display text-lg font-semibold text-warm-900 truncate">
+                        {prod.nombre}
+                      </h3>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                     <button
@@ -282,10 +279,10 @@ export function CatalogoPage() {
 
                 {/* Category + Metal badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                  {prod.categoria && (
+                  {prod.categoria_nombre && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-ivory-200 text-warm-600 border border-ivory-400">
                       <Tag size={10} />
-                      {typeof prod.categoria === 'string' ? prod.categoria : prod.categoria.nombre}
+                      {prod.categoria_nombre}
                     </span>
                   )}
                   {prod.metal && (
@@ -299,51 +296,17 @@ export function CatalogoPage() {
                   )}
                 </div>
 
-                {/* Details */}
+                {/* Price info */}
                 <div className="flex items-end justify-between mt-auto">
-                  <div className="space-y-1">
-                    {prod.peso_gramos && (
-                      <div className="flex items-center gap-1.5 text-xs text-warm-400">
-                        <Weight size={12} />
-                        {prod.peso_gramos}g
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Package
-                        size={12}
-                        className={
-                          sinStock
-                            ? 'text-red-400'
-                            : stockBajo
-                              ? 'text-amber-400'
-                              : 'text-warm-400'
-                        }
-                      />
-                      <span
-                        className={
-                          sinStock
-                            ? 'text-red-500 font-medium'
-                            : stockBajo
-                              ? 'text-amber-500 font-medium'
-                              : 'text-warm-400'
-                        }
-                      >
-                        {prod.stock ?? 0} en stock
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-1 text-[10px] text-warm-300">
+                    <Banknote size={10} />
+                    {dinamico ? 'Precio al vender' : 'Precio fijo'}
                   </div>
-
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-[10px] text-warm-300 mb-0.5">
-                      <Banknote size={10} />
-                      {['oro_10k', 'oro_14k', 'oro_24k', 'plata'].includes(prod.metal)
-                        ? 'Precio dinámico'
-                        : 'Precio fijo'}
-                    </div>
+                  {!dinamico && (
                     <p className="font-display text-xl font-bold text-warm-900">
-                      {formatMXN(precio)}
+                      {formatMXN(prod.precio_fijo)}
                     </p>
-                  </div>
+                  )}
                 </div>
               </div>
             )

@@ -3,14 +3,6 @@ import { Button } from '../../components/ui/Button'
 import { Printer, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-/**
- * TicketModal – post-sale ticket view.
- *
- * Props:
- *   venta   – venta object from completarVenta + carritoSnapshot
- *   config  – tienda config from useTienda
- *   onClose – callback
- */
 export function TicketModal({ venta, config, onClose }) {
   if (!venta) return null
 
@@ -25,31 +17,27 @@ export function TicketModal({ venta, config, onClose }) {
 
   const nombreTienda = config?.nombre ?? 'Tienda'
 
-  // Map metodo_pago back to display label
   const METODO_LABELS = {
     efectivo:      'Efectivo',
     tarjeta:       'Tarjeta',
     transferencia: 'Transferencia',
     otro:          'Otro',
   }
-  const metodoLabel = METODO_LABELS[venta.metodo_pago] ?? venta.metodo_pago ?? '—'
+  const metodoLabel = METODO_LABELS[venta.metodo_pago] ?? venta.metodo_pago ?? '--'
 
-  // Items come from carritoSnapshot (UI cart items)
   const items = venta.carritoSnapshot ?? []
 
-  // Recalculate totals from the venta object (authoritative)
   const subtotalVenta = venta.subtotal ?? items.reduce((s, i) => s + i.precioUnitario * i.cantidad, 0)
   const descuentoVenta = venta.descuento ?? 0
   const totalVenta = venta.total ?? Math.max(0, subtotalVenta - descuentoVenta)
 
-  // ── Print ──────────────────────────────────────────────────────
   function handleImprimir() {
     const printArea = document.getElementById('ticket-print-area')
     if (!printArea) return
 
     const win = window.open('', '_blank', 'width=360,height=620')
     if (!win) {
-      toast.error('El navegador bloqueó la ventana de impresión. Permite popups para este sitio.')
+      toast.error('El navegador bloqueo la ventana de impresion. Permite popups para este sitio.')
       return
     }
 
@@ -96,13 +84,13 @@ export function TicketModal({ venta, config, onClose }) {
         <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
           <Check size={28} className="text-emerald-600" />
         </div>
-        <p className="text-lg font-display font-bold text-warm-900">¡Venta registrada!</p>
+        <p className="text-lg font-display font-bold text-warm-900">Venta registrada!</p>
         <p className="text-sm text-warm-500 mt-0.5">
-          Folio: <strong className="text-warm-800">{venta.folio ?? '—'}</strong>
+          Folio: <strong className="text-warm-800">{venta.folio ?? '--'}</strong>
         </p>
       </div>
 
-      {/* ── Printable ticket area ── */}
+      {/* Printable ticket area */}
       <div
         id="ticket-print-area"
         className="bg-ivory-50 rounded-xl p-4 text-xs font-mono text-warm-700 space-y-1 border border-ivory-200"
@@ -112,26 +100,32 @@ export function TicketModal({ venta, config, onClose }) {
           <h1 className="font-bold text-sm">{nombreTienda.toUpperCase()}</h1>
           <p>Ticket de Venta</p>
           <p>{fechaStr} {horaStr}</p>
-          <p>Folio: {venta.folio ?? '—'}</p>
+          <p>Folio: {venta.folio ?? '--'}</p>
         </div>
 
-        {/* Separator */}
         <div className="border-t border-dashed border-warm-400 my-2" />
 
         {/* Items */}
         <div className="space-y-1.5">
-          {items.map((item, idx) => (
-            <div key={idx}>
-              <p className="font-semibold truncate">{item.producto?.nombre ?? item.nombre ?? '—'}</p>
-              <div className="flex justify-between text-warm-500">
-                <span>{item.cantidad} × {fmt(item.precioUnitario)}</span>
-                <span>{fmt(item.precioUnitario * item.cantidad)}</span>
+          {items.map((item, idx) => {
+            const label = item.producto?.codigo || '--'
+            const nombre = item.producto?.nombre
+            const pesoInfo = item.peso_gramos ? ` (${item.peso_gramos}g)` : ''
+
+            return (
+              <div key={idx}>
+                <p className="font-semibold truncate">
+                  {label}{nombre ? ` - ${nombre}` : ''}{pesoInfo}
+                </p>
+                <div className="flex justify-between text-warm-500">
+                  <span>{item.cantidad} x {fmt(item.precioUnitario)}</span>
+                  <span>{fmt(item.precioUnitario * item.cantidad)}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
-        {/* Separator */}
         <div className="border-t border-dashed border-warm-400 my-2" />
 
         {/* Totals */}
@@ -143,7 +137,7 @@ export function TicketModal({ venta, config, onClose }) {
           {descuentoVenta > 0 && (
             <div className="flex justify-between">
               <span>Descuento:</span>
-              <span>−{fmt(descuentoVenta)}</span>
+              <span>-{fmt(descuentoVenta)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold text-sm pt-0.5">
@@ -152,12 +146,10 @@ export function TicketModal({ venta, config, onClose }) {
           </div>
         </div>
 
-        {/* Separator */}
         <div className="border-t border-dashed border-warm-400 my-2" />
 
-        {/* Footer */}
-        <p className="text-center">Método de pago: {metodoLabel}</p>
-        <p className="text-center font-semibold mt-1">¡Gracias por su compra!</p>
+        <p className="text-center">Metodo de pago: {metodoLabel}</p>
+        <p className="text-center font-semibold mt-1">Gracias por su compra!</p>
       </div>
 
       {/* Actions */}

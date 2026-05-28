@@ -15,20 +15,15 @@ const METAL_OPTIONS = [
   { value: 'acero', label: 'Acero' },
 ]
 
-const METALES_DINAMICOS = ['oro_10k', 'oro_14k', 'oro_24k', 'plata']
 const METALES_FIJOS = ['chapa', 'acero']
 
 const INITIAL_FORM = {
   codigo: '',
   nombre: '',
-  descripcion: '',
   categoria_id: '',
   metal: 'oro_14k',
-  peso_gramos: '',
-  costo_mano_obra: '',
   costo_compra: '',
   precio_fijo: '',
-  stock: '',
   activo: true,
 }
 
@@ -45,14 +40,10 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
         setForm({
           codigo: producto.codigo || '',
           nombre: producto.nombre || '',
-          descripcion: producto.descripcion || '',
           categoria_id: producto.categoria_id || '',
           metal: producto.metal || 'oro_14k',
-          peso_gramos: producto.peso_gramos ?? '',
-          costo_mano_obra: producto.costo_mano_obra ?? '',
           costo_compra: producto.costo_compra ?? '',
           precio_fijo: producto.precio_fijo ?? '',
-          stock: producto.stock ?? 0,
           activo: producto.activo ?? true,
         })
       } else {
@@ -61,7 +52,6 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
     }
   }, [isOpen, producto])
 
-  const esDinamico = METALES_DINAMICOS.includes(form.metal)
   const esFijo = METALES_FIJOS.includes(form.metal)
 
   function handleChange(field) {
@@ -69,7 +59,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
   }
 
   async function handleDelete() {
-    if (!window.confirm('¿Estás seguro de que quieres borrar este producto?')) return
+    if (!window.confirm('Estas seguro de que quieres borrar este producto?')) return
 
     setDeleting(true)
     try {
@@ -87,13 +77,8 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
   async function handleSubmit(e) {
     e.preventDefault()
 
-    if (!form.codigo.trim() || !form.nombre.trim()) {
-      toast.error('Código y nombre son obligatorios')
-      return
-    }
-
-    if (esDinamico && (!form.peso_gramos || parseFloat(form.peso_gramos) <= 0)) {
-      toast.error('Indica el peso en gramos para este tipo de metal')
+    if (!form.codigo.trim()) {
+      toast.error('El codigo es obligatorio')
       return
     }
 
@@ -106,15 +91,11 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
     try {
       const payload = {
         codigo: form.codigo.trim(),
-        nombre: form.nombre.trim(),
-        descripcion: form.descripcion.trim() || null,
+        nombre: form.nombre.trim() || '',
         categoria_id: form.categoria_id || null,
         metal: form.metal,
-        peso_gramos: esDinamico && form.peso_gramos ? parseFloat(form.peso_gramos) : null,
-        costo_mano_obra: esDinamico && form.costo_mano_obra ? parseFloat(form.costo_mano_obra) : 0,
         costo_compra: esFijo && form.costo_compra ? parseFloat(form.costo_compra) : 0,
         precio_fijo: esFijo && form.precio_fijo ? parseFloat(form.precio_fijo) : null,
-        stock: form.stock !== '' ? parseInt(form.stock, 10) : 0,
         activo: form.activo,
       }
 
@@ -140,60 +121,18 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
       isOpen={isOpen}
       onClose={onClose}
       title={esEdicion ? 'Editar Producto' : 'Nuevo Producto'}
-      size="lg"
+      size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Row 1: Codigo + Nombre */}
-        <div className="grid grid-cols-3 gap-4">
+        {/* Row 1: Codigo + Metal */}
+        <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Código *"
+            label="Codigo *"
             value={form.codigo}
             onChange={handleChange('codigo')}
             placeholder="AN-001"
             disabled={saving || deleting}
           />
-          <div className="col-span-2">
-            <Input
-              label="Nombre *"
-              value={form.nombre}
-              onChange={handleChange('nombre')}
-              placeholder="Anillo Solitario Oro 14k"
-              disabled={saving || deleting}
-            />
-          </div>
-        </div>
-
-        {/* Row 2: Descripcion */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-warm-600">Descripción</label>
-          <textarea
-            value={form.descripcion}
-            onChange={handleChange('descripcion')}
-            rows={2}
-            placeholder="Descripción opcional del producto..."
-            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all resize-none"
-            disabled={saving || deleting}
-          />
-        </div>
-
-        {/* Row 3: Categoria + Metal */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Categoría</label>
-            <select
-              value={form.categoria_id}
-              onChange={handleChange('categoria_id')}
-              className="select-luxury"
-              disabled={saving || deleting}
-            >
-              <option value="">Sin categoría</option>
-              {categorias?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-warm-600">Metal *</label>
             <select
@@ -211,31 +150,32 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           </div>
         </div>
 
-        {/* Dynamic metal fields: peso + mano de obra */}
-        {esDinamico && (
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Peso (gramos) *"
-              type="number"
-              step="0.001"
-              min="0"
-              value={form.peso_gramos}
-              onChange={handleChange('peso_gramos')}
-              placeholder="0.000"
+        {/* Row 2: Nombre + Categoria (optional) */}
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Nombre"
+            value={form.nombre}
+            onChange={handleChange('nombre')}
+            placeholder="Anillo Solitario (opcional)"
+            disabled={saving || deleting}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-warm-600">Categoria</label>
+            <select
+              value={form.categoria_id}
+              onChange={handleChange('categoria_id')}
+              className="select-luxury"
               disabled={saving || deleting}
-            />
-            <Input
-              label="Mano de obra"
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.costo_mano_obra}
-              onChange={handleChange('costo_mano_obra')}
-              placeholder="$0.00"
-              disabled={saving || deleting}
-            />
+            >
+              <option value="">Sin categoria</option>
+              {categorias?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+        </div>
 
         {/* Fixed price metal fields: costo_compra + precio_fijo */}
         {esFijo && (
@@ -265,31 +205,17 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
 
         {/* Pricing explanation */}
         <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
-          {esDinamico ? (
+          {esFijo ? (
             <>
-              <strong className="text-warm-600">Precio dinámico:</strong> (peso x precio del metal
-              del día) + mano de obra. El precio se recalcula cada día.
+              <strong className="text-warm-600">Precio fijo:</strong> este producto se vendera
+              siempre al precio fijo indicado.
             </>
           ) : (
             <>
-              <strong className="text-warm-600">Precio fijo:</strong> este producto se venderá
-              siempre al precio fijo indicado.
+              <strong className="text-warm-600">Precio dinamico:</strong> el peso, mano de obra
+              y precio de venta se ingresan al momento de vender cada pieza.
             </>
           )}
-        </div>
-
-        {/* Stock */}
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label={esEdicion ? 'Stock actual' : 'Stock inicial'}
-            type="number"
-            min="0"
-            step="1"
-            value={form.stock}
-            onChange={handleChange('stock')}
-            placeholder="0"
-            disabled={saving || deleting}
-          />
         </div>
 
         {/* Active toggle (only in edit mode) */}

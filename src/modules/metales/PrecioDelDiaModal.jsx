@@ -14,6 +14,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
   const [oro10k, setOro10k] = useState('')
   const [plata, setPlata] = useState('')
   const [fuente, setFuente] = useState('manual')
+  const [tipoCambio, setTipoCambio] = useState(null)
   const [loading, setLoading] = useState(false)
   const [fetchingApi, setFetchingApi] = useState(false)
 
@@ -25,6 +26,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setOro10k('')
       setPlata('')
       setFuente('manual')
+      setTipoCambio(null)
       // Auto-fetch prices from API
       handleConsultarAPI()
     }
@@ -39,6 +41,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       ])
       const xau = metales.xau
       const xag = metales.xag
+      setTipoCambio(mxnRate)
       const oro24kMxnGram = convertirAGramoMXN(xau, mxnRate)
       const plataGram = convertirAGramoMXN(xag, mxnRate)
       const kilates = calcularKilates(oro24kMxnGram)
@@ -146,6 +149,16 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
             Consultar API
           </Button>
         </div>
+
+        {/* Exchange rate */}
+        {tipoCambio && (
+          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+            <span className="text-blue-600 font-bold text-sm">USD/MXN</span>
+            <span className="font-display text-lg font-bold text-blue-800">
+              ${tipoCambio.toFixed(2)}
+            </span>
+          </div>
+        )}
 
         {/* Info note */}
         <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">

@@ -1,6 +1,11 @@
 const { ipcMain } = require('electron')
 const { getDb } = require('../database.cjs')
 
+function fechaLocal() {
+  const n = new Date()
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
+}
+
 const SELECT_PRECIOS = `SELECT id, fecha,
   oro_24k_por_gramo AS oro_24k, oro_14k_por_gramo AS oro_14k,
   oro_10k_por_gramo AS oro_10k, plata_por_gramo AS plata,
@@ -8,7 +13,7 @@ const SELECT_PRECIOS = `SELECT id, fecha,
 
 ipcMain.handle('precios:obtener-hoy', () => {
   const db = getDb()
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocal()
   return db.prepare(`${SELECT_PRECIOS} WHERE fecha = ?`).get(hoy) || null
 })
 
@@ -19,7 +24,7 @@ ipcMain.handle('precios:obtener-ultimo', () => {
 
 ipcMain.handle('precios:guardar', (_event, { oro24k, oro14k, oro10k, plata, fuente }) => {
   const db = getDb()
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocal()
   const existing = db.prepare('SELECT id FROM precios_metales WHERE fecha = ?').get(hoy)
   if (existing) {
     db.prepare(`

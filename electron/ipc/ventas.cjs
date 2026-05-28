@@ -2,7 +2,8 @@ const { ipcMain } = require('electron')
 const { getDb } = require('../database.cjs')
 
 function generarFolio(db) {
-  const hoy = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const now = new Date()
+  const hoy = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
   const last = db.prepare(
     "SELECT folio FROM ventas WHERE folio LIKE ? ORDER BY id DESC LIMIT 1"
   ).get(`V${hoy}%`)
@@ -30,8 +31,6 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
-  const updateStock = db.prepare('UPDATE productos SET stock = stock - ? WHERE id = ? AND stock >= ?')
-
   const transaction = db.transaction(() => {
     const ventaResult = insertVenta.run(
       folio, subtotal, descuento || 0, total, metodoPago, notas || null,
@@ -46,10 +45,6 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
         item.metal || null, item.peso_gramos || null,
         item.costo_mano_obra || null, item.costo_compra || null
       )
-      const stockResult = updateStock.run(item.cantidad, item.producto_id, item.cantidad)
-      if (stockResult.changes === 0) {
-        throw new Error(`Stock insuficiente para producto ${item.nombre || item.producto_id}`)
-      }
     }
 
     return db.prepare('SELECT * FROM ventas WHERE id = ?').get(ventaId)
@@ -62,8 +57,8 @@ ipcMain.handle('ventas:obtener', (_event, { desde, hasta, limite } = {}) => {
   const db = getDb()
   let sql = 'SELECT * FROM ventas WHERE 1=1'
   const params = []
-  if (desde) { sql += ' AND created_at >= ?'; params.push(`${desde}T00:00:00`) }
-  if (hasta) { sql += ' AND created_at <= ?'; params.push(`${hasta}T23:59:59.999`) }
+  if (desde) { sql += " AND date(created_at, 'localtime') >= ?"; params.push(desde) }
+  if (hasta) { sql += " AND date(created_at, 'localtime') <= ?"; params.push(hasta) }
   sql += ' ORDER BY created_at DESC'
   if (limite) { sql += ' LIMIT ?'; params.push(limite) }
   const ventas = db.prepare(sql).all(...params)
