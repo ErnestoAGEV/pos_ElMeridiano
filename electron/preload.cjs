@@ -46,5 +46,8 @@ contextBridge.exposeInMainWorld('api', {
     piezasPorCategoria: (data) => ipcRenderer.invoke('reportes:piezas-por-categoria', data),
     ganancia: (data) => ipcRenderer.invoke('reportes:ganancia', data),
     dashboard: () => ipcRenderer.invoke('reportes:dashboard'),
+    topProductos: (data) => ipcRenderer.invoke('reportes:top-productos', data),
+    productosMuertos: () => ipcRenderer.invoke('reportes:productos-muertos'),
+    gananciaPorMetal: (data) => ipcRenderer.invoke('reportes:ganancia-por-metal', data),
   },
 })
