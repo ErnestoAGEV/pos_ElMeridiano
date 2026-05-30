@@ -2,7 +2,6 @@ const TAB_TITLES = {
   resumen: 'Resumen de Ventas',
   productos: 'Productos',
   ganancias: 'Ganancias',
-  cortes: 'Cortes de Caja',
   metales: 'Precios de Metales',
 }
 

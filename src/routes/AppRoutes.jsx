@@ -6,7 +6,6 @@ import { DashboardPage } from '../modules/dashboard/DashboardPage'
 import { MetalesPage } from '../modules/metales/MetalesPage'
 import { CatalogoPage } from '../modules/catalogo/CatalogoPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
-import { CortesPage } from '../modules/cortes/CortesPage'
 import { ReportesPage } from '../modules/reportes/ReportesPage'
 import { PersonalizacionPage } from '../modules/personalizacion/PersonalizacionPage'
 
@@ -24,7 +23,6 @@ export function AppRoutes() {
         <Route path="/metales" element={<MetalesPage />} />
         <Route path="/catalogo" element={<CatalogoPage />} />
         <Route path="/ventas" element={<VentasPage />} />
-        <Route path="/cortes" element={<CortesPage />} />
         <Route path="/reportes" element={<ReportesPage />} />
         <Route path="/personalizacion" element={<PersonalizacionPage />} />
       </Route>

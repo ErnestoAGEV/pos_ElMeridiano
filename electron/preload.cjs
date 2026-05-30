@@ -28,11 +28,6 @@ contextBridge.exposeInMainWorld('api', {
     completar: (data) => ipcRenderer.invoke('ventas:completar', data),
     obtener: (data) => ipcRenderer.invoke('ventas:obtener', data),
   },
-  cortes: {
-    calcularResumen: (data) => ipcRenderer.invoke('cortes:calcular-resumen', data),
-    guardar: (data) => ipcRenderer.invoke('cortes:guardar', data),
-    historial: (data) => ipcRenderer.invoke('cortes:historial', data),
-  },
   config: {
     obtener: () => ipcRenderer.invoke('config:obtener'),
     actualizar: (data) => ipcRenderer.invoke('config:actualizar', data),

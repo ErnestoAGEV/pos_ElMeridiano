@@ -5,7 +5,6 @@ import { Spinner } from '../../components/ui/Spinner'
 import { TabResumen } from './TabResumen'
 import { TabProductos } from './TabProductos'
 import { TabGanancias } from './TabGanancias'
-import { TabCortes } from './TabCortes'
 import { TabMetales } from './TabMetales'
 import { exportarPDF } from './exportarPDF'
 
@@ -13,7 +12,6 @@ const TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'productos', label: 'Productos' },
   { id: 'ganancias', label: 'Ganancias' },
-  { id: 'cortes', label: 'Cortes' },
   { id: 'metales', label: 'Metales' },
 ]
 
@@ -169,7 +167,6 @@ export function ReportesPage() {
       {tab === 'resumen' && <TabResumen rango={rango} setCargando={setCargando} />}
       {tab === 'productos' && <TabProductos rango={rango} setCargando={setCargando} />}
       {tab === 'ganancias' && <TabGanancias rango={rango} setCargando={setCargando} />}
-      {tab === 'cortes' && <TabCortes setCargando={setCargando} />}
       {tab === 'metales' && <TabMetales setCargando={setCargando} />}
     </div>
   )

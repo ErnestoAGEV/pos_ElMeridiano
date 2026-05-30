@@ -17,7 +17,7 @@ function createWindow() {
       nodeIntegration: false,
     },
     autoHideMenuBar: true,
-    title: 'Joyeria POS',
+    title: 'Meridiano — Sistema Joyero',
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -41,7 +41,6 @@ app.whenReady().then(() => {
   require('./ipc/productos.cjs')
   require('./ipc/precios.cjs')
   require('./ipc/ventas.cjs')
-  require('./ipc/cortes.cjs')
   require('./ipc/config.cjs')
   require('./ipc/backup.cjs')
   require('./ipc/reportes.cjs')
