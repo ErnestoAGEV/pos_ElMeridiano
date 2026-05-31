@@ -112,8 +112,8 @@ CREATE TABLE precios_metales (
 Calculo automatico desde API:
 - Se jala precio oro 24k (XAU) y plata (XAG) en USD/troy oz
 - Se convierte a MXN/gramo con tipo de cambio USD/MXN
-- oro_14k = oro_24k * 0.583
-- oro_10k = oro_24k * 0.417
+- oro_14k = oro_24k * 0.6
+- oro_10k = oro_24k * 0.44
 - El cliente puede ajustar cualquier valor antes de confirmar
 
 #### ventas
@@ -207,7 +207,7 @@ Resumen rapido del dia actual:
 
 - Pantalla diaria para confirmar precios
 - Boton "Consultar API": jala oro 24k y plata desde gold-api.com + tipo de cambio USD/MXN
-- Calcula automaticamente: oro_14k = 24k * 0.583, oro_10k = 24k * 0.417
+- Calcula automaticamente: oro_14k = 24k * 0.6, oro_10k = 24k * 0.44
 - El cliente puede ajustar cualquier valor manualmente antes de confirmar
 - Historial de precios por fecha
 - NO bloquea ventas si no se ha confirmado (usa el ultimo precio disponible)

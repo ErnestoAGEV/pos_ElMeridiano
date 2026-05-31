@@ -6,7 +6,15 @@ let db = null
 
 function getDbPath() {
   const userDataPath = app.getPath('userData')
-  return path.join(userDataPath, 'pos-meridiano.db')
+  const newPath = path.join(userDataPath, 'meridiano.db')
+  // Migrate from old name if needed
+  if (!require('fs').existsSync(newPath)) {
+    const oldPath = path.join(userDataPath, 'pos-meridiano.db')
+    if (require('fs').existsSync(oldPath)) {
+      require('fs').copyFileSync(oldPath, newPath)
+    }
+  }
+  return newPath
 }
 
 function getDb() {
@@ -59,6 +67,7 @@ function initSchema() {
       oro_14k_por_gramo REAL NOT NULL,
       oro_10k_por_gramo REAL NOT NULL,
       plata_por_gramo REAL NOT NULL,
+      tipo_cambio REAL,
       fuente TEXT DEFAULT 'manual',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -116,6 +125,12 @@ function initSchema() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
+
+  // Migration: add tipo_cambio column if missing
+  const cols = db.prepare("PRAGMA table_info(precios_metales)").all()
+  if (!cols.find(c => c.name === 'tipo_cambio')) {
+    db.exec('ALTER TABLE precios_metales ADD COLUMN tipo_cambio REAL')
+  }
 
   // Seed config if empty
   const configRow = db.prepare('SELECT id FROM config_tienda WHERE id = 1').get()

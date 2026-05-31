@@ -49,7 +49,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setOro24k(kilates.oro_24k.toFixed(2))
       setOro14k(kilates.oro_14k.toFixed(2))
       setOro10k(kilates.oro_10k.toFixed(2))
-      setPlata(plataGram.toFixed(2))
+      setPlata((plataGram + 7).toFixed(2))
       setFuente('api')
 
       toast.success('Precios actualizados desde la API')
@@ -90,7 +90,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
 
     setLoading(true)
     try {
-      await guardarPrecioDelDia({ oro24k: v24k, oro14k: v14k, oro10k: v10k, plata: vPlata, fuente })
+      await guardarPrecioDelDia({ oro24k: v24k, oro14k: v14k, oro10k: v10k, plata: vPlata, tipoCambio, fuente })
       toast.success('Precios del día confirmados')
       onConfirmado()
       onClose()
@@ -150,21 +150,31 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
           </Button>
         </div>
 
-        {/* Exchange rate */}
-        {tipoCambio && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-            <span className="text-blue-600 font-bold text-sm">USD/MXN</span>
-            <span className="font-display text-lg font-bold text-blue-800">
-              ${tipoCambio.toFixed(2)}
+        {/* Exchange rate + mano de obra */}
+        <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+          <span className="text-blue-600 font-bold text-sm shrink-0">USD/MXN</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={tipoCambio ?? ''}
+            onChange={(e) => setTipoCambio(e.target.value === '' ? null : parseFloat(e.target.value))}
+            placeholder="0.00"
+            className="w-24 bg-white border border-blue-300 rounded-lg px-2 py-1.5 text-blue-800 font-display text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-400/30"
+          />
+          {tipoCambio > 0 && (
+            <span className="text-xs text-blue-600 ml-auto">
+              Mano de obra: <strong className="text-blue-800">${(tipoCambio * 8.2).toFixed(2)}</strong>
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Info note */}
         <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
           <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-500" />
           <p className="text-xs text-amber-700">
-            Al cambiar <strong>Oro 24k</strong> manualmente se recalculan Oro 14k (×0.583) y Oro 10k (×0.417) de forma automática.
+            Al cambiar <strong>Oro 24k</strong> manualmente se recalculan Oro 14k (×0.6) y Oro 10k (×0.44) de forma automática.
+            La <strong>mano de obra</strong> se calcula como tipo de cambio × 8.2.
           </p>
         </div>
 

@@ -1,5 +1,5 @@
-export async function completarVenta({ items, subtotal, descuento, total, metodoPago, notas, preciosUsados }) {
-  return window.api.ventas.completar({ items, subtotal, descuento, total, metodoPago, notas, preciosUsados })
+export async function completarVenta({ items, subtotal, descuento, total, metodoPago, notas, preciosUsados, fechaVenta }) {
+  return window.api.ventas.completar({ items, subtotal, descuento, total, metodoPago, notas, preciosUsados, fechaVenta })
 }
 
 export async function obtenerVentas({ desde, hasta, limite } = {}) {

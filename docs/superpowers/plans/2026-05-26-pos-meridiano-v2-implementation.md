@@ -1250,8 +1250,8 @@ export function convertirAGramoMXN(precioUsdTroyOz, tipoCambioMXN) {
 export function calcularKilates(oro24kPorGramo) {
   return {
     oro_24k: oro24kPorGramo,
-    oro_14k: oro24kPorGramo * 0.583,
-    oro_10k: oro24kPorGramo * 0.417,
+    oro_14k: oro24kPorGramo * 0.6,
+    oro_10k: oro24kPorGramo * 0.44,
   }
 }
 ```

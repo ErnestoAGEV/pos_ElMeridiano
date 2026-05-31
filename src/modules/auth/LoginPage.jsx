@@ -39,7 +39,7 @@ export function LoginPage() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center mx-auto mb-4 shadow-primary-md">
             <Gem size={28} className="text-white" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-warm-900">Joyeria POS</h1>
+          <h1 className="font-display text-3xl font-bold text-warm-900">Sistema Joyero</h1>
           <p className="text-warm-400 text-sm mt-1">Inicia sesion para continuar</p>
         </div>
 

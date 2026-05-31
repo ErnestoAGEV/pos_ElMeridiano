@@ -15,14 +15,23 @@ function generarFolio(db) {
   return `V${hoy}${String(seq).padStart(4, '0')}`
 }
 
-ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total, metodoPago, notas, preciosUsados }) => {
+ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total, metodoPago, notas, preciosUsados, fechaVenta }) => {
   const db = getDb()
   const folio = generarFolio(db)
 
+  // Build created_at: use fechaVenta date with current time
+  let createdAt = null
+  if (fechaVenta) {
+    const now = new Date()
+    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+    createdAt = `${fechaVenta} ${time}`
+  }
+
   const insertVenta = db.prepare(`
     INSERT INTO ventas (folio, subtotal, descuento, total, metodo_pago, notas,
-      precio_oro_24k_usado, precio_oro_14k_usado, precio_oro_10k_usado, precio_plata_usado)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      precio_oro_24k_usado, precio_oro_14k_usado, precio_oro_10k_usado, precio_plata_usado,
+      created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
   const insertDetalle = db.prepare(`
@@ -35,7 +44,8 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
     const ventaResult = insertVenta.run(
       folio, subtotal, descuento || 0, total, metodoPago, notas || null,
       preciosUsados?.oro_24k || null, preciosUsados?.oro_14k || null,
-      preciosUsados?.oro_10k || null, preciosUsados?.plata || null
+      preciosUsados?.oro_10k || null, preciosUsados?.plata || null,
+      createdAt || new Date().toISOString()
     )
     const ventaId = ventaResult.lastInsertRowid
 

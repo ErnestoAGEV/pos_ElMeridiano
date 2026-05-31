@@ -28,11 +28,6 @@ contextBridge.exposeInMainWorld('api', {
     completar: (data) => ipcRenderer.invoke('ventas:completar', data),
     obtener: (data) => ipcRenderer.invoke('ventas:obtener', data),
   },
-  cortes: {
-    calcularResumen: (data) => ipcRenderer.invoke('cortes:calcular-resumen', data),
-    guardar: (data) => ipcRenderer.invoke('cortes:guardar', data),
-    historial: (data) => ipcRenderer.invoke('cortes:historial', data),
-  },
   config: {
     obtener: () => ipcRenderer.invoke('config:obtener'),
     actualizar: (data) => ipcRenderer.invoke('config:actualizar', data),
@@ -41,10 +36,16 @@ contextBridge.exposeInMainWorld('api', {
     exportar: () => ipcRenderer.invoke('backup:exportar'),
     restaurar: () => ipcRenderer.invoke('backup:restaurar'),
   },
+  exportar: {
+    guardarArchivo: (data) => ipcRenderer.invoke('exportar:guardar-archivo', data),
+  },
   reportes: {
     ventas: (data) => ipcRenderer.invoke('reportes:ventas', data),
     piezasPorCategoria: (data) => ipcRenderer.invoke('reportes:piezas-por-categoria', data),
     ganancia: (data) => ipcRenderer.invoke('reportes:ganancia', data),
     dashboard: () => ipcRenderer.invoke('reportes:dashboard'),
+    topProductos: (data) => ipcRenderer.invoke('reportes:top-productos', data),
+    productosMuertos: () => ipcRenderer.invoke('reportes:productos-muertos'),
+    gananciaPorMetal: (data) => ipcRenderer.invoke('reportes:ganancia-por-metal', data),
   },
 })

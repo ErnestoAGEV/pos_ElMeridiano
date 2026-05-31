@@ -8,8 +8,8 @@ export async function obtenerUltimoPrecio() {
   return window.api.precios.obtenerUltimo()
 }
 
-export async function guardarPrecioDelDia({ oro24k, oro14k, oro10k, plata, fuente }) {
-  return window.api.precios.guardar({ oro24k, oro14k, oro10k, plata, fuente })
+export async function guardarPrecioDelDia({ oro24k, oro14k, oro10k, plata, tipoCambio, fuente }) {
+  return window.api.precios.guardar({ oro24k, oro14k, oro10k, plata, tipoCambio, fuente })
 }
 
 export async function obtenerHistorialPrecios({ desde, hasta } = {}) {
@@ -42,7 +42,7 @@ export function convertirAGramoMXN(precioUsdTroyOz, tipoCambioMXN) {
 export function calcularKilates(oro24kPorGramo) {
   return {
     oro_24k: oro24kPorGramo,
-    oro_14k: oro24kPorGramo * 0.583,
-    oro_10k: oro24kPorGramo * 0.417,
+    oro_14k: oro24kPorGramo * 0.6,
+    oro_10k: oro24kPorGramo * 0.44,
   }
 }

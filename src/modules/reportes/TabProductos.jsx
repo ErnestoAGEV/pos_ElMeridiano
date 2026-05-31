@@ -1,0 +1,141 @@
+import { useState, useEffect, useCallback } from 'react'
+import { Trophy, AlertTriangle, Package } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { obtenerTopProductos, obtenerProductosMuertos } from './reportesService'
+import { formatMoney } from './ReportesPage'
+
+export function TabProductos({ rango, setCargando }) {
+  const [topProductos, setTopProductos] = useState([])
+  const [muertos, setMuertos] = useState([])
+
+  const cargarDatos = useCallback(async () => {
+    if (!rango) return
+    setCargando(true)
+    try {
+      const [top, dead] = await Promise.all([
+        obtenerTopProductos(rango),
+        obtenerProductosMuertos(),
+      ])
+      setTopProductos(top ?? [])
+      setMuertos(dead ?? [])
+    } catch (err) {
+      console.error(err)
+      toast.error('Error al cargar productos')
+    } finally {
+      setCargando(false)
+    }
+  }, [rango, setCargando])
+
+  useEffect(() => { cargarDatos() }, [cargarDatos])
+
+  function diasDesde(fechaStr) {
+    if (!fechaStr) return null
+    const fecha = new Date(fechaStr)
+    const hoy = new Date()
+    return Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24))
+  }
+
+  return (
+    <div className="space-y-6" data-tab-content>
+      {/* Top 10 */}
+      <div className="card rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-ivory-100">
+          <h2 className="font-semibold text-warm-900 flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            Top 10 Productos Mas Vendidos
+          </h2>
+        </div>
+        {topProductos.length === 0 ? (
+          <div className="p-8 text-center text-warm-400 text-sm">Sin datos para el periodo</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-ivory-50">
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold w-10">#</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
+                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
+                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ivory-100">
+              {topProductos.map((p, i) => (
+                <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
+                  <td className="px-5 py-3 text-warm-400 font-semibold">{i + 1}</td>
+                  <td className="px-5 py-3 text-warm-700 font-mono text-xs">{p.codigo}</td>
+                  <td className="px-5 py-3 text-warm-800 font-medium">{p.nombre || '—'}</td>
+                  <td className="px-5 py-3 text-warm-600">{p.categoria || 'Sin categoria'}</td>
+                  <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
+                  <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Estrella vs Muertos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Estrellas */}
+        <div className="card rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-ivory-100">
+            <h2 className="font-semibold text-warm-900 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-emerald-500" />
+              Productos Estrella
+            </h2>
+            <p className="text-xs text-warm-400 mt-0.5">Mas vendidos en el periodo</p>
+          </div>
+          <div className="p-4 space-y-3">
+            {topProductos.length === 0 ? (
+              <p className="text-center text-warm-400 text-sm py-4">Sin datos</p>
+            ) : (
+              topProductos.slice(0, 5).map((p, i) => (
+                <div key={p.codigo} className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-warm-800 truncate">{p.nombre || p.codigo}</p>
+                    <p className="text-xs text-warm-500">{p.codigo}</p>
+                  </div>
+                  <span className="text-sm font-semibold text-emerald-700">{p.piezas} pzas</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Muertos */}
+        <div className="card rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-ivory-100">
+            <h2 className="font-semibold text-warm-900 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              Productos Muertos
+            </h2>
+            <p className="text-xs text-warm-400 mt-0.5">Sin ventas en 60+ dias o nunca vendidos</p>
+          </div>
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
+            {muertos.length === 0 ? (
+              <p className="text-center text-warm-400 text-sm py-4">No hay productos muertos</p>
+            ) : (
+              muertos.map((p) => {
+                const dias = diasDesde(p.ultima_venta)
+                return (
+                  <div key={p.codigo} className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-100">
+                    <Package className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-warm-800 truncate">{p.nombre || p.codigo}</p>
+                      <p className="text-xs text-warm-500">{p.codigo}{p.categoria ? ` · ${p.categoria}` : ''}</p>
+                    </div>
+                    <span className="text-xs font-semibold text-red-600 whitespace-nowrap">
+                      {p.ultima_venta ? `Hace ${dias} dias` : 'Nunca vendido'}
+                    </span>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
