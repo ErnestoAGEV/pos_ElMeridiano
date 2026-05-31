@@ -70,11 +70,15 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
   const items = []
 
   for (const d of detalles) {
-    let costoUnitario = 0
     const metal = d.metal
     const peso = d.peso_gramos || 0
+    const sinGanancia = metal === 'chapa' || metal === 'acero'
+    let costoUnitario = 0
 
-    if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
+    if (sinGanancia) {
+      // Chapa/acero: solo se registra la venta, no se calcula ganancia
+      costoUnitario = 0
+    } else if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
       costoUnitario = (peso * d.precio_oro_24k_usado) + (d.costo_mano_obra || 0)
     } else if (metal === 'oro_14k' && d.precio_oro_14k_usado) {
       costoUnitario = (peso * d.precio_oro_14k_usado) + (d.costo_mano_obra || 0)
@@ -86,7 +90,7 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
       costoUnitario = d.costo_compra || 0
     }
 
-    const gananciaItem = (d.precio_unitario - costoUnitario) * d.cantidad
+    const gananciaItem = sinGanancia ? 0 : (d.precio_unitario - costoUnitario) * d.cantidad
     gananciaTotal += gananciaItem
 
     const cat = d.categoria_nombre || 'Sin categoria'
@@ -193,9 +197,12 @@ ipcMain.handle('reportes:ganancia-por-metal', (_event, { desde, hasta }) => {
     }
     const entry = porMetal[metal]
     const peso = d.peso_gramos || 0
+    const sinGanancia = metal === 'chapa' || metal === 'acero'
     let costoUnitario = 0
 
-    if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
+    if (sinGanancia) {
+      costoUnitario = 0
+    } else if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
       costoUnitario = (peso * d.precio_oro_24k_usado) + (d.costo_mano_obra || 0)
     } else if (metal === 'oro_14k' && d.precio_oro_14k_usado) {
       costoUnitario = (peso * d.precio_oro_14k_usado) + (d.costo_mano_obra || 0)
@@ -207,11 +214,11 @@ ipcMain.handle('reportes:ganancia-por-metal', (_event, { desde, hasta }) => {
       costoUnitario = d.costo_compra || 0
     }
 
-    const costoTotal = costoUnitario * d.cantidad
+    const costoTotal = sinGanancia ? 0 : costoUnitario * d.cantidad
     entry.piezas += d.cantidad
     entry.ingreso += d.subtotal
     entry.costo += costoTotal
-    entry.ganancia += (d.precio_unitario - costoUnitario) * d.cantidad
+    entry.ganancia += sinGanancia ? 0 : (d.precio_unitario - costoUnitario) * d.cantidad
   }
 
   return Object.values(porMetal).sort((a, b) => b.ganancia - a.ganancia)

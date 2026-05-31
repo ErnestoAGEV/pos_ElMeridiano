@@ -1,6 +1,6 @@
 {
-  "name": "pos-meridiano",
-  "description": "Sistema de punto de venta para joyerias",
+  "name": "meridiano-sistema-joyero",
+  "description": "Sistema de gestion para joyerias",
   "author": "Meridiano",
   "private": true,
   "version": "2.0.0",
@@ -16,8 +16,8 @@
     "electron:build:linux": "vite build && electron-builder --linux"
   },
   "build": {
-    "appId": "com.meridiano.pos",
-    "productName": "JoyeriaPOS",
+    "appId": "com.meridiano.sistemajoyero",
+    "productName": "Meridiano",
     "directories": {
       "output": "C:/pos-meridiano-build"
     },
@@ -53,6 +53,7 @@
     "react-dom": "^19.2.5",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.14.2",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

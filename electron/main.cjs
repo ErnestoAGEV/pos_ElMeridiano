@@ -44,6 +44,7 @@ app.whenReady().then(() => {
   require('./ipc/config.cjs')
   require('./ipc/backup.cjs')
   require('./ipc/reportes.cjs')
+  require('./ipc/exportar.cjs')
 
   createWindow()
 })

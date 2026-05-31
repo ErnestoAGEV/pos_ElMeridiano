@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('api', {
     exportar: () => ipcRenderer.invoke('backup:exportar'),
     restaurar: () => ipcRenderer.invoke('backup:restaurar'),
   },
+  exportar: {
+    guardarArchivo: (data) => ipcRenderer.invoke('exportar:guardar-archivo', data),
+  },
   reportes: {
     ventas: (data) => ipcRenderer.invoke('reportes:ventas', data),
     piezasPorCategoria: (data) => ipcRenderer.invoke('reportes:piezas-por-categoria', data),

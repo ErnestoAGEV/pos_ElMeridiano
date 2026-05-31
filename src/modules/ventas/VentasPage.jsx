@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast'
 
 import { obtenerProductos, esDinamico, getPrecioMetal, calcularCostoBase } from '../catalogo/catalogoService'
+import { fetchTipoCambioUSDMXN } from '../metales/metalesService'
 import { completarVenta } from './ventasService'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { useTienda } from '../../context/TiendaContext'
@@ -49,6 +50,10 @@ export function VentasPage() {
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [descuento, setDescuento] = useState('')
   const [notas, setNotas] = useState('')
+  const [fechaVenta, setFechaVenta] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
 
   // Checkout
   const [procesando, setProcesando] = useState(false)
@@ -56,6 +61,9 @@ export function VentasPage() {
 
   // Modal for adding dynamic metal pieces
   const [piezaModal, setPiezaModal] = useState({ open: false, producto: null })
+
+  // Modal for chapa/acero price capture
+  const [precioModal, setPrecioModal] = useState({ open: false, producto: null })
 
   // -- Load products --
   const cargarProductos = useCallback(async () => {
@@ -93,10 +101,10 @@ export function VentasPage() {
       }
       setPiezaModal({ open: true, producto })
     } else {
-      // Fixed price - add directly to cart
       const precio = parseFloat(producto.precio_fijo)
       if (!precio) {
-        toast.error('Este producto no tiene precio fijo configurado')
+        // Chapa/acero without fixed price — ask for price
+        setPrecioModal({ open: true, producto })
         return
       }
       setCarrito((prev) => {
@@ -117,6 +125,20 @@ export function VentasPage() {
         }]
       })
     }
+  }
+
+  // -- Add chapa/acero with manual price --
+  function handleAgregarConPrecio(producto, precioVenta) {
+    setCarrito((prev) => [...prev, {
+      cartId: ++cartIdCounter,
+      producto,
+      cantidad: 1,
+      precioUnitario: precioVenta,
+      peso_gramos: null,
+      costoManoObra: null,
+      costoBase: null,
+    }])
+    setPrecioModal({ open: false, producto: null })
   }
 
   // -- Add dynamic piece from modal --
@@ -183,6 +205,7 @@ export function VentasPage() {
         metodoPago,
         notas: notas.trim() || null,
         preciosUsados,
+        fechaVenta,
       })
 
       setVentaCompletada({ ...venta, carritoSnapshot: carrito })
@@ -397,6 +420,19 @@ export function VentasPage() {
         {/* Checkout section */}
         <div className="border-t border-ivory-300 px-5 py-4 space-y-4 bg-ivory-50 shrink-0">
 
+          {/* Sale date */}
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1 block">
+              Fecha de venta
+            </label>
+            <input
+              type="date"
+              value={fechaVenta}
+              onChange={(e) => setFechaVenta(e.target.value)}
+              className="w-full bg-white border border-ivory-300 rounded-xl px-3 py-2 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
+            />
+          </div>
+
           {/* Payment methods */}
           <div>
             <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold mb-1.5 block">
@@ -493,6 +529,14 @@ export function VentasPage() {
         onAgregar={handleAgregarPieza}
       />
 
+      {/* Modal: chapa/acero price capture */}
+      <PrecioVentaModal
+        isOpen={precioModal.open}
+        producto={precioModal.producto}
+        onClose={() => setPrecioModal({ open: false, producto: null })}
+        onAgregar={handleAgregarConPrecio}
+      />
+
       {/* Ticket modal */}
       {ventaCompletada && (
         <TicketModal
@@ -518,22 +562,29 @@ function PrecioBadge({ label, valor }) {
 // -- Sub-component: Modal to add dynamic metal piece --
 function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) {
   const [peso, setPeso] = useState('')
-  const [manoObra, setManoObra] = useState('')
   const [precioVenta, setPrecioVenta] = useState('')
+  const [tipoCambio, setTipoCambio] = useState(null)
 
   useEffect(() => {
     if (isOpen) {
       setPeso('')
-      setManoObra('')
       setPrecioVenta('')
+      // Use stored tipo_cambio or fetch from API
+      if (precioHoy?.tipo_cambio) {
+        setTipoCambio(precioHoy.tipo_cambio)
+      } else {
+        fetchTipoCambioUSDMXN()
+          .then(setTipoCambio)
+          .catch(() => setTipoCambio(null))
+      }
     }
-  }, [isOpen])
+  }, [isOpen, precioHoy])
 
   if (!producto) return null
 
   const precioMetalGramo = getPrecioMetal(producto.metal, precioHoy)
   const pesoNum = parseFloat(peso) || 0
-  const manoObraNum = parseFloat(manoObra) || 0
+  const manoObraNum = (tipoCambio || 0) * 8.2
   const costoBase = calcularCostoBase(pesoNum, manoObraNum, precioMetalGramo)
   const precioVentaNum = parseFloat(precioVenta) || 0
   const ganancia = precioVentaNum - costoBase
@@ -582,42 +633,23 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
           <strong className="text-warm-700">{fmt(precioMetalGramo)}/g</strong>
         </div>
 
-        {/* Inputs: peso + mano de obra */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-warm-600 mb-1.5">
-              Peso (gramos) *
-            </label>
-            <div className="relative">
-              <Weight size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400" />
-              <input
-                type="number"
-                step="0.001"
-                min="0"
-                value={peso}
-                onChange={(e) => setPeso(e.target.value)}
-                placeholder="0.000"
-                className={inputClass}
-                autoFocus
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-warm-600 mb-1.5">
-              Mano de obra
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={manoObra}
-                onChange={(e) => setManoObra(e.target.value)}
-                placeholder="0.00"
-                className={inputClass}
-              />
-            </div>
+        {/* Input: peso */}
+        <div>
+          <label className="block text-sm font-medium text-warm-600 mb-1.5">
+            Peso (gramos) *
+          </label>
+          <div className="relative">
+            <Weight size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400" />
+            <input
+              type="number"
+              step="0.001"
+              min="0"
+              value={peso}
+              onChange={(e) => setPeso(e.target.value)}
+              placeholder="0.000"
+              className={inputClass}
+              autoFocus
+            />
           </div>
         </div>
 
@@ -628,12 +660,10 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
               <span>Metal: {pesoNum}g x {fmt(precioMetalGramo)}</span>
               <span>{fmt(pesoNum * precioMetalGramo)}</span>
             </div>
-            {manoObraNum > 0 && (
-              <div className="flex justify-between text-xs text-warm-500">
-                <span>Mano de obra</span>
-                <span>{fmt(manoObraNum)}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-xs text-warm-500">
+              <span>Mano de obra (TC {tipoCambio?.toFixed(2) || '—'} × 8.2)</span>
+              <span>{fmt(manoObraNum)}</span>
+            </div>
             <div className="flex justify-between text-sm font-semibold text-warm-800 pt-1 border-t border-ivory-300">
               <span>Costo base</span>
               <span>{fmt(costoBase)}</span>
@@ -683,6 +713,80 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
             Cancelar
           </Button>
           <Button size="md" type="submit" disabled={!canAdd}>
+            <Plus size={15} />
+            Agregar al carrito
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+// -- Sub-component: Modal to capture price for chapa/acero --
+function PrecioVentaModal({ isOpen, producto, onClose, onAgregar }) {
+  const [precio, setPrecio] = useState('')
+
+  useEffect(() => {
+    if (isOpen) setPrecio('')
+  }, [isOpen])
+
+  if (!producto) return null
+
+  const precioNum = parseFloat(precio) || 0
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (precioNum <= 0) {
+      toast.error('Ingresa el precio de venta')
+      return
+    }
+    onAgregar(producto, precioNum)
+  }
+
+  const inputClass =
+    'w-full bg-ivory-50 border border-ivory-400 rounded-xl pl-8 pr-4 py-3 text-warm-800 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all'
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Registrar venta" size="sm">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center gap-3 p-3 bg-ivory-50 rounded-xl">
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] font-mono uppercase text-warm-400 bg-ivory-200 px-1.5 py-0.5 rounded">
+              {producto.codigo}
+            </span>
+            {producto.nombre && (
+              <p className="text-sm font-semibold text-warm-800 mt-0.5 truncate">{producto.nombre}</p>
+            )}
+          </div>
+          <span className="text-xs font-medium text-warm-500 bg-ivory-200 px-2 py-0.5 rounded-full">
+            {METAL_LABELS[producto.metal]}
+          </span>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-warm-600 mb-1.5">
+            Precio de venta *
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-400 text-sm">$</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+              placeholder="0.00"
+              className={inputClass}
+              autoFocus
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" size="md" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button size="md" type="submit" disabled={precioNum <= 0}>
             <Plus size={15} />
             Agregar al carrito
           </Button>

@@ -9,7 +9,7 @@ function fechaLocal() {
 const SELECT_PRECIOS = `SELECT id, fecha,
   oro_24k_por_gramo AS oro_24k, oro_14k_por_gramo AS oro_14k,
   oro_10k_por_gramo AS oro_10k, plata_por_gramo AS plata,
-  fuente, created_at FROM precios_metales`
+  tipo_cambio, fuente, created_at FROM precios_metales`
 
 ipcMain.handle('precios:obtener-hoy', () => {
   const db = getDb()
@@ -22,20 +22,20 @@ ipcMain.handle('precios:obtener-ultimo', () => {
   return db.prepare(`${SELECT_PRECIOS} ORDER BY fecha DESC LIMIT 1`).get() || null
 })
 
-ipcMain.handle('precios:guardar', (_event, { oro24k, oro14k, oro10k, plata, fuente }) => {
+ipcMain.handle('precios:guardar', (_event, { oro24k, oro14k, oro10k, plata, tipoCambio, fuente }) => {
   const db = getDb()
   const hoy = fechaLocal()
   const existing = db.prepare('SELECT id FROM precios_metales WHERE fecha = ?').get(hoy)
   if (existing) {
     db.prepare(`
       UPDATE precios_metales SET oro_24k_por_gramo = ?, oro_14k_por_gramo = ?,
-        oro_10k_por_gramo = ?, plata_por_gramo = ?, fuente = ? WHERE fecha = ?
-    `).run(oro24k, oro14k, oro10k, plata, fuente || 'manual', hoy)
+        oro_10k_por_gramo = ?, plata_por_gramo = ?, tipo_cambio = ?, fuente = ? WHERE fecha = ?
+    `).run(oro24k, oro14k, oro10k, plata, tipoCambio || null, fuente || 'manual', hoy)
   } else {
     db.prepare(`
       INSERT INTO precios_metales (fecha, oro_24k_por_gramo, oro_14k_por_gramo,
-        oro_10k_por_gramo, plata_por_gramo, fuente) VALUES (?, ?, ?, ?, ?, ?)
-    `).run(hoy, oro24k, oro14k, oro10k, plata, fuente || 'manual')
+        oro_10k_por_gramo, plata_por_gramo, tipo_cambio, fuente) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(hoy, oro24k, oro14k, oro10k, plata, tipoCambio || null, fuente || 'manual')
   }
   return db.prepare(`${SELECT_PRECIOS} WHERE fecha = ?`).get(hoy)
 })

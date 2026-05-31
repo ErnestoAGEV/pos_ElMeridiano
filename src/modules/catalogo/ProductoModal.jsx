@@ -53,6 +53,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
   }, [isOpen, producto])
 
   const esFijo = METALES_FIJOS.includes(form.metal)
+  const esChapaAcero = form.metal === 'chapa' || form.metal === 'acero'
 
   function handleChange(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -82,7 +83,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
       return
     }
 
-    if (esFijo && (!form.precio_fijo || parseFloat(form.precio_fijo) <= 0)) {
+    if (esFijo && !esChapaAcero && (!form.precio_fijo || parseFloat(form.precio_fijo) <= 0)) {
       toast.error('Indica el precio fijo para este tipo de producto')
       return
     }
@@ -177,8 +178,8 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           </div>
         </div>
 
-        {/* Fixed price metal fields: costo_compra + precio_fijo */}
-        {esFijo && (
+        {/* Fixed price metal fields: costo_compra + precio_fijo (not for chapa/acero) */}
+        {esFijo && !esChapaAcero && (
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Costo de compra"
@@ -205,7 +206,12 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
 
         {/* Pricing explanation */}
         <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
-          {esFijo ? (
+          {esChapaAcero ? (
+            <>
+              <strong className="text-warm-600">Precio en venta:</strong> el precio de venta
+              se captura al momento de registrar la venta en el punto de venta.
+            </>
+          ) : esFijo ? (
             <>
               <strong className="text-warm-600">Precio fijo:</strong> este producto se vendera
               siempre al precio fijo indicado.

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { FileDown, Calendar, Minus } from 'lucide-react'
+import { FileDown, FileSpreadsheet, Calendar, Minus } from 'lucide-react'
 import { useTienda } from '../../context/TiendaContext'
 import { Spinner } from '../../components/ui/Spinner'
 import { TabResumen } from './TabResumen'
@@ -7,6 +7,7 @@ import { TabProductos } from './TabProductos'
 import { TabGanancias } from './TabGanancias'
 import { TabMetales } from './TabMetales'
 import { exportarPDF } from './exportarPDF'
+import { exportarExcel } from './exportarExcel'
 
 const TABS = [
   { id: 'resumen', label: 'Resumen' },
@@ -75,6 +76,22 @@ export function ReportesPage() {
     exportarPDF(tab, config, rango)
   }
 
+  const handleExportExcel = async () => {
+    setCargando(true)
+    try {
+      const result = await exportarExcel(tab, config, rango)
+      if (result?.success) {
+        const toast = (await import('react-hot-toast')).default
+        toast.success('Excel exportado correctamente')
+      }
+    } catch (err) {
+      const toast = (await import('react-hot-toast')).default
+      toast.error(err.message || 'Error al exportar Excel')
+    } finally {
+      setCargando(false)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -85,6 +102,14 @@ export function ReportesPage() {
         </div>
         <div className="flex items-center gap-3">
           {cargando && <Spinner />}
+          <button
+            onClick={handleExportExcel}
+            disabled={cargando}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-700 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Exportar Excel
+          </button>
           <button
             onClick={handleExportPDF}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-warm-800 text-white hover:bg-warm-700 transition-colors"
