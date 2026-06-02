@@ -20,7 +20,8 @@ ipcMain.handle('reportes:ventas', (_event, { desde, hasta }) => {
   const porDia = {}
   for (const v of ventas) {
     const ts = v.created_at || ''
-    const d = new Date(ts.replace(' ', 'T') + 'Z')
+    const normalized = ts.includes('T') ? ts : ts.replace(' ', 'T') + 'Z'
+    const d = new Date(normalized)
     const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     porDia[dia] = (porDia[dia] || 0) + v.total
   }
