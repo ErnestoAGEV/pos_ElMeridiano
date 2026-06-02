@@ -7,18 +7,30 @@ export default function App() {
     <HashRouter>
       <AppRoutes />
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
-          duration: 4000,
+          duration: 3500,
           style: {
             background: '#FFFFFF',
             color: '#3A3731',
             border: '1px solid #E2DDD2',
-            borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            borderRadius: '14px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04)',
+            padding: '14px 18px',
+            fontSize: '15px',
+            fontWeight: '500',
+            lineHeight: '1.4',
+            maxWidth: '420px',
           },
-          success: { iconTheme: { primary: 'var(--color-primary-400)', secondary: 'var(--color-primary-50)' } },
-          error: { iconTheme: { primary: '#ef4444', secondary: '#fef2f2' } },
+          success: {
+            iconTheme: { primary: 'var(--color-primary-500)', secondary: 'var(--color-primary-50)' },
+            style: { borderLeft: '4px solid var(--color-primary-400)' },
+          },
+          error: {
+            iconTheme: { primary: '#ef4444', secondary: '#fef2f2' },
+            style: { borderLeft: '4px solid #ef4444' },
+            duration: 5000,
+          },
         }}
       />
     </HashRouter>

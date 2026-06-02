@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
 import { colorPresets } from '../../lib/colorPresets'
 import { fontPresets } from '../../lib/fontPresets'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 export function PersonalizacionPage() {
   const { config, updateConfig } = useTienda()
@@ -22,6 +23,24 @@ export function PersonalizacionPage() {
   const [saving, setSaving] = useState(false)
   const [backingUp, setBackingUp] = useState(false)
   const [restoring, setRestoring] = useState(false)
+  const [confirmRestore, setConfirmRestore] = useState(false)
+  const [backupEstado, setBackupEstado] = useState({ carpeta: null, ultimo: null })
+
+  useEffect(() => {
+    window.api.backup.estado().then(setBackupEstado).catch(() => {})
+  }, [])
+
+  async function handleSeleccionarCarpeta() {
+    try {
+      const result = await window.api.backup.seleccionarCarpeta()
+      if (result?.success) {
+        setBackupEstado((prev) => ({ ...prev, carpeta: result.carpeta }))
+        toast.success('Carpeta de respaldo configurada')
+      }
+    } catch (err) {
+      toast.error('Error al seleccionar carpeta')
+    }
+  }
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -81,11 +100,7 @@ export function PersonalizacionPage() {
   }
 
   async function handleRestore() {
-    const confirmed = window.confirm(
-      '¿Estás seguro? Esto reemplazará todos los datos actuales con los del respaldo.'
-    )
-    if (!confirmed) return
-
+    setConfirmRestore(false)
     setRestoring(true)
     try {
       const result = await window.api.backup.restaurar()
@@ -261,44 +276,87 @@ export function PersonalizacionPage() {
         </div>
       </section>
 
-      {/* Section 4: Respaldos */}
-      <section className="card rounded-xl p-6 space-y-4">
+      {/* Section 4: Respaldo automatico */}
+      <section className="card rounded-xl p-6 space-y-5">
         <div className="flex items-center gap-3">
           <Database size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Respaldos</h2>
+          <h2 className="font-display text-xl text-warm-900">Respaldo automatico</h2>
         </div>
 
         <p className="text-sm text-warm-600">
-          Los respaldos son copias de tu base de datos local. Puedes guardar un respaldo en
-          cualquier carpeta y restaurarlo más adelante en caso de pérdida de datos.
+          El sistema crea un respaldo automatico cada semana al iniciar la aplicacion.
+          Selecciona la carpeta donde se guardaran los respaldos.
         </p>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-          <Button
-            onClick={handleBackup}
-            disabled={backingUp}
-            className="flex items-center gap-2"
-          >
-            <Download size={16} />
-            {backingUp ? 'Creando respaldo...' : 'Respaldar datos'}
-          </Button>
+        {/* Auto-backup folder */}
+        <div className="rounded-xl border border-ivory-300 bg-ivory-50 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <FolderOpen size={16} className="text-warm-400 shrink-0" />
+              {backupEstado.carpeta ? (
+                <span className="text-sm text-warm-700 truncate">{backupEstado.carpeta}</span>
+              ) : (
+                <span className="text-sm text-warm-400 italic">Sin carpeta configurada</span>
+              )}
+            </div>
+            <Button variant="secondary" size="sm" onClick={handleSeleccionarCarpeta}>
+              {backupEstado.carpeta ? 'Cambiar' : 'Seleccionar carpeta'}
+            </Button>
+          </div>
 
-          <button
-            type="button"
-            onClick={handleRestore}
-            disabled={restoring}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-red-700 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <UploadCloud size={16} />
-            {restoring ? 'Restaurando...' : 'Restaurar respaldo'}
-          </button>
+          {backupEstado.ultimo && (
+            <div className="flex items-center gap-2 text-xs text-warm-500">
+              <CheckCircle size={13} className="text-emerald-500 shrink-0" />
+              Ultimo respaldo: {new Date(backupEstado.ultimo).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
+
+          {!backupEstado.carpeta && (
+            <div className="flex items-center gap-2 text-xs text-amber-600">
+              <Clock size={13} className="shrink-0" />
+              Selecciona una carpeta para activar los respaldos automaticos semanales.
+            </div>
+          )}
         </div>
 
-        <p className="text-xs text-warm-400">
-          Al restaurar un respaldo se reemplazarán todos los datos actuales. Esta acción no se
-          puede deshacer.
-        </p>
+        {/* Manual backup + restore */}
+        <div className="border-t border-ivory-200 pt-4">
+          <p className="text-xs text-warm-400 mb-3 font-medium uppercase tracking-wider">Acciones manuales</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <Button
+              onClick={handleBackup}
+              disabled={backingUp}
+              className="flex items-center gap-2"
+            >
+              <Download size={16} />
+              {backingUp ? 'Creando respaldo...' : 'Respaldar datos'}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => setConfirmRestore(true)}
+              disabled={restoring}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-red-700 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UploadCloud size={16} />
+              {restoring ? 'Restaurando...' : 'Restaurar respaldo'}
+            </button>
+          </div>
+          <p className="text-xs text-warm-400 mt-2">
+            Al restaurar un respaldo se reemplazarán todos los datos actuales. Esta acción no se
+            puede deshacer.
+          </p>
+        </div>
       </section>
+
+      <ConfirmDialog
+        isOpen={confirmRestore}
+        onCancel={() => setConfirmRestore(false)}
+        onConfirm={handleRestore}
+        title="Restaurar respaldo"
+        message="¿Estás seguro? Esto reemplazará todos los datos actuales con los del respaldo.\n\nEsta accion no se puede deshacer."
+        confirmLabel="Restaurar"
+      />
     </div>
   )
 }

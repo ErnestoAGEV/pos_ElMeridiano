@@ -120,8 +120,8 @@ function initSchema() {
       nombre TEXT DEFAULT 'Mi Joyeria',
       slogan TEXT,
       logo_path TEXT,
-      color_preset TEXT DEFAULT 'gold',
-      fuente_preset TEXT DEFAULT 'elegante',
+      color_preset TEXT DEFAULT 'grafito',
+      fuente_preset TEXT DEFAULT 'profesional',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
@@ -130,6 +130,15 @@ function initSchema() {
   const cols = db.prepare("PRAGMA table_info(precios_metales)").all()
   if (!cols.find(c => c.name === 'tipo_cambio')) {
     db.exec('ALTER TABLE precios_metales ADD COLUMN tipo_cambio REAL')
+  }
+
+  // Migration: add backup columns to config_tienda
+  const configCols = db.prepare("PRAGMA table_info(config_tienda)").all()
+  if (!configCols.find(c => c.name === 'backup_carpeta')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN backup_carpeta TEXT')
+  }
+  if (!configCols.find(c => c.name === 'backup_ultimo')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN backup_ultimo TEXT')
   }
 
   // Seed config if empty

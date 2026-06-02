@@ -42,9 +42,19 @@ app.whenReady().then(() => {
   require('./ipc/precios.cjs')
   require('./ipc/ventas.cjs')
   require('./ipc/config.cjs')
-  require('./ipc/backup.cjs')
+  const { ejecutarBackupAuto } = require('./ipc/backup.cjs')
   require('./ipc/reportes.cjs')
   require('./ipc/exportar.cjs')
+
+  // Auto-backup on startup (if folder configured and 7+ days since last)
+  try {
+    const result = ejecutarBackupAuto()
+    if (result.success) {
+      console.log('[Backup auto] Respaldo creado:', result.path)
+    }
+  } catch (err) {
+    console.error('[Backup auto] Error:', err.message)
+  }
 
   createWindow()
 })

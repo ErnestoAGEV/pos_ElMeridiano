@@ -12,6 +12,7 @@ import {
 } from './catalogoService'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { ProductoModal } from './ProductoModal'
 import { CategoriaModal } from './CategoriaModal'
 
@@ -58,6 +59,7 @@ export function CatalogoPage() {
   // Modals
   const [productoModal, setProductoModal] = useState({ open: false, producto: null })
   const [categoriasOpen, setCategoriasOpen] = useState(false)
+  const [confirmEliminar, setConfirmEliminar] = useState(null)
 
   const cargarCategorias = useCallback(async () => {
     try {
@@ -93,10 +95,14 @@ export function CatalogoPage() {
     cargarProductos()
   }, [cargarProductos])
 
-  async function handleEliminar(e, prod) {
+  function handleEliminar(e, prod) {
     e.stopPropagation()
-    if (!window.confirm(`Eliminar el producto "${prod.codigo}"?`)) return
+    setConfirmEliminar(prod)
+  }
 
+  async function confirmarEliminar() {
+    const prod = confirmEliminar
+    setConfirmEliminar(null)
     try {
       await eliminarProducto(prod.id)
       toast.success('Producto eliminado')
@@ -327,6 +333,15 @@ export function CatalogoPage() {
         isOpen={categoriasOpen}
         onClose={() => setCategoriasOpen(false)}
         onChanged={handleReload}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmEliminar}
+        onCancel={() => setConfirmEliminar(null)}
+        onConfirm={confirmarEliminar}
+        title="Eliminar producto"
+        message={`¿Eliminar el producto "${confirmEliminar?.codigo}"?\n\nEsta accion no se puede deshacer.`}
+        confirmLabel="Eliminar"
       />
     </div>
   )

@@ -35,6 +35,9 @@ contextBridge.exposeInMainWorld('api', {
   backup: {
     exportar: () => ipcRenderer.invoke('backup:exportar'),
     restaurar: () => ipcRenderer.invoke('backup:restaurar'),
+    seleccionarCarpeta: () => ipcRenderer.invoke('backup:seleccionar-carpeta'),
+    estado: () => ipcRenderer.invoke('backup:estado'),
+    auto: () => ipcRenderer.invoke('backup:auto'),
   },
   exportar: {
     guardarArchivo: (data) => ipcRenderer.invoke('exportar:guardar-archivo', data),

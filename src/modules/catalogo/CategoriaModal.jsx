@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import {
   obtenerCategorias,
   crearCategoria,
@@ -21,6 +22,7 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
   const [editandoId, setEditandoId] = useState(null)
   const [editandoNombre, setEditandoNombre] = useState('')
   const [guardandoEdicion, setGuardandoEdicion] = useState(false)
+  const [confirmEliminar, setConfirmEliminar] = useState(null)
 
   const cargar = useCallback(async () => {
     setLoading(true)
@@ -95,14 +97,9 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
     }
   }
 
-  async function handleEliminar(cat) {
-    if (
-      !window.confirm(
-        `¿Eliminar la categoría "${cat.nombre}"?\n\nLos productos con esta categoría quedarán sin categoría asignada.`
-      )
-    )
-      return
-
+  async function confirmarEliminar() {
+    const cat = confirmEliminar
+    setConfirmEliminar(null)
     try {
       await eliminarCategoria(cat.id)
       toast.success('Categoría eliminada')
@@ -198,7 +195,7 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
                         <PenLine size={15} />
                       </button>
                       <button
-                        onClick={() => handleEliminar(cat)}
+                        onClick={() => setConfirmEliminar(cat)}
                         className="p-1.5 text-warm-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Eliminar"
                       >
@@ -212,6 +209,14 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={!!confirmEliminar}
+        onCancel={() => setConfirmEliminar(null)}
+        onConfirm={confirmarEliminar}
+        title="Eliminar categoria"
+        message={`¿Eliminar la categoría "${confirmEliminar?.nombre}"?\n\nLos productos con esta categoría quedarán sin categoría asignada.`}
+        confirmLabel="Eliminar"
+      />
     </Modal>
   )
 }

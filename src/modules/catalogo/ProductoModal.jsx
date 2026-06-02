@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { crearProducto, actualizarProducto, eliminarProducto } from './catalogoService'
 
 const METAL_OPTIONS = [
@@ -33,6 +34,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
   const [form, setForm] = useState(INITIAL_FORM)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -56,12 +58,14 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
   const esChapaAcero = form.metal === 'chapa' || form.metal === 'acero'
 
   function handleChange(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      const val = (field === 'codigo' || field === 'nombre') ? e.target.value.toUpperCase() : e.target.value
+      setForm((f) => ({ ...f, [field]: val }))
+    }
   }
 
   async function handleDelete() {
-    if (!window.confirm('Estas seguro de que quieres borrar este producto?')) return
-
+    setConfirmDelete(false)
     setDeleting(true)
     try {
       await eliminarProducto(producto.id)
@@ -80,6 +84,14 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
 
     if (!form.codigo.trim()) {
       toast.error('El codigo es obligatorio')
+      return
+    }
+    if (!form.nombre.trim()) {
+      toast.error('El nombre es obligatorio')
+      return
+    }
+    if (!form.categoria_id) {
+      toast.error('Selecciona una categoria')
       return
     }
 
@@ -151,24 +163,24 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           </div>
         </div>
 
-        {/* Row 2: Nombre + Categoria (optional) */}
+        {/* Row 2: Nombre + Categoria */}
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Nombre"
+            label="Nombre *"
             value={form.nombre}
             onChange={handleChange('nombre')}
-            placeholder="Anillo Solitario (opcional)"
+            placeholder="ANILLO SOLITARIO"
             disabled={saving || deleting}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Categoria</label>
+            <label className="text-sm font-medium text-warm-600">Categoria *</label>
             <select
               value={form.categoria_id}
               onChange={handleChange('categoria_id')}
               className="select-luxury"
               disabled={saving || deleting}
             >
-              <option value="">Sin categoria</option>
+              <option value="">Seleccionar...</option>
               {categorias?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nombre}
@@ -243,7 +255,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           {esEdicion ? (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirmDelete(true)}
               disabled={deleting || saving}
               className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
@@ -268,6 +280,15 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           </div>
         </div>
       </form>
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Borrar producto"
+        message="¿Estas seguro de que quieres borrar este producto?\n\nEsta accion no se puede deshacer."
+        confirmLabel="Borrar"
+      />
     </Modal>
   )
 }

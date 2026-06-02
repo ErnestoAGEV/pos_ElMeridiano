@@ -4,20 +4,20 @@
 
 @layer base {
   :root {
-    /* Default gold palette (overridden by TiendaProvider at runtime) */
-    --color-primary-50: #FDF8EC;
-    --color-primary-100: #F9EDCC;
-    --color-primary-200: #F2D98A;
-    --color-primary-300: #E8C44E;
-    --color-primary-400: #D4AF37;
-    --color-primary-500: #B8962E;
-    --color-primary-600: #9A7D26;
-    --color-primary-700: #7C641E;
-    --color-primary-800: #5E4B16;
-    --color-primary-900: #3D310F;
+    /* Default grafito palette (overridden by TiendaProvider at runtime) */
+    --color-primary-50: #F7F7F8;
+    --color-primary-100: #EDEDF0;
+    --color-primary-200: #D4D4DB;
+    --color-primary-300: #B0B0BC;
+    --color-primary-400: #6B6B7B;
+    --color-primary-500: #56566A;
+    --color-primary-600: #454559;
+    --color-primary-700: #363647;
+    --color-primary-800: #282836;
+    --color-primary-900: #1A1A25;
     /* Default fonts */
-    --font-display: 'Playfair Display', Georgia, serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-display: 'Inter', system-ui, sans-serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
   }
 
   body {
