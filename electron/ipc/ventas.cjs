@@ -16,6 +16,9 @@ function generarFolio(db) {
 }
 
 ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total, metodoPago, notas, preciosUsados, fechaVenta }) => {
+  if (!items || items.length === 0) {
+    throw new Error('No se puede completar una venta sin productos')
+  }
   const db = getDb()
   const folio = generarFolio(db)
 

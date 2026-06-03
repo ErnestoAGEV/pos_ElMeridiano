@@ -106,6 +106,11 @@ export function CatalogoPage() {
     try {
       await eliminarProducto(prod.id)
       toast.success('Producto eliminado')
+      // Si el producto eliminado era de la categoría filtrada, verificar que aún exista
+      if (filtroCategoria && prod.categoria_id === filtroCategoria) {
+        const catExists = categorias.some((c) => c.id === filtroCategoria)
+        if (!catExists) setFiltroCategoria('')
+      }
       cargarProductos()
     } catch (err) {
       toast.error(err.message)

@@ -14,12 +14,25 @@ export function DashboardPage() {
 
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    obtenerDashboard().then(setStats).catch(() => {}).finally(() => setLoading(false))
+    obtenerDashboard()
+      .then(setStats)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="flex items-center justify-center h-screen"><Spinner size="lg" /></div>
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-screen gap-3">
+      <AlertTriangle size={32} className="text-amber-500" />
+      <p className="text-warm-600 font-medium">Error al cargar el dashboard</p>
+      <button onClick={() => { setError(false); setLoading(true); obtenerDashboard().then(setStats).catch(() => setError(true)).finally(() => setLoading(false)) }}
+        className="text-sm text-primary-600 hover:underline">Reintentar</button>
+    </div>
+  )
 
   return (
     <div className="p-8">

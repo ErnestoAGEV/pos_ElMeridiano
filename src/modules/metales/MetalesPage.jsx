@@ -41,7 +41,7 @@ export function MetalesPage() {
     cargarHistorial()
     fetchTipoCambioUSDMXN()
       .then(setTipoCambio)
-      .catch(() => {})
+      .catch(() => toast.error('No se pudo obtener el tipo de cambio'))
   }, [])
 
   function handleConfirmado() {

@@ -21,7 +21,13 @@ function margenColor(pct) {
 }
 
 function DeltaBadge({ actual, anterior }) {
-  if (anterior == null || anterior === 0) return null
+  if (anterior == null) return null
+  if (anterior === 0 && actual === 0) return null
+  if (anterior === 0) return (
+    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600">
+      <ArrowUpRight className="w-3 h-3" />nuevo
+    </span>
+  )
   const delta = ((actual - anterior) / Math.abs(anterior)) * 100
   const positivo = delta >= 0
   return (

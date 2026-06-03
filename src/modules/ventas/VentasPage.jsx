@@ -95,6 +95,10 @@ export function VentasPage() {
   // -- Handle product click --
   function handleProductoClick(producto) {
     if (esDinamico(producto.metal)) {
+      if (loadingPrecios) {
+        toast.error('Cargando precios, espera un momento...')
+        return
+      }
       if (!precioHoy) {
         toast.error('Confirma los precios del dia antes de vender metales')
         return
@@ -162,7 +166,10 @@ export function VentasPage() {
 
   // -- Totals --
   const subtotal = useMemo(
-    () => carrito.reduce((acc, i) => acc + i.precioUnitario * i.cantidad, 0),
+    () => carrito.reduce((acc, i) => {
+      const line = (i.precioUnitario ?? 0) * (i.cantidad ?? 0)
+      return acc + (isNaN(line) ? 0 : line)
+    }, 0),
     [carrito],
   )
   const descuentoNum = parseFloat(descuento) || 0

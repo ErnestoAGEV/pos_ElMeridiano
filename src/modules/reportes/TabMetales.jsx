@@ -30,6 +30,7 @@ function LineChart({ datos }) {
       if (d[m.key] != null) allValues.push(d[m.key])
     }
   }
+  if (allValues.length === 0) return <div className="p-8 text-center text-warm-400 text-sm">Sin datos</div>
   const minVal = Math.min(...allValues)
   const maxVal = Math.max(...allValues)
   const range = maxVal - minVal || 1

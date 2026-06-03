@@ -9,7 +9,8 @@ export function TicketModal({ venta, config, onClose }) {
   const fmt = (n) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n ?? 0)
 
-  const fecha = new Date(venta.created_at || Date.now())
+  const fechaRaw = new Date(venta.created_at || Date.now())
+  const fecha = isNaN(fechaRaw.getTime()) ? new Date() : fechaRaw
   const fechaStr = fecha.toLocaleDateString('es-MX', {
     day: '2-digit', month: '2-digit', year: 'numeric',
   })
