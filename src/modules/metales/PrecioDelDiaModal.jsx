@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import {
   fetchPreciosMetalesAPI, fetchTipoCambioUSDMXN,
   convertirAGramoMXN, calcularKilates, guardarPrecioDelDia,
+  obtenerUltimoPrecio,
 } from './metalesService'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
@@ -17,6 +18,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
   const [tipoCambio, setTipoCambio] = useState(null)
   const [loading, setLoading] = useState(false)
   const [fetchingApi, setFetchingApi] = useState(false)
+  const [sinConexion, setSinConexion] = useState(null)
 
   // Reset state and auto-fetch from API when modal opens
   useEffect(() => {
@@ -27,6 +29,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setPlata('')
       setFuente('manual')
       setTipoCambio(null)
+      setSinConexion(null)
       // Auto-fetch prices from API
       handleConsultarAPI()
     }
@@ -51,10 +54,27 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setOro10k(kilates.oro_10k.toFixed(2))
       setPlata((plataGram + 7).toFixed(2))
       setFuente('api')
+      setSinConexion(null)
 
       toast.success('Precios actualizados desde la API')
     } catch (err) {
-      toast.error(err.message || 'No se pudo consultar la API de metales')
+      // Sin internet: cargar último precio registrado como base
+      try {
+        const ultimo = await obtenerUltimoPrecio()
+        if (ultimo) {
+          setOro24k(Number(ultimo.oro_24k).toFixed(2))
+          setOro14k(Number(ultimo.oro_14k).toFixed(2))
+          setOro10k(Number(ultimo.oro_10k).toFixed(2))
+          setPlata(Number(ultimo.plata).toFixed(2))
+          setTipoCambio(ultimo.tipo_cambio ?? null)
+          setFuente('manual')
+          setSinConexion(ultimo.fecha)
+        } else {
+          toast.error('Sin conexión y no hay precios previos registrados')
+        }
+      } catch {
+        toast.error('Sin conexión y no se pudo cargar el último precio')
+      }
     } finally {
       setFetchingApi(false)
     }
@@ -149,6 +169,22 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
             Consultar API
           </Button>
         </div>
+
+        {/* Sin conexión: aviso con fecha del último precio */}
+        {sinConexion && (
+          <div className="flex items-start gap-3 p-3.5 bg-orange-50 border border-orange-200 rounded-xl">
+            <AlertTriangle size={15} className="mt-0.5 shrink-0 text-orange-500" />
+            <p className="text-xs text-orange-700">
+              <strong>Sin conexión a internet.</strong> Se cargaron los precios del{' '}
+              <strong>
+                {new Date(sinConexion + 'T12:00:00').toLocaleDateString('es-MX', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </strong>
+              . Revisa y ajusta antes de confirmar.
+            </p>
+          </div>
+        )}
 
         {/* Exchange rate + mano de obra */}
         <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">

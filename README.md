@@ -1,6 +1,6 @@
-# POS El Meridiano 💍
+# Meridiano — Sistema Joyero
 
-Sistema de Punto de Venta (POS) moderno y personalizable diseñado específicamente para joyerías. Esta aplicación integral facilita la administración del negocio mediante un control estricto de ventas, inventario, cierres de caja y una interfaz de usuario adaptada a la marca de la tienda.
+Sistema de gestion moderno y personalizable diseñado especificamente para joyerias. Facilita la administracion del negocio mediante control de precios de metales, catalogo, ventas, cierres de caja, reportes de rentabilidad y una interfaz adaptada a la marca de la tienda.
 
 ## 🚀 Tecnologías (Tech Stack)
 

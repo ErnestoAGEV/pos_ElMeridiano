@@ -52,7 +52,7 @@ export function Sidebar() {
       <div className={`pt-7 pb-5 ${collapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
           {config.logo_path ? (
-            <img src={`file://${config.logo_path}`} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+            <img src={config.logo_path} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
           ) : (
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
               <Gem size={18} className="text-white" />
