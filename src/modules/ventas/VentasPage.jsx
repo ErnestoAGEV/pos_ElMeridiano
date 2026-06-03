@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
-  Search, Trash2, ShoppingCart,
+  Search, Trash2, ShoppingCart, Minus,
   CreditCard, Banknote, ArrowRightLeft, Receipt,
   Check, AlertTriangle, MoreHorizontal, Plus, Weight, TrendingUp,
 } from 'lucide-react'
@@ -157,6 +157,15 @@ export function VentasPage() {
       costoBase,
     }])
     setPiezaModal({ open: false, producto: null })
+  }
+
+  // -- Change quantity in cart --
+  function cambiarCantidad(cartId, delta) {
+    setCarrito((prev) => prev.map((i) => {
+      if (i.cartId !== cartId) return i
+      const nueva = i.cantidad + delta
+      return nueva >= 1 ? { ...i, cantidad: nueva } : i
+    }))
   }
 
   // -- Remove from cart --
@@ -394,11 +403,10 @@ export function VentasPage() {
                       <p className="text-[10px] text-warm-400">
                         {METAL_LABELS[item.producto.metal]}
                         {item.peso_gramos ? ` · ${item.peso_gramos}g` : ''}
-                        {item.cantidad > 1 ? ` · x${item.cantidad}` : ''}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <p className="text-sm font-bold text-warm-900">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <p className="text-sm font-bold text-warm-900 mr-1">
                         {fmt(item.precioUnitario * item.cantidad)}
                       </p>
                       <button
@@ -409,12 +417,34 @@ export function VentasPage() {
                       </button>
                     </div>
                   </div>
+                  {/* Quantity controls */}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => cambiarCantidad(item.cartId, -1)}
+                        disabled={item.cantidad <= 1}
+                        className="w-6 h-6 rounded-lg border border-ivory-300 bg-white flex items-center justify-center text-warm-500 hover:bg-ivory-100 hover:text-warm-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-7 text-center text-xs font-bold text-warm-800">{item.cantidad}</span>
+                      <button
+                        onClick={() => cambiarCantidad(item.cartId, 1)}
+                        className="w-6 h-6 rounded-lg border border-ivory-300 bg-white flex items-center justify-center text-warm-500 hover:bg-ivory-100 hover:text-warm-700 transition-colors"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                    {item.cantidad > 1 && (
+                      <span className="text-[10px] text-warm-400">{fmt(item.precioUnitario)} c/u</span>
+                    )}
+                  </div>
                   {/* Show ganancia for dynamic metals */}
                   {item.costoBase != null && (
                     <div className="flex items-center gap-2 mt-1.5 text-[10px]">
-                      <span className="text-warm-400">Costo: {fmt(item.costoBase)}</span>
+                      <span className="text-warm-400">Costo: {fmt(item.costoBase * item.cantidad)}</span>
                       <span className="text-emerald-600 font-semibold">
-                        Ganancia: {fmt(item.precioUnitario - item.costoBase)}
+                        Ganancia: {fmt((item.precioUnitario - item.costoBase) * item.cantidad)}
                       </span>
                     </div>
                   )}
