@@ -141,6 +141,14 @@ function initSchema() {
     db.exec('ALTER TABLE config_tienda ADD COLUMN backup_ultimo TEXT')
   }
 
+  // Indexes for report performance
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_ventas_created_at ON ventas(created_at);
+    CREATE INDEX IF NOT EXISTS idx_detalle_ventas_venta_id ON detalle_ventas(venta_id);
+    CREATE INDEX IF NOT EXISTS idx_detalle_ventas_producto_id ON detalle_ventas(producto_id);
+    CREATE INDEX IF NOT EXISTS idx_productos_activo ON productos(activo);
+  `)
+
   // Seed config if empty
   const configRow = db.prepare('SELECT id FROM config_tienda WHERE id = 1').get()
   if (!configRow) {

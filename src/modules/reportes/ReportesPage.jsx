@@ -65,6 +65,8 @@ export function ReportesPage() {
   const rango = useMemo(() => {
     if (periodo === 'personalizado') {
       if (!desde || !hasta) return null
+      // Corregir si desde > hasta
+      if (desde > hasta) return { desde: hasta, hasta: desde }
       return { desde, hasta }
     }
     return calcularRango(periodo)

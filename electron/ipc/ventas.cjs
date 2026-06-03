@@ -4,6 +4,7 @@ const { getDb } = require('../database.cjs')
 function generarFolio(db) {
   const now = new Date()
   const hoy = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+  // NOTE: must be called INSIDE a transaction to avoid race conditions
   const last = db.prepare(
     "SELECT folio FROM ventas WHERE folio LIKE ? ORDER BY id DESC LIMIT 1"
   ).get(`V${hoy}%`)
@@ -20,7 +21,6 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
     throw new Error('No se puede completar una venta sin productos')
   }
   const db = getDb()
-  const folio = generarFolio(db)
 
   // Build created_at: use fechaVenta date with current time
   let createdAt = null
@@ -44,6 +44,7 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
   `)
 
   const transaction = db.transaction(() => {
+    const folio = generarFolio(db)
     const ventaResult = insertVenta.run(
       folio, subtotal, descuento || 0, total, metodoPago, notas || null,
       preciosUsados?.oro_24k || null, preciosUsados?.oro_14k || null,

@@ -28,7 +28,7 @@ export async function exportarExcel(tab, config, rango) {
   } else if (tab === 'ganancias') {
     await buildGanancias(wb, rango)
   } else if (tab === 'metales') {
-    await buildMetales(wb)
+    await buildMetales(wb, rango)
   }
 
   const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' })
@@ -168,8 +168,8 @@ async function buildGanancias(wb, rango) {
   }
 }
 
-async function buildMetales(wb) {
-  const data = await window.api.precios.historial({})
+async function buildMetales(wb, rango) {
+  const data = await window.api.precios.historial({ desde: rango?.desde, hasta: rango?.hasta })
 
   const rows = [['Fecha', 'Oro 24k/g', 'Oro 14k/g', 'Oro 10k/g', 'Plata/g', 'Fuente']]
   for (const d of data) {

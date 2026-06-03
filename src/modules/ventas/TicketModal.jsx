@@ -42,6 +42,15 @@ export function TicketModal({ venta, config, onClose }) {
       return
     }
 
+    const safeHTML = printArea.cloneNode(true)
+    // Sanitize: remove any script tags or event handlers
+    safeHTML.querySelectorAll('script').forEach((s) => s.remove())
+    safeHTML.querySelectorAll('*').forEach((el) => {
+      for (const attr of [...el.attributes]) {
+        if (attr.name.startsWith('on')) el.removeAttribute(attr.name)
+      }
+    })
+
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -68,7 +77,7 @@ export function TicketModal({ venta, config, onClose }) {
           </style>
         </head>
         <body>
-          ${printArea.innerHTML}
+          ${safeHTML.innerHTML}
           <script>
             window.onload = function() { window.print(); window.close(); };
           <\/script>
