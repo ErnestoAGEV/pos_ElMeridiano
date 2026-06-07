@@ -5,7 +5,7 @@ ipcMain.handle('reportes:ventas', (_event, { desde, hasta }) => {
   const db = getDb()
 
   const ventas = db.prepare(
-    "SELECT id, total, metodo_pago, descuento, created_at FROM ventas WHERE date(created_at, 'localtime') >= ? AND date(created_at, 'localtime') <= ?"
+    "SELECT id, total, metodo_pago, descuento, created_at FROM ventas WHERE estatus = 'completada' AND date(created_at, 'localtime') >= ? AND date(created_at, 'localtime') <= ?"
   ).all(desde, hasta)
 
   const totalVentas = ventas.reduce((s, v) => s + v.total, 0)
@@ -47,7 +47,7 @@ ipcMain.handle('reportes:piezas-por-categoria', (_event, { desde, hasta }) => {
     JOIN ventas v ON dv.venta_id = v.id
     LEFT JOIN productos p ON dv.producto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
     GROUP BY c.id, c.nombre
     ORDER BY piezas DESC
   `).all(desde, hasta)
@@ -65,7 +65,7 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
     JOIN ventas v ON dv.venta_id = v.id
     LEFT JOIN productos p ON dv.producto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
   `).all(desde, hasta)
 
   let gananciaTotal = 0
@@ -119,7 +119,7 @@ ipcMain.handle('reportes:dashboard', (_event) => {
   const hoy = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const ventas = db.prepare(
-    "SELECT total FROM ventas WHERE date(created_at, 'localtime') = ?"
+    "SELECT total FROM ventas WHERE estatus = 'completada' AND date(created_at, 'localtime') = ?"
   ).all(hoy)
   const totalHoy = ventas.reduce((s, v) => s + v.total, 0)
 
@@ -127,7 +127,7 @@ ipcMain.handle('reportes:dashboard', (_event) => {
     SELECT COALESCE(SUM(dv.cantidad), 0) as total
     FROM detalle_ventas dv
     JOIN ventas v ON dv.venta_id = v.id
-    WHERE date(v.created_at, 'localtime') = ?
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') = ?
   `).get(hoy)
 
   const productosCount = db.prepare('SELECT COUNT(*) as total FROM productos WHERE activo = 1').get()
@@ -151,7 +151,7 @@ ipcMain.handle('reportes:top-productos', (_event, { desde, hasta }) => {
     JOIN ventas v ON dv.venta_id = v.id
     LEFT JOIN productos p ON dv.producto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
     GROUP BY dv.producto_id
     ORDER BY piezas DESC
     LIMIT 10
@@ -170,7 +170,7 @@ ipcMain.handle('reportes:productos-muertos', (_event) => {
     FROM productos p
     LEFT JOIN categorias c ON p.categoria_id = c.id
     LEFT JOIN detalle_ventas dv ON dv.producto_id = p.id
-    LEFT JOIN ventas v ON dv.venta_id = v.id
+    LEFT JOIN ventas v ON dv.venta_id = v.id AND v.estatus = 'completada'
     WHERE p.activo = 1
     GROUP BY p.id
     HAVING ultima_venta IS NULL OR ultima_venta < ?
@@ -187,7 +187,7 @@ ipcMain.handle('reportes:ganancia-por-metal', (_event, { desde, hasta }) => {
            v.precio_oro_10k_usado, v.precio_plata_usado
     FROM detalle_ventas dv
     JOIN ventas v ON dv.venta_id = v.id
-    WHERE date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
   `).all(desde, hasta)
 
   const porMetal = {}

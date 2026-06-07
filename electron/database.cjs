@@ -141,6 +141,12 @@ function initSchema() {
     db.exec('ALTER TABLE config_tienda ADD COLUMN backup_ultimo TEXT')
   }
 
+  // Migration: add estatus column to ventas
+  const ventasCols = db.prepare("PRAGMA table_info(ventas)").all()
+  if (!ventasCols.find(c => c.name === 'estatus')) {
+    db.exec("ALTER TABLE ventas ADD COLUMN estatus TEXT DEFAULT 'completada'")
+  }
+
   // Indexes for report performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_ventas_created_at ON ventas(created_at);

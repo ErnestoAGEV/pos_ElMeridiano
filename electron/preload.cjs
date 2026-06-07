@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('api', {
   ventas: {
     completar: (data) => ipcRenderer.invoke('ventas:completar', data),
     obtener: (data) => ipcRenderer.invoke('ventas:obtener', data),
+    cancelar: (data) => ipcRenderer.invoke('ventas:cancelar', data),
   },
   config: {
     obtener: () => ipcRenderer.invoke('config:obtener'),

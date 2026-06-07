@@ -621,7 +621,7 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
 
   const precioMetalGramo = getPrecioMetal(producto.metal, precioHoy)
   const pesoNum = parseFloat(peso) || 0
-  const manoObraNum = (tipoCambio || 0) * 8.2
+  const manoObraNum = producto.metal === 'plata' ? 22 : (tipoCambio || 0) * 8.2
   const costoBase = calcularCostoBase(pesoNum, manoObraNum, precioMetalGramo)
   const precioVentaNum = parseFloat(precioVenta) || 0
   const ganancia = precioVentaNum - costoBase
@@ -698,7 +698,7 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
               <span>{fmt(pesoNum * precioMetalGramo)}</span>
             </div>
             <div className="flex justify-between text-xs text-warm-500">
-              <span>Mano de obra (TC {tipoCambio?.toFixed(2) || '—'} × 8.2)</span>
+              <span>Mano de obra {producto.metal === 'plata' ? '(fijo)' : `(TC ${tipoCambio?.toFixed(2) || '—'} × 8.2)`}</span>
               <span>{fmt(manoObraNum)}</span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-warm-800 pt-1 border-t border-ivory-300">

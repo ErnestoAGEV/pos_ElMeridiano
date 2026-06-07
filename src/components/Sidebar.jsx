@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  BarChart2, DollarSign, Gem, ShoppingCart,
+  BarChart2, DollarSign, Gem, ShoppingCart, ClipboardList,
   BookOpen, Paintbrush, LogOut, ChevronsLeft, ChevronsRight,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -14,6 +14,7 @@ const links = [
   { to: '/metales', icon: DollarSign, label: 'Precios Metales' },
   { to: '/catalogo', icon: Gem, label: 'Catalogo' },
   { to: '/ventas', icon: ShoppingCart, label: 'Punto de Venta' },
+  { to: '/historial', icon: ClipboardList, label: 'Historial' },
   { to: '/reportes', icon: BookOpen, label: 'Reportes' },
   { to: '/personalizacion', icon: Paintbrush, label: 'Personalizacion' },
 ]

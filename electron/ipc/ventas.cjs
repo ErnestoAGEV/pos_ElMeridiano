@@ -88,3 +88,14 @@ ipcMain.handle('ventas:obtener', (_event, { desde, hasta, limite } = {}) => {
   }
   return ventas
 })
+
+ipcMain.handle('ventas:cancelar', (_event, { ventaId }) => {
+  const db = getDb()
+
+  const venta = db.prepare('SELECT * FROM ventas WHERE id = ?').get(ventaId)
+  if (!venta) throw new Error('Venta no encontrada')
+  if (venta.estatus === 'cancelada') throw new Error('La venta ya esta cancelada')
+
+  db.prepare("UPDATE ventas SET estatus = 'cancelada' WHERE id = ?").run(ventaId)
+  return { success: true }
+})

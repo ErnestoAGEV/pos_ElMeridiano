@@ -8,6 +8,7 @@ import { CatalogoPage } from '../modules/catalogo/CatalogoPage'
 import { VentasPage } from '../modules/ventas/VentasPage'
 import { ReportesPage } from '../modules/reportes/ReportesPage'
 import { PersonalizacionPage } from '../modules/personalizacion/PersonalizacionPage'
+import { HistorialPage } from '../modules/historial/HistorialPage'
 
 export function AppRoutes() {
   const { user, loading } = useAuth()
@@ -23,6 +24,7 @@ export function AppRoutes() {
         <Route path="/metales" element={<MetalesPage />} />
         <Route path="/catalogo" element={<CatalogoPage />} />
         <Route path="/ventas" element={<VentasPage />} />
+        <Route path="/historial" element={<HistorialPage />} />
         <Route path="/reportes" element={<ReportesPage />} />
         <Route path="/personalizacion" element={<PersonalizacionPage />} />
       </Route>
