@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Search, PenLine, FolderOpen, Filter,
-  Package, Banknote, Tag, Trash2,
+  Package, Banknote, Tag, Trash2, Barcode,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
@@ -15,6 +15,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { ProductoModal } from './ProductoModal'
 import { CategoriaModal } from './CategoriaModal'
+import { EtiquetaModal } from './EtiquetaModal'
 
 const METAL_OPTIONS = [
   { value: 'oro_24k', label: 'Oro 24k' },
@@ -58,6 +59,7 @@ export function CatalogoPage() {
 
   // Modals
   const [productoModal, setProductoModal] = useState({ open: false, producto: null })
+  const [etiquetaModal, setEtiquetaModal] = useState({ open: false, producto: null })
   const [categoriasOpen, setCategoriasOpen] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState(null)
 
@@ -273,6 +275,16 @@ export function CatalogoPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
+                        setEtiquetaModal({ open: true, producto: prod })
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
+                      title="Imprimir etiqueta"
+                    >
+                      <Barcode size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
                         setProductoModal({ open: true, producto: prod })
                       }}
                       className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
@@ -338,6 +350,12 @@ export function CatalogoPage() {
         isOpen={categoriasOpen}
         onClose={() => setCategoriasOpen(false)}
         onChanged={handleReload}
+      />
+
+      <EtiquetaModal
+        isOpen={etiquetaModal.open}
+        producto={etiquetaModal.producto}
+        onClose={() => setEtiquetaModal({ open: false, producto: null })}
       />
 
       <ConfirmDialog
