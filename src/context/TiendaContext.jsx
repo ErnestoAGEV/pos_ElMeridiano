@@ -10,6 +10,8 @@ const DEFAULTS = {
   logo_path: null,
   color_preset: defaultColorPreset,
   fuente_preset: defaultFontPreset,
+  etiqueta_ancho_mm: 50,
+  etiqueta_alto_mm: 10,
 }
 
 function applyColorPreset(presetName) {

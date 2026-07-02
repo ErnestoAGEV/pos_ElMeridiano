@@ -11,7 +11,7 @@ ipcMain.handle('config:actualizar', (_event, changes) => {
   const fields = []
   const values = []
   for (const [key, value] of Object.entries(changes)) {
-    if (['nombre', 'slogan', 'logo_path', 'color_preset', 'fuente_preset', 'backup_carpeta', 'backup_ultimo'].includes(key)) {
+    if (['nombre', 'slogan', 'logo_path', 'color_preset', 'fuente_preset', 'backup_carpeta', 'backup_ultimo', 'etiqueta_ancho_mm', 'etiqueta_alto_mm'].includes(key)) {
       fields.push(`${key} = ?`)
       values.push(value)
     }

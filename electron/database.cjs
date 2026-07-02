@@ -141,6 +141,14 @@ function initSchema() {
     db.exec('ALTER TABLE config_tienda ADD COLUMN backup_ultimo TEXT')
   }
 
+  // Migration: add etiqueta size columns to config_tienda
+  if (!configCols.find(c => c.name === 'etiqueta_ancho_mm')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN etiqueta_ancho_mm REAL DEFAULT 50')
+  }
+  if (!configCols.find(c => c.name === 'etiqueta_alto_mm')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN etiqueta_alto_mm REAL DEFAULT 10')
+  }
+
   // Migration: add estatus column to ventas
   const ventasCols = db.prepare("PRAGMA table_info(ventas)").all()
   if (!ventasCols.find(c => c.name === 'estatus')) {
