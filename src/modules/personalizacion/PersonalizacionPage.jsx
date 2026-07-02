@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle } from 'lucide-react'
+import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
 import { colorPresets } from '../../lib/colorPresets'
@@ -17,6 +17,8 @@ export function PersonalizacionPage() {
     logo_path: config?.logo_path ?? '',
     color_preset: config?.color_preset ?? '',
     fuente_preset: config?.fuente_preset ?? '',
+    etiqueta_ancho_mm: config?.etiqueta_ancho_mm ?? 50,
+    etiqueta_alto_mm: config?.etiqueta_alto_mm ?? 10,
   })
 
   const [logoPreview, setLogoPreview] = useState(config?.logo_path ?? '')
@@ -70,9 +72,17 @@ export function PersonalizacionPage() {
   }
 
   async function handleSave() {
+    const ancho = parseFloat(form.etiqueta_ancho_mm)
+    const alto = parseFloat(form.etiqueta_alto_mm)
+    if (!ancho || ancho < 10 || !alto || alto < 5) {
+      toast.error('Tamaño de etiqueta inválido: mínimo 10 mm de ancho y 5 mm de alto.')
+      return
+    }
     setSaving(true)
     try {
       const { ...changes } = form
+      changes.etiqueta_ancho_mm = ancho
+      changes.etiqueta_alto_mm = alto
       await updateConfig(changes)
       toast.success('Configuración guardada.')
     } catch (err) {
@@ -273,6 +283,65 @@ export function PersonalizacionPage() {
               </button>
             )
           })}
+        </div>
+      </section>
+
+      {/* Section: Etiquetas de producto */}
+      <section className="card rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Barcode size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Etiquetas de producto</h2>
+        </div>
+
+        <p className="text-sm text-warm-600">
+          Tamaño de la etiqueta con código de barras que se imprime desde el Catálogo.
+          Elige un preset o captura el tamaño de tu rollo en milímetros.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: 'Dumbbell joyería 50×10', ancho: 50, alto: 10 },
+            { label: 'Rectangular 30×20', ancho: 30, alto: 20 },
+            { label: 'Rectangular 40×30', ancho: 40, alto: 30 },
+          ].map((preset) => {
+            const isSelected =
+              parseFloat(form.etiqueta_ancho_mm) === preset.ancho &&
+              parseFloat(form.etiqueta_alto_mm) === preset.alto
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => {
+                  handleChange('etiqueta_ancho_mm', preset.ancho)
+                  handleChange('etiqueta_alto_mm', preset.alto)
+                }}
+                className={`px-3 py-2 rounded-xl text-xs font-medium border-2 transition-all ${
+                  isSelected
+                    ? 'border-warm-900 bg-white shadow-md text-warm-900'
+                    : 'border-ivory-300 bg-white text-warm-500 hover:border-ivory-400'
+                }`}
+              >
+                {preset.label} mm
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 max-w-xs">
+          <Input
+            label="Ancho (mm)"
+            type="number"
+            min="10"
+            value={form.etiqueta_ancho_mm}
+            onChange={(e) => handleChange('etiqueta_ancho_mm', e.target.value)}
+          />
+          <Input
+            label="Alto (mm)"
+            type="number"
+            min="5"
+            value={form.etiqueta_alto_mm}
+            onChange={(e) => handleChange('etiqueta_alto_mm', e.target.value)}
+          />
         </div>
       </section>
 
