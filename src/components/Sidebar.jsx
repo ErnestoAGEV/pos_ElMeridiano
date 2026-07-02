@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useTienda } from '../context/TiendaContext'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
+import logoDefault from '../assets/logo-default.png'
 
 const links = [
   { to: '/dashboard', icon: BarChart2, label: 'Dashboard' },
@@ -52,13 +53,11 @@ export function Sidebar() {
       {/* Brand */}
       <div className={`pt-7 pb-5 ${collapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          {config.logo_path ? (
-            <img src={config.logo_path} alt={config.nombre} className="w-10 h-10 rounded-xl object-cover shrink-0" />
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-primary-sm shrink-0">
-              <Gem size={18} className="text-white" />
-            </div>
-          )}
+          <img
+            src={config.logo_path || logoDefault}
+            alt={config.nombre}
+            className="w-10 h-10 rounded-xl object-cover shrink-0 bg-white border border-ivory-300"
+          />
           {!collapsed && (
             <div>
               <h1 className="font-display text-xl font-bold text-warm-900 leading-tight tracking-tight">

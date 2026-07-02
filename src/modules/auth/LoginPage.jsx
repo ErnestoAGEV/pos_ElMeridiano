@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Gem, LogIn } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { iniciarSesion } from './authService'
 import { useAuthStore } from '../../stores/authStore'
 import { useTienda } from '../../context/TiendaContext'
 import { Button } from '../../components/ui/Button'
+import logoDefault from '../../assets/logo-default.png'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -38,13 +39,11 @@ export function LoginPage() {
     <div className="min-h-screen bg-ivory-100 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          {config.logo_path ? (
-            <img src={config.logo_path} alt={config.nombre} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-primary-md" />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center mx-auto mb-4 shadow-primary-md">
-              <Gem size={28} className="text-white" />
-            </div>
-          )}
+          <img
+            src={config.logo_path || logoDefault}
+            alt={config.nombre}
+            className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-primary-md bg-white"
+          />
           <h1 className="font-display text-3xl font-bold text-warm-900">{config.nombre || 'Sistema Joyero'}</h1>
           {config.slogan && <p className="text-warm-400 text-xs mt-0.5">{config.slogan}</p>}
           <p className="text-warm-400 text-sm mt-1">Inicia sesion para continuar</p>
