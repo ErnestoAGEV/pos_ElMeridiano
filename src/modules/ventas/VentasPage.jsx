@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
   Search, Trash2, ShoppingCart, Minus,
   CreditCard, Banknote, ArrowRightLeft, Receipt,
@@ -44,6 +44,7 @@ export function VentasPage() {
   const [productos, setProductos] = useState([])
   const [loadingProductos, setLoadingProductos] = useState(true)
   const [busqueda, setBusqueda] = useState('')
+  const searchRef = useRef(null)
 
   // Cart: [{ cartId, producto, cantidad, precioUnitario, peso_gramos?, costoManoObra?, costoBase? }]
   const [carrito, setCarrito] = useState([])
@@ -91,6 +92,21 @@ export function VentasPage() {
         (p.codigo && p.codigo.toLowerCase().includes(q)),
     )
   }, [productos, busqueda])
+
+  // -- Barcode scanner / exact code entry (Enter in search box) --
+  function handleBusquedaKeyDown(e) {
+    if (e.key !== 'Enter') return
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return
+    const exacto = productos.find((p) => p.codigo && p.codigo.toLowerCase() === q)
+    if (exacto) {
+      handleProductoClick(exacto)
+      setBusqueda('')
+    } else {
+      toast.error(`Codigo no encontrado: ${busqueda.trim()}`)
+      e.target.select()
+    }
+  }
 
   // -- Handle product click --
   function handleProductoClick(producto) {
@@ -143,6 +159,7 @@ export function VentasPage() {
       costoBase: null,
     }])
     setPrecioModal({ open: false, producto: null })
+    searchRef.current?.focus()
   }
 
   // -- Add dynamic piece from modal --
@@ -157,6 +174,7 @@ export function VentasPage() {
       costoBase,
     }])
     setPiezaModal({ open: false, producto: null })
+    searchRef.current?.focus()
   }
 
   // -- Change quantity in cart --
@@ -255,6 +273,8 @@ export function VentasPage() {
               placeholder="Buscar producto por codigo o nombre..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={handleBusquedaKeyDown}
+              ref={searchRef}
               autoFocus
               className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-9 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
             />
@@ -562,7 +582,10 @@ export function VentasPage() {
         isOpen={piezaModal.open}
         producto={piezaModal.producto}
         precioHoy={precioHoy}
-        onClose={() => setPiezaModal({ open: false, producto: null })}
+        onClose={() => {
+          setPiezaModal({ open: false, producto: null })
+          searchRef.current?.focus()
+        }}
         onAgregar={handleAgregarPieza}
       />
 
@@ -570,7 +593,10 @@ export function VentasPage() {
       <PrecioVentaModal
         isOpen={precioModal.open}
         producto={precioModal.producto}
-        onClose={() => setPrecioModal({ open: false, producto: null })}
+        onClose={() => {
+          setPrecioModal({ open: false, producto: null })
+          searchRef.current?.focus()
+        }}
         onAgregar={handleAgregarConPrecio}
       />
 
