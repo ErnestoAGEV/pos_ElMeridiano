@@ -54,25 +54,25 @@ export function MetalesPage() {
       label: 'Oro 24k',
       value: precioHoy?.oro_24k,
       icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-gradient-to-br from-primary-300 to-primary-500',
+      dot: 'bg-primary-500',
     },
     {
       label: 'Oro 14k',
       value: precioHoy?.oro_14k,
       icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-gradient-to-br from-primary-200 to-primary-400',
+      dot: 'bg-primary-400',
     },
     {
       label: 'Oro 10k',
       value: precioHoy?.oro_10k,
       icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-gradient-to-br from-primary-100 to-primary-300',
+      dot: 'bg-primary-300',
     },
     {
       label: 'Plata',
       value: precioHoy?.plata,
       icon: <Gem size={18} className="text-warm-400" />,
-      dot: 'bg-gradient-to-br from-gray-300 to-gray-400',
+      dot: 'bg-gray-400',
     },
   ]
 
@@ -86,7 +86,7 @@ export function MetalesPage() {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-primary-400 to-primary-500 hover:from-primary-300 hover:to-primary-400 text-white font-semibold text-sm rounded-xl shadow-primary-sm hover:shadow-primary-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 text-white font-semibold text-sm rounded-xl shadow-primary-sm hover:shadow-primary-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
         >
           <RefreshCw size={15} />
           Confirmar precios del dia
@@ -113,7 +113,7 @@ export function MetalesPage() {
             <div className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600" />
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
                   <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-blue-500">
                     USD/MXN
                   </span>

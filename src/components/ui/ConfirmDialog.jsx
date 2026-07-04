@@ -37,7 +37,7 @@ export function ConfirmDialog({
       />
       <div className="relative bg-white rounded-2xl shadow-luxury-lg w-full max-w-sm overflow-hidden animate-[fadeIn_0.15s_ease-out]">
         {/* Accent line */}
-        <div className={`h-[3px] ${variant === 'danger' ? 'bg-gradient-to-r from-red-400 via-red-300 to-red-400' : 'bg-gradient-to-r from-primary-400 via-primary-300 to-primary-400'}`} />
+        <div className={`h-[3px] ${variant === 'danger' ? 'bg-red-400' : 'bg-primary-400'}`} />
 
         <div className="px-6 py-6">
           {/* Icon + Title */}

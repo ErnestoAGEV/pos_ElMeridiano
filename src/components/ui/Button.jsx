@@ -2,7 +2,7 @@ import { Spinner } from './Spinner'
 
 const variants = {
   primary:
-    'bg-gradient-to-b from-primary-400 to-primary-500 hover:from-primary-300 hover:to-primary-400 text-white font-semibold shadow-primary-sm hover:shadow-primary-md',
+    'bg-primary-500 hover:bg-primary-400 text-white font-semibold shadow-primary-sm hover:shadow-primary-md',
   secondary:
     'bg-white hover:bg-ivory-200 text-warm-700 font-medium border border-ivory-400 shadow-luxury',
   danger:

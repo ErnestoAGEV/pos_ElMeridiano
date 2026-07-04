@@ -47,7 +47,7 @@ export function MiniBar({ pct }) {
   return (
     <div className="w-full h-2 bg-ivory-200 rounded-full overflow-hidden">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-500"
+        className="h-full rounded-full bg-primary-500 transition-all duration-500"
         style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
       />
     </div>

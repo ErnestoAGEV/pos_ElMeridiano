@@ -309,7 +309,7 @@ export function TabResumen({ rango, setCargando }) {
                     <span className="text-[9px] text-warm-500 mb-1 whitespace-nowrap font-medium">{formatMoney(monto)}</span>
                     <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
                       <div
-                        className="w-7 rounded-t-md bg-gradient-to-t from-primary-600 to-primary-400 transition-all duration-500"
+                        className="w-7 rounded-t-md bg-primary-500 transition-all duration-500"
                         style={{ height: `${Math.max(4, heightPct)}%` }}
                       />
                     </div>

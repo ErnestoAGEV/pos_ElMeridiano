@@ -57,7 +57,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div className="card-primary lg:col-span-2">
           <div className="p-6 flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-300 to-primary-500 flex items-center justify-center shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-primary-400 flex items-center justify-center shrink-0">
               <ShoppingCart size={24} className="text-white" />
             </div>
             <div>
@@ -81,15 +81,15 @@ export function DashboardPage() {
       {/* Metal prices */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Oro 24k', value: precioHoy?.oro_24k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Oro 14k', value: precioHoy?.oro_14k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Oro 10k', value: precioHoy?.oro_10k, icon: DollarSign, gradient: 'from-primary-300 to-primary-500' },
-          { label: 'Plata', value: precioHoy?.plata, icon: Gem, gradient: 'from-gray-300 to-gray-400' },
-        ].map(({ label, value, icon: Icon, gradient }) => (
+          { label: 'Oro 24k', value: precioHoy?.oro_24k, icon: DollarSign, color: 'bg-primary-400' },
+          { label: 'Oro 14k', value: precioHoy?.oro_14k, icon: DollarSign, color: 'bg-primary-400' },
+          { label: 'Oro 10k', value: precioHoy?.oro_10k, icon: DollarSign, color: 'bg-primary-400' },
+          { label: 'Plata', value: precioHoy?.plata, icon: Gem, color: 'bg-gray-400' },
+        ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card-primary">
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center`}>
                   <Icon size={14} className="text-white" />
                 </div>
                 <span className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">{label}</span>

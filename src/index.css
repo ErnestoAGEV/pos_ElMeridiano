@@ -56,25 +56,17 @@
     content: '';
     display: block;
     height: 3px;
-    background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-300), var(--color-primary-400));
+    background: var(--color-primary-400);
   }
 
   .divider-primary {
     height: 1px;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary-400) 30%, transparent), transparent);
+    background: color-mix(in srgb, var(--color-primary-400) 30%, transparent);
   }
 
   .texture-linen {
     background-color: #FEFDFB;
     background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' type='fractalNoise' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-  }
-
-  .text-primary-shimmer {
-    background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-400) 40%, var(--color-primary-300) 50%, var(--color-primary-400) 60%, var(--color-primary-600) 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   .select-luxury {
