@@ -94,6 +94,7 @@ export function EtiquetaModal({ isOpen, onClose, producto }) {
               overflow: hidden;
               page-break-after: always;
             }
+            .etiqueta:last-child { page-break-after: auto; }
             .etiqueta svg {
               max-width: 96%;
               max-height: ${precioEtiqueta ? '70%' : '96%'};
@@ -132,13 +133,21 @@ export function EtiquetaModal({ isOpen, onClose, producto }) {
               className="bg-white border border-warm-300 shadow-sm flex flex-col items-center justify-center overflow-hidden"
               style={{ width: `${ancho}mm`, height: `${alto}mm` }}
             >
-              {barcodeError ? (
+              {barcodeError && (
                 <p className="text-[10px] text-red-500 text-center px-1">
                   Codigo no representable
                 </p>
-              ) : (
-                <svg ref={svgRef} style={{ maxWidth: '96%', maxHeight: precioEtiqueta ? '70%' : '96%' }} />
               )}
+              {/* El svg permanece montado aunque haya error: el efecto que dibuja
+                  el codigo necesita el ref vivo para el siguiente producto */}
+              <svg
+                ref={svgRef}
+                style={{
+                  maxWidth: '96%',
+                  maxHeight: precioEtiqueta ? '70%' : '96%',
+                  display: barcodeError ? 'none' : 'block',
+                }}
+              />
               {precioEtiqueta && (
                 <p className="text-[9px] font-bold leading-none">{precioEtiqueta}</p>
               )}

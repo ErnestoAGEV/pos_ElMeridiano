@@ -605,7 +605,10 @@ export function VentasPage() {
         <TicketModal
           venta={ventaCompletada}
           config={config}
-          onClose={() => setVentaCompletada(null)}
+          onClose={() => {
+            setVentaCompletada(null)
+            searchRef.current?.focus()
+          }}
         />
       )}
     </div>
