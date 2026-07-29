@@ -10,7 +10,10 @@ function generarFolio(db) {
   ).get(`V${hoy}%`)
   let seq = 1
   if (last) {
-    const lastSeq = parseInt(last.folio.slice(-4), 10)
+    // Prefix is always "V" + 8-digit date (9 chars) -- slice from a fixed offset
+    // instead of slice(-4), which would misread the sequence once it grows past
+    // 4 digits (10000+ sales in a single day) and could regenerate a duplicate folio.
+    const lastSeq = parseInt(last.folio.slice(9), 10)
     seq = lastSeq + 1
   }
   return `V${hoy}${String(seq).padStart(4, '0')}`
@@ -22,12 +25,17 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
   }
   const db = getDb()
 
-  // Build created_at: use fechaVenta date with current time
+  // Build created_at: use fechaVenta date with current time, stored as a real UTC
+  // instant (via toISOString()) so it stays consistent with date(created_at, 'localtime')
+  // used everywhere else. Concatenating a bare local wall-clock string here previously
+  // caused SQLite to double-shift the timezone, silently moving backdated sales to the
+  // wrong calendar day in every report.
   let createdAt = null
   if (fechaVenta) {
+    const [anio, mes, dia] = fechaVenta.split('-').map(Number)
     const now = new Date()
-    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
-    createdAt = `${fechaVenta} ${time}`
+    const local = new Date(anio, mes - 1, dia, now.getHours(), now.getMinutes(), now.getSeconds())
+    createdAt = local.toISOString()
   }
 
   const insertVenta = db.prepare(`
@@ -75,7 +83,7 @@ ipcMain.handle('ventas:obtener', (_event, { desde, hasta, limite } = {}) => {
   if (desde) { sql += " AND date(created_at, 'localtime') >= ?"; params.push(desde) }
   if (hasta) { sql += " AND date(created_at, 'localtime') <= ?"; params.push(hasta) }
   sql += ' ORDER BY created_at DESC'
-  if (limite) { sql += ' LIMIT ?'; params.push(limite) }
+  if (limite != null && limite > 0) { sql += ' LIMIT ?'; params.push(limite) }
   const ventas = db.prepare(sql).all(...params)
 
   const detalleSql = db.prepare(`

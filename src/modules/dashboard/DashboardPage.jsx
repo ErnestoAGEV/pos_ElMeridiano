@@ -10,7 +10,9 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const { precioHoy, faltaConfirmacion } = usePrecioDelDia()
   const { config } = useTienda()
-  const fmt = (n) => n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '--'
+  const fmt = (n) => n != null
+    ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+    : '--'
 
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -94,7 +96,7 @@ export function DashboardPage() {
                 </div>
                 <span className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">{label}</span>
               </div>
-              <p className="font-display text-2xl font-bold text-warm-900">{value ? fmt(value) : '--'}</p>
+              <p className="font-display text-2xl font-bold text-warm-900">{fmt(value)}</p>
               <p className="text-xs text-warm-300 mt-0.5">MXN / gramo</p>
             </div>
           </div>

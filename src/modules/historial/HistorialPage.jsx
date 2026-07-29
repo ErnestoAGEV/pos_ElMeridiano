@@ -220,7 +220,7 @@ function VentaRow({ venta, expanded, onToggle, onCancelar }) {
               <tbody>
                 {venta.detalles.map((d) => (
                   <tr key={d.id} className="border-t border-ivory-200">
-                    <td className="py-1.5 font-mono text-warm-500">{d.producto_codigo}</td>
+                    <td className="py-1.5 font-mono text-warm-500">{d.producto_codigo || '—'}</td>
                     <td className="py-1.5 text-warm-700">{d.producto_nombre || '—'}</td>
                     <td className="py-1.5 text-center text-warm-600">{d.cantidad}</td>
                     <td className="py-1.5 text-right text-warm-600">{fmt(d.precio_unitario)}</td>

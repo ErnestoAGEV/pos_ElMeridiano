@@ -41,12 +41,33 @@ ipcMain.handle('backup:restaurar', async () => {
   const sourcePath = filePaths[0]
 
   const Database = require('better-sqlite3')
+  const TABLAS_ESPERADAS = ['usuarios', 'productos', 'categorias', 'ventas', 'detalle_ventas', 'config_tienda']
+  let testDb
   try {
-    const testDb = new Database(sourcePath, { readonly: true })
-    testDb.prepare('SELECT id FROM config_tienda LIMIT 1').get()
-    testDb.close()
+    testDb = new Database(sourcePath, { readonly: true })
   } catch {
     throw new Error('El archivo seleccionado no es una base de datos valida de Meridiano')
+  }
+  let tablas, configRow
+  try {
+    tablas = testDb.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((t) => t.name)
+    configRow = testDb.prepare('SELECT id FROM config_tienda WHERE id = 1').get()
+  } catch {
+    tablas = []
+    configRow = null
+  } finally {
+    testDb.close()
+  }
+  const faltantes = TABLAS_ESPERADAS.filter((t) => !tablas.includes(t))
+  if (faltantes.length > 0 || !configRow) {
+    throw new Error('El archivo seleccionado no es una base de datos valida de Meridiano')
+  }
+
+  // Safety copy of the current database before overwriting it, in case the
+  // restored file turns out to be the wrong one.
+  if (fs.existsSync(dbPath)) {
+    const preRestoreBackup = dbPath.replace(/\.db$/, '') + '.antes-de-restaurar.db'
+    fs.copyFileSync(dbPath, preRestoreBackup)
   }
 
   closeDb()
