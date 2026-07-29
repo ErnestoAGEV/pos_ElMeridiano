@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode } from 'lucide-react'
+import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
 import { colorPresets } from '../../lib/colorPresets'
@@ -7,9 +7,14 @@ import { fontPresets } from '../../lib/fontPresets'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
+import { cambiarPin } from '../auth/authService'
+import { useAuthStore } from '../../stores/authStore'
 
 export function PersonalizacionPage() {
   const { config, updateConfig } = useTienda()
+  const user = useAuthStore((s) => s.user)
+  const [pinForm, setPinForm] = useState({ actual: '', nuevo: '', confirmar: '' })
+  const [cambiandoPin, setCambiandoPin] = useState(false)
 
   const [form, setForm] = useState({
     nombre: config?.nombre ?? '',
@@ -90,6 +95,34 @@ export function PersonalizacionPage() {
       toast.error('Error al guardar la configuración.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  function handlePinChange(field) {
+    return (e) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 4)
+      setPinForm((prev) => ({ ...prev, [field]: val }))
+    }
+  }
+
+  async function handleCambiarPin() {
+    if (!/^\d{4}$/.test(pinForm.actual) || !/^\d{4}$/.test(pinForm.nuevo) || !/^\d{4}$/.test(pinForm.confirmar)) {
+      toast.error('Los 3 campos deben tener exactamente 4 dígitos.')
+      return
+    }
+    if (pinForm.nuevo !== pinForm.confirmar) {
+      toast.error('El PIN nuevo y su confirmación no coinciden.')
+      return
+    }
+    setCambiandoPin(true)
+    try {
+      await cambiarPin({ userId: user.id, pinActual: pinForm.actual, pinNuevo: pinForm.nuevo })
+      toast.success('PIN actualizado.')
+      setPinForm({ actual: '', nuevo: '', confirmar: '' })
+    } catch (err) {
+      toast.error(err.message || 'Error al cambiar el PIN.')
+    } finally {
+      setCambiandoPin(false)
     }
   }
 
@@ -343,6 +376,53 @@ export function PersonalizacionPage() {
             onChange={(e) => handleChange('etiqueta_alto_mm', e.target.value)}
           />
         </div>
+      </section>
+
+      {/* Section: Seguridad */}
+      <section className="card rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Lock size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Seguridad</h2>
+        </div>
+
+        <p className="text-sm text-warm-600">
+          Cambia el PIN de 4 dígitos con el que inicias sesión en el sistema.
+        </p>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 max-w-xl">
+          <Input
+            label="PIN actual"
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={pinForm.actual}
+            onChange={handlePinChange('actual')}
+            placeholder="••••"
+          />
+          <Input
+            label="PIN nuevo"
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={pinForm.nuevo}
+            onChange={handlePinChange('nuevo')}
+            placeholder="••••"
+          />
+          <Input
+            label="Confirmar PIN nuevo"
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={pinForm.confirmar}
+            onChange={handlePinChange('confirmar')}
+            placeholder="••••"
+          />
+        </div>
+
+        <Button onClick={handleCambiarPin} disabled={cambiandoPin}>
+          <Lock size={16} />
+          {cambiandoPin ? 'Cambiando...' : 'Cambiar PIN'}
+        </Button>
       </section>
 
       {/* Section 4: Respaldo automatico */}
