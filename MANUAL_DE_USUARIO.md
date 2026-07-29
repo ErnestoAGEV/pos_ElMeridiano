@@ -694,6 +694,18 @@ Cambia las fuentes de texto del sistema.
 2. Cada opcion muestra una vista previa del texto con esa fuente
 3. Haz clic en la combinacion que prefieras
 
+### Seguridad (Cambiar PIN)
+
+En la seccion **"Seguridad"** puedes cambiar el PIN de 4 digitos con el que inicias sesion.
+
+1. Escribe tu PIN actual en el campo **"PIN actual"**
+2. Escribe el nuevo PIN en **"PIN nuevo"**
+3. Vuelve a escribir el mismo PIN nuevo en **"Confirmar PIN nuevo"**
+4. Haz clic en el boton **"Cambiar PIN"**
+5. Si el PIN actual es correcto y los dos PIN nuevos coinciden, veras el mensaje "PIN actualizado."
+
+> Este cambio se guarda de inmediato al hacer clic en "Cambiar PIN" — no necesitas usar el boton "Guardar cambios" de arriba para esto.
+
 ### Guardar cambios
 
 Despues de hacer cambios en la identidad, color o tipografia:
