@@ -49,30 +49,22 @@
 
 ## 2. Inicio de Sesion
 
-Al abrir la aplicacion, veras la pantalla de inicio de sesion.
+Al abrir la aplicacion, veras la pantalla de inicio de sesion con un teclado numerico.
 
-### Campos requeridos
+### PIN por defecto
 
-| Campo       | Que escribir                          |
-|-------------|---------------------------------------|
-| Correo      | Tu correo electronico registrado      |
-| Contrasena  | Tu contrasena                         |
+La primera vez que uses el sistema, ingresa con el PIN que viene por defecto:
 
-### Credenciales iniciales
+- **PIN:** `1234`
 
-La primera vez que uses el sistema, ingresa con las credenciales que vienen por defecto:
-
-- **Correo:** `admin@meridiano.com`
-- **Contrasena:** `admin123`
+Puedes cambiarlo despues desde **Personalizacion → Seguridad**.
 
 ### Pasos
 
-1. Escribe tu correo en el campo **Correo**
-2. Escribe tu contrasena en el campo **Contrasena**
-3. Haz clic en el boton **Iniciar sesion**
-4. Si los datos son correctos, veras el mensaje "Bienvenido" y entraras al Dashboard
-
-> Si ves un mensaje de error, verifica que tu correo y contrasena esten escritos correctamente.
+1. Teclea tu PIN de 4 digitos usando el teclado en pantalla (o el teclado fisico de tu computadora).
+2. Al completar el 4to digito, el sistema entra automaticamente — no hay boton "Iniciar sesion".
+3. Si el PIN es correcto, veras el mensaje "Bienvenido" y entraras al Dashboard.
+4. Si el PIN es incorrecto, los circulos se pondran en rojo y se limpiara la pantalla para que vuelvas a intentar.
 
 ---
 
