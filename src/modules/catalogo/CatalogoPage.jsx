@@ -79,7 +79,7 @@ export function CatalogoPage() {
         categoriaId: filtroCategoria || undefined,
         metal: filtroMetal || undefined,
         busqueda: busqueda || undefined,
-        soloActivos: true,
+        soloActivos: false,
       })
       setProductos(data)
     } catch (err) {
