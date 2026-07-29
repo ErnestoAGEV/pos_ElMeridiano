@@ -1,7 +1,8 @@
 import * as XLSX from 'xlsx'
 import {
   obtenerEstadisticasVentas, obtenerPiezasPorCategoria,
-  obtenerGanancia, obtenerTopProductos, obtenerProductosMuertos,
+  obtenerGanancia, obtenerTopProductos, obtenerTopProductosPorIngreso,
+  obtenerProductosVendidos, obtenerProductosMuertos,
   obtenerGananciaPorMetal,
 } from './reportesService'
 
@@ -97,18 +98,36 @@ async function buildResumen(wb, rango) {
 async function buildProductos(wb, rango) {
   if (!rango) return
 
-  const [top, muertos] = await Promise.all([
+  const [top, topIngreso, vendidos, muertos] = await Promise.all([
     obtenerTopProductos(rango),
+    obtenerTopProductosPorIngreso(rango),
+    obtenerProductosVendidos(rango),
     obtenerProductosMuertos(),
   ])
 
-  // Top productos
+  // Top productos por piezas
   const topRows = [['#', 'Codigo', 'Nombre', 'Categoria', 'Piezas', 'Ingreso']]
   top.forEach((p, i) => {
     topRows.push([i + 1, p.codigo, p.nombre || '', p.categoria || 'Sin categoria', p.piezas, p.ingreso])
   })
   const wsTop = XLSX.utils.aoa_to_sheet(topRows)
-  XLSX.utils.book_append_sheet(wb, wsTop, 'Top Productos')
+  XLSX.utils.book_append_sheet(wb, wsTop, 'Top Productos (Piezas)')
+
+  // Top productos por ingresos
+  const topIngresoRows = [['#', 'Codigo', 'Nombre', 'Categoria', 'Piezas', 'Ingreso']]
+  topIngreso.forEach((p, i) => {
+    topIngresoRows.push([i + 1, p.codigo, p.nombre || '', p.categoria || 'Sin categoria', p.piezas, p.ingreso])
+  })
+  const wsTopIngreso = XLSX.utils.aoa_to_sheet(topIngresoRows)
+  XLSX.utils.book_append_sheet(wb, wsTopIngreso, 'Top Productos (Ingresos)')
+
+  // Todos los productos vendidos (sin limite)
+  const vendidosRows = [['Codigo', 'Nombre', 'Categoria', 'Piezas', 'Ingreso']]
+  for (const p of vendidos) {
+    vendidosRows.push([p.codigo, p.nombre || '', p.categoria || 'Sin categoria', p.piezas, p.ingreso])
+  }
+  const wsVendidos = XLSX.utils.aoa_to_sheet(vendidosRows)
+  XLSX.utils.book_append_sheet(wb, wsVendidos, 'Productos Vendidos')
 
   // Productos muertos
   const deadRows = [['Codigo', 'Nombre', 'Categoria', 'Ultima Venta']]

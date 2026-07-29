@@ -1,22 +1,73 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Trophy, AlertTriangle, Package } from 'lucide-react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Trophy, AlertTriangle, Package, Search, ListOrdered } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { obtenerTopProductos, obtenerProductosMuertos } from './reportesService'
+import {
+  obtenerTopProductos, obtenerTopProductosPorIngreso,
+  obtenerProductosVendidos, obtenerProductosMuertos,
+} from './reportesService'
 import { formatMoney } from './ReportesPage'
+
+function TablaTopProductos({ titulo, productos }) {
+  return (
+    <div className="card rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-ivory-100">
+        <h2 className="font-semibold text-warm-900 flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-amber-500" />
+          {titulo}
+        </h2>
+      </div>
+      {productos.length === 0 ? (
+        <div className="p-8 text-center text-warm-400 text-sm">Sin datos para el periodo</div>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-ivory-50">
+              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold w-10">#</th>
+              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
+              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
+              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
+              <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
+              <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-ivory-100">
+            {productos.map((p, i) => (
+              <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
+                <td className="px-5 py-3 text-warm-400 font-semibold">{i + 1}</td>
+                <td className="px-5 py-3 text-warm-700 font-mono text-xs">{p.codigo}</td>
+                <td className="px-5 py-3 text-warm-800 font-medium">{p.nombre || '—'}</td>
+                <td className="px-5 py-3 text-warm-600">{p.categoria || 'Sin categoria'}</td>
+                <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
+                <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
 
 export function TabProductos({ rango, setCargando }) {
   const [topProductos, setTopProductos] = useState([])
+  const [topProductosIngreso, setTopProductosIngreso] = useState([])
+  const [vendidos, setVendidos] = useState([])
   const [muertos, setMuertos] = useState([])
+  const [busqueda, setBusqueda] = useState('')
 
   const cargarDatos = useCallback(async () => {
     if (!rango) return
     setCargando(true)
     try {
-      const [top, dead] = await Promise.all([
+      const [top, topIngreso, todos, dead] = await Promise.all([
         obtenerTopProductos(rango),
+        obtenerTopProductosPorIngreso(rango),
+        obtenerProductosVendidos(rango),
         obtenerProductosMuertos(),
       ])
       setTopProductos(top ?? [])
+      setTopProductosIngreso(topIngreso ?? [])
+      setVendidos(todos ?? [])
       setMuertos(dead ?? [])
     } catch (err) {
       console.error(err)
@@ -35,44 +86,26 @@ export function TabProductos({ rango, setCargando }) {
     return Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24))
   }
 
+  const vendidosFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return vendidos
+    return vendidos.filter(
+      (p) =>
+        (p.codigo && p.codigo.toLowerCase().includes(q)) ||
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+        (p.categoria && p.categoria.toLowerCase().includes(q)),
+    )
+  }, [vendidos, busqueda])
+
+  const totalPiezas = vendidosFiltrados.reduce((s, p) => s + (p.piezas || 0), 0)
+  const totalIngreso = vendidosFiltrados.reduce((s, p) => s + (p.ingreso || 0), 0)
+
   return (
     <div className="space-y-6" data-tab-content>
-      {/* Top 10 */}
-      <div className="card rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-ivory-100">
-          <h2 className="font-semibold text-warm-900 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500" />
-            Top 10 Productos Mas Vendidos
-          </h2>
-        </div>
-        {topProductos.length === 0 ? (
-          <div className="p-8 text-center text-warm-400 text-sm">Sin datos para el periodo</div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-ivory-50">
-                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold w-10">#</th>
-                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
-                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
-                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
-                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
-                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ivory-100">
-              {topProductos.map((p, i) => (
-                <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
-                  <td className="px-5 py-3 text-warm-400 font-semibold">{i + 1}</td>
-                  <td className="px-5 py-3 text-warm-700 font-mono text-xs">{p.codigo}</td>
-                  <td className="px-5 py-3 text-warm-800 font-medium">{p.nombre || '—'}</td>
-                  <td className="px-5 py-3 text-warm-600">{p.categoria || 'Sin categoria'}</td>
-                  <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
-                  <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      {/* Top 10 por piezas y por ingresos */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <TablaTopProductos titulo="Top 10 Productos Mas Vendidos (Piezas)" productos={topProductos} />
+        <TablaTopProductos titulo="Top 10 Productos por Ingresos" productos={topProductosIngreso} />
       </div>
 
       {/* Estrella vs Muertos */}
@@ -135,6 +168,68 @@ export function TabProductos({ rango, setCargando }) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Todos los productos vendidos en el periodo */}
+      <div className="card rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-ivory-100 flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="font-semibold text-warm-900 flex items-center gap-2">
+              <ListOrdered className="w-4 h-4 text-primary-600" />
+              Todos los Productos Vendidos
+            </h2>
+            <p className="text-xs text-warm-400 mt-0.5">Reporte completo del periodo seleccionado, sin limite</p>
+          </div>
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-warm-300 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar por codigo, nombre o categoria..."
+              className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-ivory-300 bg-white text-warm-700 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all w-64"
+            />
+          </div>
+        </div>
+        {vendidosFiltrados.length === 0 ? (
+          <div className="p-8 text-center text-warm-400 text-sm">
+            {vendidos.length === 0 ? 'Sin ventas de productos en el periodo' : 'Sin resultados para la busqueda'}
+          </div>
+        ) : (
+          <div className="max-h-[32rem] overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-ivory-50 z-10">
+                <tr>
+                  <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
+                  <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
+                  <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
+                  <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
+                  <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ivory-100">
+                {vendidosFiltrados.map((p) => (
+                  <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
+                    <td className="px-5 py-3 text-warm-700 font-mono text-xs">{p.codigo}</td>
+                    <td className="px-5 py-3 text-warm-800 font-medium">{p.nombre || '—'}</td>
+                    <td className="px-5 py-3 text-warm-600">{p.categoria || 'Sin categoria'}</td>
+                    <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
+                    <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="sticky bottom-0">
+                <tr className="bg-ivory-100 font-semibold">
+                  <td className="px-5 py-3 text-warm-800" colSpan={3}>
+                    Total ({vendidosFiltrados.length} producto{vendidosFiltrados.length !== 1 && 's'})
+                  </td>
+                  <td className="px-5 py-3 text-right text-warm-800">{totalPiezas}</td>
+                  <td className="px-5 py-3 text-right text-warm-800">{formatMoney(totalIngreso)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )

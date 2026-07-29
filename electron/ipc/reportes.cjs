@@ -158,6 +158,39 @@ ipcMain.handle('reportes:top-productos', (_event, { desde, hasta }) => {
   `).all(desde, hasta)
 })
 
+ipcMain.handle('reportes:top-productos-ingreso', (_event, { desde, hasta }) => {
+  const db = getDb()
+  return db.prepare(`
+    SELECT p.codigo, p.nombre, c.nombre as categoria,
+           COALESCE(SUM(dv.cantidad), 0) as piezas,
+           COALESCE(SUM(dv.subtotal), 0) as ingreso
+    FROM detalle_ventas dv
+    JOIN ventas v ON dv.venta_id = v.id
+    LEFT JOIN productos p ON dv.producto_id = p.id
+    LEFT JOIN categorias c ON p.categoria_id = c.id
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    GROUP BY dv.producto_id
+    ORDER BY ingreso DESC
+    LIMIT 10
+  `).all(desde, hasta)
+})
+
+ipcMain.handle('reportes:productos-vendidos', (_event, { desde, hasta }) => {
+  const db = getDb()
+  return db.prepare(`
+    SELECT p.codigo, p.nombre, c.nombre as categoria,
+           COALESCE(SUM(dv.cantidad), 0) as piezas,
+           COALESCE(SUM(dv.subtotal), 0) as ingreso
+    FROM detalle_ventas dv
+    JOIN ventas v ON dv.venta_id = v.id
+    LEFT JOIN productos p ON dv.producto_id = p.id
+    LEFT JOIN categorias c ON p.categoria_id = c.id
+    WHERE v.estatus = 'completada' AND date(v.created_at, 'localtime') >= ? AND date(v.created_at, 'localtime') <= ?
+    GROUP BY dv.producto_id
+    ORDER BY piezas DESC
+  `).all(desde, hasta)
+})
+
 ipcMain.handle('reportes:productos-muertos', (_event) => {
   const db = getDb()
   const hace60dias = new Date()

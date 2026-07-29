@@ -14,6 +14,14 @@ export async function obtenerTopProductos({ desde, hasta }) {
   return window.api.reportes.topProductos({ desde, hasta })
 }
 
+export async function obtenerTopProductosPorIngreso({ desde, hasta }) {
+  return window.api.reportes.topProductosIngreso({ desde, hasta })
+}
+
+export async function obtenerProductosVendidos({ desde, hasta }) {
+  return window.api.reportes.productosVendidos({ desde, hasta })
+}
+
 export async function obtenerProductosMuertos() {
   return window.api.reportes.productosMuertos()
 }
