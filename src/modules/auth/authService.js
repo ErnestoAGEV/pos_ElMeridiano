@@ -1,7 +1,7 @@
-export async function iniciarSesion({ email, password }) {
-  return window.api.auth.login({ email, password })
+export async function iniciarSesionConPin(pin) {
+  return window.api.auth.loginPin({ pin })
 }
 
-export async function cambiarPassword({ userId, currentPassword, newPassword }) {
-  return window.api.auth.cambiarPassword({ userId, currentPassword, newPassword })
+export async function cambiarPin({ userId, pinActual, pinNuevo }) {
+  return window.api.auth.cambiarPin({ userId, pinActual, pinNuevo })
 }

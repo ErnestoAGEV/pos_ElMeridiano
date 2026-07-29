@@ -2,8 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('api', {
   auth: {
-    login: (data) => ipcRenderer.invoke('auth:login', data),
-    cambiarPassword: (data) => ipcRenderer.invoke('auth:cambiar-password', data),
+    loginPin: (data) => ipcRenderer.invoke('auth:login-pin', data),
+    cambiarPin: (data) => ipcRenderer.invoke('auth:cambiar-pin', data),
   },
   categorias: {
     obtener: () => ipcRenderer.invoke('categorias:obtener'),
