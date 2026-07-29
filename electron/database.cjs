@@ -149,6 +149,12 @@ function initSchema() {
     db.exec('ALTER TABLE config_tienda ADD COLUMN etiqueta_alto_mm REAL DEFAULT 10')
   }
 
+  // Migration: add pin_hash column to usuarios
+  const usuariosCols = db.prepare("PRAGMA table_info(usuarios)").all()
+  if (!usuariosCols.find(c => c.name === 'pin_hash')) {
+    db.exec('ALTER TABLE usuarios ADD COLUMN pin_hash TEXT')
+  }
+
   // Migration: add estatus column to ventas
   const ventasCols = db.prepare("PRAGMA table_info(ventas)").all()
   if (!ventasCols.find(c => c.name === 'estatus')) {
@@ -172,12 +178,16 @@ function initSchema() {
 
 function seedDefaultUser() {
   const bcrypt = require('bcryptjs')
-  const existing = db.prepare('SELECT id FROM usuarios LIMIT 1').get()
+  const existing = db.prepare('SELECT id, pin_hash FROM usuarios LIMIT 1').get()
   if (!existing) {
-    const hash = bcrypt.hashSync('admin123', 10)
-    db.prepare('INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)').run(
-      'Administrador', 'admin@meridiano.com', hash
+    const passwordHash = bcrypt.hashSync('admin123', 10)
+    const pinHash = bcrypt.hashSync('1234', 10)
+    db.prepare('INSERT INTO usuarios (nombre, email, password_hash, pin_hash) VALUES (?, ?, ?, ?)').run(
+      'Administrador', 'admin@meridiano.com', passwordHash, pinHash
     )
+  } else if (!existing.pin_hash) {
+    const pinHash = bcrypt.hashSync('1234', 10)
+    db.prepare('UPDATE usuarios SET pin_hash = ? WHERE id = ?').run(pinHash, existing.id)
   }
 }
 
