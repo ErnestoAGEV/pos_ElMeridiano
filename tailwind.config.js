@@ -52,6 +52,18 @@ export default {
         'primary-sm': '0 0 0 1px color-mix(in srgb, var(--color-primary-400) 8%, transparent), 0 2px 8px color-mix(in srgb, var(--color-primary-400) 6%, transparent)',
         'primary-md': '0 0 0 1px color-mix(in srgb, var(--color-primary-400) 12%, transparent), 0 4px 16px color-mix(in srgb, var(--color-primary-400) 8%, transparent)',
       },
+      keyframes: {
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%': { transform: 'translateX(-8px)' },
+          '40%': { transform: 'translateX(8px)' },
+          '60%': { transform: 'translateX(-6px)' },
+          '80%': { transform: 'translateX(6px)' },
+        },
+      },
+      animation: {
+        shake: 'shake 0.4s ease-in-out',
+      },
     },
   },
   plugins: [],
