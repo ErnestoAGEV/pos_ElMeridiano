@@ -39,8 +39,8 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
 
   const insertDetalle = db.prepare(`
     INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal,
-      metal, peso_gramos, costo_mano_obra, costo_compra)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      metal, peso_gramos, costo_mano_obra, costo_compra, precio_fijo_forzado)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
   const transaction = db.transaction(() => {
@@ -54,10 +54,11 @@ ipcMain.handle('ventas:completar', (_event, { items, subtotal, descuento, total,
     const ventaId = ventaResult.lastInsertRowid
 
     for (const item of items) {
+      const precioFijoForzado = (item.metal === 'chapa' || item.metal === 'acero' || item.precio_fijo_forzado) ? 1 : 0
       insertDetalle.run(
         ventaId, item.producto_id, item.cantidad, item.precio_unitario, item.subtotal,
         item.metal || null, item.peso_gramos || null,
-        item.costo_mano_obra || null, item.costo_compra || null
+        item.costo_mano_obra || null, item.costo_compra || null, precioFijoForzado
       )
     }
 

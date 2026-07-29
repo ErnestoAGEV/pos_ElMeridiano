@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import { obtenerProductos, esDinamico, getPrecioMetal, calcularCostoBase } from '../catalogo/catalogoService'
+import { obtenerProductos, requierePeso, getPrecioMetal, calcularCostoBase } from '../catalogo/catalogoService'
 import { fetchTipoCambioUSDMXN } from '../metales/metalesService'
 import { completarVenta } from './ventasService'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
@@ -110,7 +110,7 @@ export function VentasPage() {
 
   // -- Handle product click --
   function handleProductoClick(producto) {
-    if (esDinamico(producto.metal)) {
+    if (requierePeso(producto)) {
       if (loadingPrecios) {
         toast.error('Cargando precios, espera un momento...')
         return
@@ -210,14 +210,15 @@ export function VentasPage() {
     }
 
     const items = carrito.map((i) => ({
-      producto_id:     i.producto.id,
-      cantidad:        i.cantidad,
-      precio_unitario: i.precioUnitario,
-      subtotal:        i.precioUnitario * i.cantidad,
-      metal:           i.producto.metal,
-      peso_gramos:     i.peso_gramos,
-      costo_mano_obra: i.costoManoObra,
-      costo_compra:    i.producto.costo_compra,
+      producto_id:          i.producto.id,
+      cantidad:             i.cantidad,
+      precio_unitario:      i.precioUnitario,
+      subtotal:             i.precioUnitario * i.cantidad,
+      metal:                i.producto.metal,
+      peso_gramos:          i.peso_gramos,
+      costo_mano_obra:      i.costoManoObra,
+      costo_compra:         i.producto.costo_compra,
+      precio_fijo_forzado:  !!i.producto.precio_fijo_forzado,
     }))
 
     const preciosUsados = precioHoy
@@ -320,7 +321,7 @@ export function VentasPage() {
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
               {productosFiltrados.map((producto) => {
-                const dinamico = esDinamico(producto.metal)
+                const dinamico = requierePeso(producto)
                 const enCarrito = carrito.some((i) => i.producto.id === producto.id)
 
                 return (
@@ -627,6 +628,9 @@ function PrecioBadge({ label, valor }) {
 
 // -- Sub-component: Modal to add dynamic metal piece --
 function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) {
+  const { config } = useTienda()
+  const factorManoObraOro = config?.factor_mano_obra_oro ?? 8.2
+  const manoObraPlataFijo = config?.mano_obra_plata_fijo ?? 22
   const [peso, setPeso] = useState('')
   const [precioVenta, setPrecioVenta] = useState('')
   const [tipoCambio, setTipoCambio] = useState(null)
@@ -650,7 +654,7 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
 
   const precioMetalGramo = getPrecioMetal(producto.metal, precioHoy)
   const pesoNum = parseFloat(peso) || 0
-  const manoObraNum = producto.metal === 'plata' ? 22 : (tipoCambio || 0) * 8.2
+  const manoObraNum = producto.metal === 'plata' ? manoObraPlataFijo : (tipoCambio || 0) * factorManoObraOro
   const costoBase = calcularCostoBase(pesoNum, manoObraNum, precioMetalGramo)
   const precioVentaNum = parseFloat(precioVenta) || 0
   const ganancia = precioVentaNum - costoBase
@@ -727,7 +731,7 @@ function AgregarPiezaModal({ isOpen, producto, precioHoy, onClose, onAgregar }) 
               <span>{fmt(pesoNum * precioMetalGramo)}</span>
             </div>
             <div className="flex justify-between text-xs text-warm-500">
-              <span>Mano de obra {producto.metal === 'plata' ? '(fijo)' : `(TC ${tipoCambio?.toFixed(2) || '—'} × 8.2)`}</span>
+              <span>Mano de obra {producto.metal === 'plata' ? '(fijo)' : `(TC ${tipoCambio?.toFixed(2) || '—'} × ${factorManoObraOro})`}</span>
               <span>{fmt(manoObraNum)}</span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-warm-800 pt-1 border-t border-ivory-300">

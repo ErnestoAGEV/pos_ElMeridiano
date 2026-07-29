@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode, Lock } from 'lucide-react'
+import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode, Coins, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
 import { colorPresets } from '../../lib/colorPresets'
@@ -24,6 +24,11 @@ export function PersonalizacionPage() {
     fuente_preset: config?.fuente_preset ?? '',
     etiqueta_ancho_mm: config?.etiqueta_ancho_mm ?? 50,
     etiqueta_alto_mm: config?.etiqueta_alto_mm ?? 10,
+    factor_oro_14k: config?.factor_oro_14k ?? 0.62,
+    factor_oro_10k: config?.factor_oro_10k ?? 0.4444,
+    margen_plata: config?.margen_plata ?? 7,
+    factor_mano_obra_oro: config?.factor_mano_obra_oro ?? 8.2,
+    mano_obra_plata_fijo: config?.mano_obra_plata_fijo ?? 22,
   })
 
   const [logoPreview, setLogoPreview] = useState(config?.logo_path ?? '')
@@ -83,11 +88,37 @@ export function PersonalizacionPage() {
       toast.error('Tamaño de etiqueta inválido: mínimo 10 mm de ancho y 5 mm de alto.')
       return
     }
+    const factor14k = parseFloat(form.factor_oro_14k)
+    const factor10k = parseFloat(form.factor_oro_10k)
+    if (!factor14k || factor14k <= 0 || factor14k > 1 || !factor10k || factor10k <= 0 || factor10k > 1) {
+      toast.error('Las fórmulas de oro deben ser un número mayor a 0 y menor o igual a 1.')
+      return
+    }
+    const margenPlata = parseFloat(form.margen_plata)
+    const factorManoObraOro = parseFloat(form.factor_mano_obra_oro)
+    const manoObraPlataFijo = parseFloat(form.mano_obra_plata_fijo)
+    if (isNaN(margenPlata) || margenPlata < 0) {
+      toast.error('El margen de plata debe ser un número mayor o igual a 0.')
+      return
+    }
+    if (!factorManoObraOro || factorManoObraOro <= 0) {
+      toast.error('El factor de mano de obra del oro debe ser mayor a 0.')
+      return
+    }
+    if (isNaN(manoObraPlataFijo) || manoObraPlataFijo < 0) {
+      toast.error('La mano de obra fija de plata debe ser un número mayor o igual a 0.')
+      return
+    }
     setSaving(true)
     try {
       const { ...changes } = form
       changes.etiqueta_ancho_mm = ancho
       changes.etiqueta_alto_mm = alto
+      changes.factor_oro_14k = factor14k
+      changes.factor_oro_10k = factor10k
+      changes.margen_plata = margenPlata
+      changes.factor_mano_obra_oro = factorManoObraOro
+      changes.mano_obra_plata_fijo = manoObraPlataFijo
       await updateConfig(changes)
       toast.success('Configuración guardada.')
     } catch (err) {
@@ -375,6 +406,85 @@ export function PersonalizacionPage() {
             value={form.etiqueta_alto_mm}
             onChange={(e) => handleChange('etiqueta_alto_mm', e.target.value)}
           />
+        </div>
+      </section>
+
+      {/* Section: Fórmulas de precios */}
+      <section className="card rounded-xl p-6 space-y-6">
+        <div className="flex items-center gap-3">
+          <Coins size={20} className="text-warm-600" />
+          <h2 className="font-display text-xl text-warm-900">Fórmulas de precios</h2>
+        </div>
+
+        {/* Oro */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-warm-700">Oro</p>
+          <p className="text-xs text-warm-500">
+            Factor por el que se multiplica el precio del Oro 24k para calcular automáticamente
+            los precios de Oro 14k y Oro 10k al capturar el precio del día.
+          </p>
+          <div className="grid grid-cols-2 gap-4 max-w-xs">
+            <Input
+              label="Factor Oro 14k"
+              type="number"
+              step="0.0001"
+              min="0"
+              max="1"
+              value={form.factor_oro_14k}
+              onChange={(e) => handleChange('factor_oro_14k', e.target.value)}
+            />
+            <Input
+              label="Factor Oro 10k"
+              type="number"
+              step="0.0001"
+              min="0"
+              max="1"
+              value={form.factor_oro_10k}
+              onChange={(e) => handleChange('factor_oro_10k', e.target.value)}
+            />
+          </div>
+          <div className="max-w-[10.5rem]">
+            <Input
+              label="Mano de obra (× TC)"
+              type="number"
+              step="0.1"
+              min="0"
+              value={form.factor_mano_obra_oro}
+              onChange={(e) => handleChange('factor_mano_obra_oro', e.target.value)}
+            />
+          </div>
+          <p className="text-xs text-warm-400">
+            La mano de obra del oro se calcula como tipo de cambio USD/MXN × este factor.
+          </p>
+        </div>
+
+        <div className="border-t border-ivory-200" />
+
+        {/* Plata */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-warm-700">Plata</p>
+          <div className="grid grid-cols-2 gap-4 max-w-xs">
+            <Input
+              label="Margen sobre spot ($)"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.margen_plata}
+              onChange={(e) => handleChange('margen_plata', e.target.value)}
+            />
+            <Input
+              label="Mano de obra fija ($)"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.mano_obra_plata_fijo}
+              onChange={(e) => handleChange('mano_obra_plata_fijo', e.target.value)}
+            />
+          </div>
+          <p className="text-xs text-warm-400">
+            El margen se suma al precio spot consultado por API; la mano de obra de plata
+            es un monto fijo por pieza (no depende del tipo de cambio).
+          </p>
         </div>
       </section>
 

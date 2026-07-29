@@ -8,8 +8,14 @@ import {
 } from './metalesService'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { useTienda } from '../../context/TiendaContext'
 
 export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
+  const { config } = useTienda()
+  const factor14k = config?.factor_oro_14k ?? 0.62
+  const factor10k = config?.factor_oro_10k ?? 0.4444
+  const margenPlata = config?.margen_plata ?? 7
+  const factorManoObraOro = config?.factor_mano_obra_oro ?? 8.2
   const [oro24k, setOro24k] = useState('')
   const [oro14k, setOro14k] = useState('')
   const [oro10k, setOro10k] = useState('')
@@ -47,12 +53,12 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
       setTipoCambio(mxnRate)
       const oro24kMxnGram = convertirAGramoMXN(xau, mxnRate)
       const plataGram = convertirAGramoMXN(xag, mxnRate)
-      const kilates = calcularKilates(oro24kMxnGram)
+      const kilates = calcularKilates(oro24kMxnGram, factor14k, factor10k)
 
       setOro24k(kilates.oro_24k.toFixed(2))
       setOro14k(kilates.oro_14k.toFixed(2))
       setOro10k(kilates.oro_10k.toFixed(2))
-      setPlata((plataGram + 7).toFixed(2))
+      setPlata((plataGram + margenPlata).toFixed(2))
       setFuente('api')
       setSinConexion(null)
 
@@ -86,7 +92,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
     setFuente('manual')
     const num = parseFloat(val)
     if (!isNaN(num) && num > 0) {
-      const kilates = calcularKilates(num)
+      const kilates = calcularKilates(num, factor14k, factor10k)
       setOro14k(kilates.oro_14k.toFixed(2))
       setOro10k(kilates.oro_10k.toFixed(2))
     }
@@ -200,7 +206,7 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
           />
           {tipoCambio > 0 && (
             <span className="text-xs text-blue-600 ml-auto">
-              Mano de obra: <strong className="text-blue-800">${(tipoCambio * 8.2).toFixed(2)}</strong>
+              Mano de obra: <strong className="text-blue-800">${(tipoCambio * factorManoObraOro).toFixed(2)}</strong>
             </span>
           )}
         </div>
@@ -209,8 +215,10 @@ export function PrecioDelDiaModal({ isOpen, onClose, onConfirmado }) {
         <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
           <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-500" />
           <p className="text-xs text-amber-700">
-            Al cambiar <strong>Oro 24k</strong> manualmente se recalculan Oro 14k (×0.6) y Oro 10k (×0.44) de forma automática.
-            La <strong>mano de obra</strong> se calcula como tipo de cambio × 8.2.
+            Al cambiar <strong>Oro 24k</strong> manualmente se recalculan Oro 14k (×{factor14k}) y Oro 10k (×{factor10k}) de forma automática.
+            La <strong>Plata</strong> consultada por API incluye un margen de +${margenPlata}.
+            La <strong>mano de obra</strong> se calcula como tipo de cambio × {factorManoObraOro}.
+            Ajusta estas fórmulas en Personalización.
           </p>
         </div>
 

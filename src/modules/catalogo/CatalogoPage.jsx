@@ -8,7 +8,7 @@ import {
   obtenerProductos,
   obtenerCategorias,
   eliminarProducto,
-  esDinamico,
+  requierePeso,
 } from './catalogoService'
 import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
@@ -242,7 +242,7 @@ export function CatalogoPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {productos.map((prod) => {
-            const dinamico = esDinamico(prod.metal)
+            const dinamico = requierePeso(prod)
 
             return (
               <div

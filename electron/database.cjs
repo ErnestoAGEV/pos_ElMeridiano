@@ -132,6 +132,16 @@ function initSchema() {
     db.exec('ALTER TABLE precios_metales ADD COLUMN tipo_cambio REAL')
   }
 
+  // Migration: allow forcing a fixed price on metals that are normally weighed (oro/plata)
+  const productosCols = db.prepare("PRAGMA table_info(productos)").all()
+  if (!productosCols.find(c => c.name === 'precio_fijo_forzado')) {
+    db.exec('ALTER TABLE productos ADD COLUMN precio_fijo_forzado INTEGER DEFAULT 0')
+  }
+  const detalleVentasCols = db.prepare("PRAGMA table_info(detalle_ventas)").all()
+  if (!detalleVentasCols.find(c => c.name === 'precio_fijo_forzado')) {
+    db.exec('ALTER TABLE detalle_ventas ADD COLUMN precio_fijo_forzado INTEGER DEFAULT 0')
+  }
+
   // Migration: add backup columns to config_tienda
   const configCols = db.prepare("PRAGMA table_info(config_tienda)").all()
   if (!configCols.find(c => c.name === 'backup_carpeta')) {
@@ -147,6 +157,25 @@ function initSchema() {
   }
   if (!configCols.find(c => c.name === 'etiqueta_alto_mm')) {
     db.exec('ALTER TABLE config_tienda ADD COLUMN etiqueta_alto_mm REAL DEFAULT 10')
+  }
+
+  // Migration: add gold factor columns to config_tienda
+  if (!configCols.find(c => c.name === 'factor_oro_14k')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN factor_oro_14k REAL DEFAULT 0.62')
+  }
+  if (!configCols.find(c => c.name === 'factor_oro_10k')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN factor_oro_10k REAL DEFAULT 0.4444')
+  }
+
+  // Migration: add remaining pricing formula columns to config_tienda
+  if (!configCols.find(c => c.name === 'margen_plata')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN margen_plata REAL DEFAULT 7')
+  }
+  if (!configCols.find(c => c.name === 'factor_mano_obra_oro')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN factor_mano_obra_oro REAL DEFAULT 8.2')
+  }
+  if (!configCols.find(c => c.name === 'mano_obra_plata_fijo')) {
+    db.exec('ALTER TABLE config_tienda ADD COLUMN mano_obra_plata_fijo REAL DEFAULT 22')
   }
 
   // Migration: add pin_hash column to usuarios

@@ -12,6 +12,11 @@ const DEFAULTS = {
   fuente_preset: defaultFontPreset,
   etiqueta_ancho_mm: 50,
   etiqueta_alto_mm: 10,
+  factor_oro_14k: 0.62,
+  factor_oro_10k: 0.4444,
+  margen_plata: 7,
+  factor_mano_obra_oro: 8.2,
+  mano_obra_plata_fijo: 22,
 }
 
 function applyColorPreset(presetName) {

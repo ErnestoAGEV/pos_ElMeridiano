@@ -78,7 +78,7 @@ ipcMain.handle('reportes:ganancia', (_event, { desde, hasta }) => {
     const esChapaAcero = metal === 'chapa' || metal === 'acero'
     let costoUnitario = 0
 
-    if (esChapaAcero) {
+    if (esChapaAcero || d.precio_fijo_forzado) {
       costoUnitario = d.costo_compra || 0
     } else if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
       costoUnitario = (peso * d.precio_oro_24k_usado) + (d.costo_mano_obra || 0)
@@ -182,7 +182,7 @@ ipcMain.handle('reportes:ganancia-por-metal', (_event, { desde, hasta }) => {
   const db = getDb()
   const detalles = db.prepare(`
     SELECT dv.metal, dv.cantidad, dv.precio_unitario, dv.subtotal,
-           dv.peso_gramos, dv.costo_mano_obra, dv.costo_compra,
+           dv.peso_gramos, dv.costo_mano_obra, dv.costo_compra, dv.precio_fijo_forzado,
            v.precio_oro_24k_usado, v.precio_oro_14k_usado,
            v.precio_oro_10k_usado, v.precio_plata_usado
     FROM detalle_ventas dv
@@ -202,7 +202,7 @@ ipcMain.handle('reportes:ganancia-por-metal', (_event, { desde, hasta }) => {
     const esChapaAcero = metal === 'chapa' || metal === 'acero'
     let costoUnitario = 0
 
-    if (esChapaAcero) {
+    if (esChapaAcero || d.precio_fijo_forzado) {
       costoUnitario = d.costo_compra || 0
     } else if (metal === 'oro_24k' && d.precio_oro_24k_usado) {
       costoUnitario = (peso * d.precio_oro_24k_usado) + (d.costo_mano_obra || 0)

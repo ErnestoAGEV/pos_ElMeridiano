@@ -46,6 +46,12 @@ export function esDinamico(metal) {
   return METALES_DINAMICOS.includes(metal)
 }
 
+// Un producto de metal dinamico (oro/plata) puede forzarse a precio fijo
+// (sin pesar), por ejemplo broqueles que se venden a precio de catalogo.
+export function requierePeso(producto) {
+  return esDinamico(producto.metal) && !producto.precio_fijo_forzado
+}
+
 export function getPrecioMetal(metal, precioHoy) {
   if (!precioHoy) return 0
   if (metal === 'oro_24k') return precioHoy.oro_24k || 0

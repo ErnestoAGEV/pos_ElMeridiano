@@ -46,12 +46,13 @@ ipcMain.handle('productos:crear', (_event, producto) => {
   const db = getDb()
   const result = db.prepare(`
     INSERT INTO productos (codigo, nombre, categoria_id, metal,
-      costo_compra, precio_fijo, imagen_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+      costo_compra, precio_fijo, precio_fijo_forzado, imagen_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     producto.codigo, producto.nombre || '',
     producto.categoria_id || null, producto.metal || 'chapa',
     producto.costo_compra || 0, producto.precio_fijo || null,
+    producto.precio_fijo_forzado ? 1 : 0,
     producto.imagen_url || null
   )
   return db.prepare('SELECT * FROM productos WHERE id = ?').get(result.lastInsertRowid)
@@ -61,14 +62,15 @@ ipcMain.handle('productos:actualizar', (_event, { id, ...producto }) => {
   const db = getDb()
   db.prepare(`
     UPDATE productos SET codigo = ?, nombre = ?, categoria_id = ?,
-      metal = ?, costo_compra = ?, precio_fijo = ?,
+      metal = ?, costo_compra = ?, precio_fijo = ?, precio_fijo_forzado = ?,
       activo = ?, imagen_url = ?
     WHERE id = ?
   `).run(
     producto.codigo, producto.nombre || '',
     producto.categoria_id || null, producto.metal || 'chapa',
     producto.costo_compra || 0, producto.precio_fijo || null,
-    producto.activo ?? 1, producto.imagen_url || null, id
+    producto.precio_fijo_forzado ? 1 : 0,
+    (producto.activo ?? 1) ? 1 : 0, producto.imagen_url || null, id
   )
   return db.prepare('SELECT * FROM productos WHERE id = ?').get(id)
 })

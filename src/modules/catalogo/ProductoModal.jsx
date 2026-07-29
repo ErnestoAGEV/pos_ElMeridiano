@@ -25,6 +25,7 @@ const INITIAL_FORM = {
   metal: 'oro_14k',
   costo_compra: '',
   precio_fijo: '',
+  precio_fijo_forzado: false,
   activo: true,
 }
 
@@ -46,6 +47,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
           metal: producto.metal || 'oro_14k',
           costo_compra: producto.costo_compra ?? '',
           precio_fijo: producto.precio_fijo ?? '',
+          precio_fijo_forzado: !!producto.precio_fijo_forzado,
           activo: producto.activo ?? true,
         })
       } else {
@@ -54,8 +56,8 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
     }
   }, [isOpen, producto])
 
-  const esFijo = METALES_FIJOS.includes(form.metal)
-  const esChapaAcero = form.metal === 'chapa' || form.metal === 'acero'
+  const esChapaAcero = METALES_FIJOS.includes(form.metal)
+  const esFijo = esChapaAcero || form.precio_fijo_forzado
 
   function handleChange(field) {
     return (e) => {
@@ -109,6 +111,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
         metal: form.metal,
         costo_compra: esFijo && form.costo_compra ? parseFloat(form.costo_compra) : 0,
         precio_fijo: esFijo && form.precio_fijo ? parseFloat(form.precio_fijo) : null,
+        precio_fijo_forzado: !esChapaAcero && form.precio_fijo_forzado,
         activo: form.activo,
       }
 
@@ -189,6 +192,20 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
             </select>
           </div>
         </div>
+
+        {/* Force fixed price on a normally-weighed metal (e.g. broqueles) */}
+        {!esChapaAcero && (
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.precio_fijo_forzado}
+              onChange={(e) => setForm((f) => ({ ...f, precio_fijo_forzado: e.target.checked }))}
+              className="w-4 h-4 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
+              disabled={saving || deleting}
+            />
+            <span className="text-sm text-warm-600">Vender a precio fijo (sin pesar)</span>
+          </label>
+        )}
 
         {/* Fixed price metal fields: costo_compra + precio_fijo (not for chapa/acero) */}
         {esFijo && !esChapaAcero && (

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { useTienda } from '../../context/TiendaContext'
-import { esDinamico } from './catalogoService'
+import { requierePeso } from './catalogoService'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n ?? 0)
@@ -21,7 +21,7 @@ export function EtiquetaModal({ isOpen, onClose, producto }) {
   const ancho = parseFloat(config?.etiqueta_ancho_mm) || 50
   const alto = parseFloat(config?.etiqueta_alto_mm) || 10
 
-  const dinamico = producto ? esDinamico(producto.metal) : false
+  const dinamico = producto ? requierePeso(producto) : false
   const tienePrecioFijo = !dinamico && producto?.precio_fijo != null && parseFloat(producto.precio_fijo) > 0
   const precioEtiqueta = incluirPrecio && tienePrecioFijo ? fmt(producto.precio_fijo) : null
 
