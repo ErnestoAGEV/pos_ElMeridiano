@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { DollarSign, Gem, RefreshCw, History, ArrowRightLeft } from 'lucide-react'
+import { RefreshCw, History, ArrowRightLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { motion } from 'motion/react'
 import { obtenerHistorialPrecios, fetchTipoCambioUSDMXN } from './metalesService'
 import { usePrecioDelDia } from '../../hooks/usePrecioDelDia'
 import { PrecioDelDiaModal } from './PrecioDelDiaModal'
@@ -50,43 +51,23 @@ export function MetalesPage() {
   }
 
   const metalCards = [
-    {
-      label: 'Oro 24k',
-      value: precioHoy?.oro_24k,
-      icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-primary-500',
-    },
-    {
-      label: 'Oro 14k',
-      value: precioHoy?.oro_14k,
-      icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-primary-400',
-    },
-    {
-      label: 'Oro 10k',
-      value: precioHoy?.oro_10k,
-      icon: <DollarSign size={18} className="text-primary-400" />,
-      dot: 'bg-primary-300',
-    },
-    {
-      label: 'Plata',
-      value: precioHoy?.plata,
-      icon: <Gem size={18} className="text-warm-400" />,
-      dot: 'bg-gray-400',
-    },
+    { label: 'Oro 24k', value: precioHoy?.oro_24k, dot: 'bg-metal-oro24' },
+    { label: 'Oro 14k', value: precioHoy?.oro_14k, dot: 'bg-metal-oro14' },
+    { label: 'Oro 10k', value: precioHoy?.oro_10k, dot: 'bg-metal-oro10' },
+    { label: 'Plata', value: precioHoy?.plata, dot: 'bg-metal-plata' },
   ]
 
   return (
-    <div className="p-8">
+    <div className="p-9">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-3xl font-bold text-warm-900">Precios de Metales</h1>
-          <p className="text-warm-400 text-sm mt-1">Precios del día para cálculo de joyería</p>
+          <h1 className="font-display italic text-[32px] text-ink leading-none">Precios de Metales</h1>
+          <p className="text-[13.5px] text-ink-faint2 mt-2">Precios del día para cálculo de joyería</p>
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 text-white font-semibold text-sm rounded-xl shadow-primary-sm hover:shadow-primary-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-ink hover:bg-ink-strong text-white font-semibold text-[13.5px] rounded-xl transition-all duration-200"
         >
           <RefreshCw size={15} />
           Confirmar precios del dia
@@ -95,9 +76,9 @@ export function MetalesPage() {
 
       {/* Missing confirmation alert */}
       {faltaConfirmacion && (
-        <div className="flex items-center gap-3 p-4 mb-6 bg-amber-50 border border-amber-200 rounded-xl">
-          <span className="text-amber-500 text-lg">⚠</span>
-          <p className="text-sm font-medium text-amber-800">No has confirmado el precio del dia</p>
+        <div className="flex items-center gap-3 p-4 mb-6 bg-dynamic-bg border border-dynamic-border rounded-xl">
+          <span className="w-2 h-2 rounded-full bg-dynamic-text shrink-0" />
+          <p className="text-sm font-medium text-dynamic-text">No has confirmado el precio del dia</p>
         </div>
       )}
 
@@ -109,49 +90,50 @@ export function MetalesPage() {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {/* Exchange rate card */}
-          <div className="card border-blue-200 bg-blue-50">
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-blue-500">
-                    USD/MXN
-                  </span>
-                </div>
-                <ArrowRightLeft size={18} className="text-blue-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="rounded-2xl bg-ink text-white p-5"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-ink-placeholder2">
+                USD/MXN
+              </span>
+              <ArrowRightLeft size={18} className="text-ink-placeholder2" />
+            </div>
+            <p className="font-display text-[27px] font-bold">
+              {tipoCambio ? `$${tipoCambio.toFixed(2)}` : '—'}
+            </p>
+            <p className="text-xs text-ink-placeholder2 mt-1">Tipo de cambio</p>
+          </motion.div>
+          {metalCards.map(({ label, value, dot }, i) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: (i + 1) * 0.05, ease: 'easeOut' }}
+              className="rounded-2xl bg-white border border-inkBorder-card p-5"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
+                <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-ink-faint2">
+                  {label}
+                </span>
               </div>
-              <p className="font-display text-2xl font-bold text-blue-800">
-                {tipoCambio ? `$${tipoCambio.toFixed(2)}` : '—'}
+              <p className="font-display text-[27px] font-bold text-ink">
+                {formatMXN(value)}
               </p>
-              <p className="text-xs text-blue-400 mt-1">Tipo de cambio</p>
-            </div>
-          </div>
-          {metalCards.map(({ label, value, icon, dot }) => (
-            <div key={label} className="card-primary">
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${dot}`} />
-                    <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-warm-400">
-                      {label}
-                    </span>
-                  </div>
-                  {icon}
-                </div>
-                <p className="font-display text-2xl font-bold text-warm-900">
-                  {formatMXN(value)}
-                </p>
-                <p className="text-xs text-warm-400 mt-1">MXN / gramo</p>
-              </div>
-            </div>
+              <p className="text-xs text-ink-placeholder2 mt-1">MXN / gramo</p>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* History table */}
       <div className="flex items-center gap-3 mb-4">
-        <History size={18} className="text-warm-400" />
-        <h2 className="font-display text-xl font-semibold text-warm-900">Historial de precios</h2>
+        <History size={18} className="text-ink-faint2" />
+        <h2 className="font-display italic text-xl text-ink">Historial de precios</h2>
       </div>
 
       {loadingHist ? (
@@ -159,46 +141,42 @@ export function MetalesPage() {
           <Spinner size="lg" />
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <div className="rounded-2xl bg-white border border-inkBorder-card overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-ivory-300">
-                <th className="text-left px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Fecha</th>
-                <th className="text-right px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Oro 24k</th>
-                <th className="text-right px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Oro 14k</th>
-                <th className="text-right px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Oro 10k</th>
-                <th className="text-right px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Plata</th>
-                <th className="text-center px-6 py-4 text-[11px] font-semibold text-warm-400 uppercase tracking-wider">Fuente</th>
+              <tr className="bg-surface-rail border-b border-inkBorder-standard">
+                <th className="text-left px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Fecha</th>
+                <th className="text-right px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Oro 24k</th>
+                <th className="text-right px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Oro 14k</th>
+                <th className="text-right px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Oro 10k</th>
+                <th className="text-right px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Plata</th>
+                <th className="text-center px-6 py-4 text-[11px] font-semibold text-ink-faint2 uppercase tracking-wider">Fuente</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ivory-200">
+            <tbody className="divide-y divide-inkBorder-row">
               {historial.map((p) => (
-                <tr key={p.id} className="hover:bg-ivory-50 transition-colors">
-                  <td className="px-6 py-3.5 text-sm font-medium text-warm-700">
+                <tr key={p.id} className="hover:bg-surface-sunken transition-colors">
+                  <td className="px-6 py-3.5 text-sm font-medium text-ink-medium">
                     {new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-MX', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
                     })}
                   </td>
-                  <td className="px-6 py-3.5 text-sm text-warm-800 text-right font-semibold">
+                  <td className="px-6 py-3.5 text-sm text-ink-strong text-right font-semibold">
                     {formatMXN(p.oro_24k)}
                   </td>
-                  <td className="px-6 py-3.5 text-sm text-warm-800 text-right font-semibold">
+                  <td className="px-6 py-3.5 text-sm text-ink-strong text-right font-semibold">
                     {formatMXN(p.oro_14k)}
                   </td>
-                  <td className="px-6 py-3.5 text-sm text-warm-800 text-right font-semibold">
+                  <td className="px-6 py-3.5 text-sm text-ink-strong text-right font-semibold">
                     {formatMXN(p.oro_10k)}
                   </td>
-                  <td className="px-6 py-3.5 text-sm text-warm-800 text-right font-semibold">
+                  <td className="px-6 py-3.5 text-sm text-ink-strong text-right font-semibold">
                     {formatMXN(p.plata)}
                   </td>
                   <td className="px-6 py-3.5 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                      p.fuente === 'api'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-primary-100 text-primary-700'
-                    }`}>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-sunken2 border border-inkBorder-strong text-ink-medium2">
                       {p.fuente}
                     </span>
                   </td>
@@ -206,7 +184,7 @@ export function MetalesPage() {
               ))}
               {historial.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-warm-300 text-sm">
+                  <td colSpan={6} className="px-6 py-16 text-center text-ink-placeholder text-sm">
                     No hay registros de precios
                   </td>
                 </tr>

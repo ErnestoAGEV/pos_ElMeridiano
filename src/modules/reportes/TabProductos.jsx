@@ -19,30 +19,40 @@ function TablaTopProductos({ titulo, productos }) {
       {productos.length === 0 ? (
         <div className="p-8 text-center text-warm-400 text-sm">Sin datos para el periodo</div>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-ivory-50">
-              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold w-10">#</th>
-              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
-              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
-              <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
-              <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
-              <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-ivory-100">
-            {productos.map((p, i) => (
-              <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
-                <td className="px-5 py-3 text-warm-400 font-semibold">{i + 1}</td>
-                <td className="px-5 py-3 text-warm-700 font-mono text-xs">{p.codigo}</td>
-                <td className="px-5 py-3 text-warm-800 font-medium">{p.nombre || '—'}</td>
-                <td className="px-5 py-3 text-warm-600">{p.categoria || 'Sin categoria'}</td>
-                <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
-                <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[540px] text-sm table-fixed">
+            <colgroup>
+              <col className="w-9" />
+              <col className="w-24" />
+              <col />
+              <col className="w-28" />
+              <col className="w-20" />
+              <col className="w-28" />
+            </colgroup>
+            <thead>
+              <tr className="bg-ivory-50">
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">#</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Nombre</th>
+                <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Categoria</th>
+                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Piezas</th>
+                <th className="px-5 py-3 text-right text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Ingreso</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-ivory-100">
+              {productos.map((p, i) => (
+                <tr key={p.codigo} className="hover:bg-ivory-50 transition-colors">
+                  <td className="px-5 py-3 text-warm-400 font-semibold">{i + 1}</td>
+                  <td className="px-5 py-3 text-warm-700 font-mono text-xs truncate" title={p.codigo}>{p.codigo}</td>
+                  <td className="px-5 py-3 text-warm-800 font-medium truncate" title={p.nombre || ''}>{p.nombre || '—'}</td>
+                  <td className="px-5 py-3 text-warm-600 truncate" title={p.categoria || ''}>{p.categoria || 'Sin categoria'}</td>
+                  <td className="px-5 py-3 text-right text-warm-700 font-semibold">{p.piezas}</td>
+                  <td className="px-5 py-3 text-right text-warm-700">{formatMoney(p.ingreso)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )
@@ -87,14 +97,13 @@ export function TabProductos({ rango, setCargando }) {
   }
 
   const vendidosFiltrados = useMemo(() => {
-    const q = busqueda.trim().toLowerCase()
-    if (!q) return vendidos
-    return vendidos.filter(
-      (p) =>
-        (p.codigo && p.codigo.toLowerCase().includes(q)) ||
-        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
-        (p.categoria && p.categoria.toLowerCase().includes(q)),
-    )
+    // Buscar por palabras sueltas (en cualquier orden), no solo la frase exacta
+    const terminos = busqueda.trim().toLowerCase().split(/\s+/).filter(Boolean)
+    if (terminos.length === 0) return vendidos
+    return vendidos.filter((p) => {
+      const texto = [p.codigo, p.nombre, p.categoria].filter(Boolean).join(' ').toLowerCase()
+      return terminos.every((t) => texto.includes(t))
+    })
   }, [vendidos, busqueda])
 
   const totalPiezas = vendidosFiltrados.reduce((s, p) => s + (p.piezas || 0), 0)
@@ -103,7 +112,7 @@ export function TabProductos({ rango, setCargando }) {
   return (
     <div className="space-y-6" data-tab-content>
       {/* Top 10 por piezas y por ingresos */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6">
         <TablaTopProductos titulo="Top 10 Productos Mas Vendidos (Piezas)" productos={topProductos} />
         <TablaTopProductos titulo="Top 10 Productos por Ingresos" productos={topProductosIngreso} />
       </div>
@@ -196,8 +205,8 @@ export function TabProductos({ rango, setCargando }) {
             {vendidos.length === 0 ? 'Sin ventas de productos en el periodo' : 'Sin resultados para la busqueda'}
           </div>
         ) : (
-          <div className="max-h-[32rem] overflow-y-auto">
-            <table className="w-full text-sm">
+          <div className="max-h-[32rem] overflow-auto">
+            <table className="w-full min-w-[560px] text-sm">
               <thead className="sticky top-0 bg-ivory-50 z-10">
                 <tr>
                   <th className="px-5 py-3 text-left text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Codigo</th>

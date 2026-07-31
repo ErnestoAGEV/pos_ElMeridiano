@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Save, Upload, X, Palette, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode, Coins, Lock } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Save, Upload, X, Type, Store, Database, Download, UploadCloud, FolderOpen, Clock, CheckCircle, Barcode, Coins, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTienda } from '../../context/TiendaContext'
-import { colorPresets } from '../../lib/colorPresets'
 import { fontPresets } from '../../lib/fontPresets'
-import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { cambiarPin } from '../auth/authService'
@@ -20,7 +18,6 @@ export function PersonalizacionPage() {
     nombre: config?.nombre ?? '',
     slogan: config?.slogan ?? '',
     logo_path: config?.logo_path ?? '',
-    color_preset: config?.color_preset ?? '',
     fuente_preset: config?.fuente_preset ?? '',
     etiqueta_ancho_mm: config?.etiqueta_ancho_mm ?? 50,
     etiqueta_alto_mm: config?.etiqueta_alto_mm ?? 10,
@@ -30,6 +27,22 @@ export function PersonalizacionPage() {
     factor_mano_obra_oro: config?.factor_mano_obra_oro ?? 8.2,
     mano_obra_plata_fijo: config?.mano_obra_plata_fijo ?? 22,
   })
+
+  const SECTIONS = [
+    { id: 'identidad', label: 'Identidad' },
+    { id: 'tipografia', label: 'Tipografía' },
+    { id: 'etiquetas', label: 'Etiquetas' },
+    { id: 'formulas', label: 'Fórmulas de precios' },
+    { id: 'seguridad', label: 'Seguridad' },
+    { id: 'respaldo', label: 'Respaldo' },
+  ]
+  const [seccionActiva, setSeccionActiva] = useState('identidad')
+  const sectionRefs = useRef({})
+
+  function irASeccion(id) {
+    setSeccionActiva(id)
+    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const [logoPreview, setLogoPreview] = useState(config?.logo_path ?? '')
   const [saving, setSaving] = useState(false)
@@ -192,24 +205,53 @@ export function PersonalizacionPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 p-6">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-9 py-6 border-b border-inkBorder-standard shrink-0">
         <div>
-          <h1 className="font-display text-3xl text-warm-900">Personalización</h1>
-          <p className="text-warm-500 mt-1">Configura la identidad visual de tu joyería.</p>
+          <h1 className="font-display italic text-[32px] text-ink leading-none">Personalización</h1>
+          <p className="text-[13.5px] text-ink-faint2 mt-2">Configura la identidad visual de tu joyería</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
-          <Save size={16} />
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white text-[13.5px] font-semibold transition-all disabled:opacity-50"
+        >
+          <Save size={17} strokeWidth={1.9} />
           {saving ? 'Guardando...' : 'Guardar cambios'}
-        </Button>
+        </button>
       </div>
 
+      <div className="flex flex-1 min-h-0">
+        {/* Sub-nav */}
+        <nav className="w-[210px] shrink-0 border-r border-inkBorder-standard py-5 px-3 overflow-y-auto">
+          {SECTIONS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => irASeccion(s.id)}
+              className={`w-full text-left px-3 py-2.5 rounded-xl text-[13.5px] transition-all ${
+                seccionActiva === s.id
+                  ? 'bg-surface-sunken2 text-ink font-semibold'
+                  : 'text-ink-faint2 font-medium hover:bg-surface-sunken hover:text-ink-medium'
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 overflow-y-auto px-9 py-6 space-y-8">
+
       {/* Section 1: Identidad */}
-      <section className="card rounded-xl p-6 space-y-6">
+      <section
+        id="identidad"
+        ref={(el) => (sectionRefs.current.identidad = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-6 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Store size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Identidad de la joyería</h2>
+          <Store size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Identidad de la joyería</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -229,33 +271,33 @@ export function PersonalizacionPage() {
 
         {/* Logo picker */}
         <div>
-          <p className="text-sm font-medium text-warm-700 mb-2">Logo de la tienda</p>
+          <p className="text-sm font-medium text-ink-medium2 mb-2">Logo de la tienda</p>
           <div className="flex items-start gap-4">
             {logoPreview ? (
               <div className="relative shrink-0">
                 <img
                   src={logoPreview}
                   alt="Logo de la tienda"
-                  className="h-24 w-24 rounded-lg object-contain border border-warm-200 bg-ivory-50"
+                  className="h-[74px] w-[74px] rounded-[14px] object-contain border border-inkBorder-strong bg-surface-sunken"
                 />
                 <button
                   type="button"
                   onClick={handleClearLogo}
-                  className="absolute -top-2 -right-2 bg-warm-800 text-white rounded-full p-0.5 hover:bg-warm-900 transition-colors"
+                  className="absolute -top-2 -right-2 bg-ink text-white rounded-full p-0.5 hover:bg-ink-strong transition-colors"
                   title="Quitar logo"
                 >
                   <X size={14} />
                 </button>
               </div>
             ) : (
-              <div className="h-24 w-24 shrink-0 rounded-lg border-2 border-dashed border-warm-300 bg-ivory-50 flex items-center justify-center text-warm-400">
-                <Upload size={24} />
+              <div className="h-[74px] w-[74px] shrink-0 rounded-[14px] border-2 border-dashed border-inkBorder-strong bg-surface-sunken flex items-center justify-center text-ink-placeholder2">
+                <Upload size={22} />
               </div>
             )}
 
             <div className="flex flex-col gap-2">
               <label className="cursor-pointer">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-warm-300 bg-white text-warm-700 text-sm font-medium hover:bg-ivory-50 transition-colors">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-inkBorder-strong bg-white text-ink-medium2 text-sm font-medium hover:bg-surface-sunken transition-colors">
                   <Upload size={14} />
                   Seleccionar imagen
                 </span>
@@ -266,55 +308,21 @@ export function PersonalizacionPage() {
                   onChange={handleLogoChange}
                 />
               </label>
-              <p className="text-xs text-warm-400">PNG, JPG, WEBP o SVG. Máximo 2 MB.</p>
+              <p className="text-xs text-ink-placeholder2">PNG, JPG, WEBP o SVG. Máximo 2 MB.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 2: Color */}
-      <section className="card rounded-xl p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <Palette size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Color</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {Object.entries(colorPresets).map(([key, preset]) => {
-            const isSelected = form.color_preset === key
-            const swatches = ['300', '400', '500', '600']
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleChange('color_preset', key)}
-                className={`rounded-xl p-3 border-2 transition-all text-left bg-white ${
-                  isSelected
-                    ? 'border-warm-900 shadow-md'
-                    : 'border-ivory-300 hover:border-ivory-400'
-                }`}
-              >
-                <div className="flex gap-1 mb-2">
-                  {swatches.map((shade) => (
-                    <span
-                      key={shade}
-                      className="h-5 w-5 rounded-full border border-warm-100"
-                      style={{ backgroundColor: preset[shade] }}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs font-medium text-warm-700 truncate">{preset.label}</p>
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
       {/* Section 3: Tipografía */}
-      <section className="card rounded-xl p-6 space-y-4">
+      <section
+        id="tipografia"
+        ref={(el) => (sectionRefs.current.tipografia = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-4 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Type size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Tipografía</h2>
+          <Type size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Tipografía</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -327,23 +335,23 @@ export function PersonalizacionPage() {
                 onClick={() => handleChange('fuente_preset', key)}
                 className={`rounded-xl p-4 border-2 transition-all text-left bg-white ${
                   isSelected
-                    ? 'border-warm-900 shadow-md'
-                    : 'border-ivory-300 hover:border-ivory-400'
+                    ? 'border-ink shadow-sm'
+                    : 'border-inkBorder-card hover:border-inkBorder-strong'
                 }`}
               >
                 <p
-                  className="text-lg text-warm-900 leading-tight"
+                  className="text-lg text-ink leading-tight"
                   style={{ fontFamily: preset.display }}
                 >
                   {form.nombre || 'Joyería Meridiano'}
                 </p>
                 <p
-                  className="text-sm text-warm-500 mt-1"
+                  className="text-sm text-ink-medium2 mt-1"
                   style={{ fontFamily: preset.sans }}
                 >
                   Texto de ejemplo para el cuerpo
                 </p>
-                <p className="text-xs text-warm-300 mt-2">{preset.label}</p>
+                <p className="text-xs text-ink-placeholder2 mt-2">{preset.label}</p>
               </button>
             )
           })}
@@ -351,13 +359,17 @@ export function PersonalizacionPage() {
       </section>
 
       {/* Section: Etiquetas de producto */}
-      <section className="card rounded-xl p-6 space-y-4">
+      <section
+        id="etiquetas"
+        ref={(el) => (sectionRefs.current.etiquetas = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-4 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Barcode size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Etiquetas de producto</h2>
+          <Barcode size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Etiquetas de producto</h2>
         </div>
 
-        <p className="text-sm text-warm-600">
+        <p className="text-sm text-ink-medium2">
           Tamaño de la etiqueta con código de barras que se imprime desde el Catálogo.
           Elige un preset o captura el tamaño de tu rollo en milímetros.
         </p>
@@ -381,8 +393,8 @@ export function PersonalizacionPage() {
                 }}
                 className={`px-3 py-2 rounded-xl text-xs font-medium border-2 transition-all ${
                   isSelected
-                    ? 'border-warm-900 bg-white shadow-md text-warm-900'
-                    : 'border-ivory-300 bg-white text-warm-500 hover:border-ivory-400'
+                    ? 'border-ink bg-white shadow-sm text-ink'
+                    : 'border-inkBorder-card bg-white text-ink-medium2 hover:border-inkBorder-strong'
                 }`}
               >
                 {preset.label} mm
@@ -410,16 +422,20 @@ export function PersonalizacionPage() {
       </section>
 
       {/* Section: Fórmulas de precios */}
-      <section className="card rounded-xl p-6 space-y-6">
+      <section
+        id="formulas"
+        ref={(el) => (sectionRefs.current.formulas = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-6 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Coins size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Fórmulas de precios</h2>
+          <Coins size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Fórmulas de precios</h2>
         </div>
 
         {/* Oro */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-warm-700">Oro</p>
-          <p className="text-xs text-warm-500">
+          <p className="text-sm font-medium text-ink-medium2">Oro</p>
+          <p className="text-xs text-ink-faint2">
             Factor por el que se multiplica el precio del Oro 24k para calcular automáticamente
             los precios de Oro 14k y Oro 10k al capturar el precio del día.
           </p>
@@ -462,7 +478,7 @@ export function PersonalizacionPage() {
 
         {/* Plata */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-warm-700">Plata</p>
+          <p className="text-sm font-medium text-ink-medium2">Plata</p>
           <div className="grid grid-cols-2 gap-4 max-w-xs">
             <Input
               label="Margen sobre spot ($)"
@@ -481,7 +497,7 @@ export function PersonalizacionPage() {
               onChange={(e) => handleChange('mano_obra_plata_fijo', e.target.value)}
             />
           </div>
-          <p className="text-xs text-warm-400">
+          <p className="text-xs text-ink-faint2">
             El margen se suma al precio spot consultado por API; la mano de obra de plata
             es un monto fijo por pieza (no depende del tipo de cambio).
           </p>
@@ -489,13 +505,17 @@ export function PersonalizacionPage() {
       </section>
 
       {/* Section: Seguridad */}
-      <section className="card rounded-xl p-6 space-y-4">
+      <section
+        id="seguridad"
+        ref={(el) => (sectionRefs.current.seguridad = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-4 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Lock size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Seguridad</h2>
+          <Lock size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Seguridad</h2>
         </div>
 
-        <p className="text-sm text-warm-600">
+        <p className="text-sm text-ink-medium2">
           Cambia el PIN de 4 dígitos con el que inicias sesión en el sistema.
         </p>
 
@@ -529,49 +549,60 @@ export function PersonalizacionPage() {
           />
         </div>
 
-        <Button onClick={handleCambiarPin} disabled={cambiandoPin}>
+        <button
+          onClick={handleCambiarPin}
+          disabled={cambiandoPin}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white text-[13.5px] font-semibold transition-all disabled:opacity-50"
+        >
           <Lock size={16} />
           {cambiandoPin ? 'Cambiando...' : 'Cambiar PIN'}
-        </Button>
+        </button>
       </section>
 
-      {/* Section 4: Respaldo automatico */}
-      <section className="card rounded-xl p-6 space-y-5">
+      {/* Section: Respaldo */}
+      <section
+        id="respaldo"
+        ref={(el) => (sectionRefs.current.respaldo = el)}
+        className="rounded-2xl border border-inkBorder-card p-6 space-y-5 scroll-mt-4"
+      >
         <div className="flex items-center gap-3">
-          <Database size={20} className="text-warm-600" />
-          <h2 className="font-display text-xl text-warm-900">Respaldo automatico</h2>
+          <Database size={20} className="text-ink-medium" strokeWidth={1.8} />
+          <h2 className="font-display italic text-xl text-ink">Respaldo</h2>
         </div>
 
-        <p className="text-sm text-warm-600">
+        <p className="text-sm text-ink-medium2">
           El sistema crea un respaldo automatico cada semana al iniciar la aplicacion.
           Selecciona la carpeta donde se guardaran los respaldos.
         </p>
 
         {/* Auto-backup folder */}
-        <div className="rounded-xl border border-ivory-300 bg-ivory-50 p-4 space-y-3">
+        <div className="rounded-xl border border-inkBorder-standard bg-surface-rail p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <FolderOpen size={16} className="text-warm-400 shrink-0" />
+              <FolderOpen size={16} className="text-ink-faint2 shrink-0" />
               {backupEstado.carpeta ? (
-                <span className="text-sm text-warm-700 truncate">{backupEstado.carpeta}</span>
+                <span className="text-sm text-ink-medium2 truncate">{backupEstado.carpeta}</span>
               ) : (
-                <span className="text-sm text-warm-400 italic">Sin carpeta configurada</span>
+                <span className="text-sm text-ink-placeholder2 italic">Sin carpeta configurada</span>
               )}
             </div>
-            <Button variant="secondary" size="sm" onClick={handleSeleccionarCarpeta}>
+            <button
+              onClick={handleSeleccionarCarpeta}
+              className="px-3.5 py-2 rounded-xl border border-inkBorder-strong bg-white text-ink-medium2 text-[12.5px] font-medium hover:bg-surface-sunken transition-all"
+            >
               {backupEstado.carpeta ? 'Cambiar' : 'Seleccionar carpeta'}
-            </Button>
+            </button>
           </div>
 
           {backupEstado.ultimo && (
-            <div className="flex items-center gap-2 text-xs text-warm-500">
-              <CheckCircle size={13} className="text-emerald-500 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-ink-medium2">
+              <CheckCircle size={13} className="text-status-successDot shrink-0" />
               Ultimo respaldo: {new Date(backupEstado.ultimo).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
 
           {!backupEstado.carpeta && (
-            <div className="flex items-center gap-2 text-xs text-amber-600">
+            <div className="flex items-center gap-2 text-xs text-dynamic-text">
               <Clock size={13} className="shrink-0" />
               Selecciona una carpeta para activar los respaldos automaticos semanales.
             </div>
@@ -579,34 +610,37 @@ export function PersonalizacionPage() {
         </div>
 
         {/* Manual backup + restore */}
-        <div className="border-t border-ivory-200 pt-4">
-          <p className="text-xs text-warm-400 mb-3 font-medium uppercase tracking-wider">Acciones manuales</p>
+        <div className="border-t border-inkBorder-standard pt-4">
+          <p className="text-xs text-ink-placeholder2 mb-3 font-medium uppercase tracking-wider">Acciones manuales</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <Button
+            <button
               onClick={handleBackup}
               disabled={backingUp}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white text-[13.5px] font-semibold transition-all disabled:opacity-50"
             >
               <Download size={16} />
               {backingUp ? 'Creando respaldo...' : 'Respaldar datos'}
-            </Button>
+            </button>
 
             <button
               type="button"
               onClick={() => setConfirmRestore(true)}
               disabled={restoring}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-red-700 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-status-dangerText/40 bg-white text-status-dangerText text-sm font-medium hover:bg-status-dangerBg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UploadCloud size={16} />
               {restoring ? 'Restaurando...' : 'Restaurar respaldo'}
             </button>
           </div>
-          <p className="text-xs text-warm-400 mt-2">
+          <p className="text-xs text-ink-placeholder2 mt-2">
             Al restaurar un respaldo se reemplazarán todos los datos actuales. Esta acción no se
             puede deshacer.
           </p>
         </div>
       </section>
+
+        </div>
+      </div>
 
       <ConfirmDialog
         isOpen={confirmRestore}

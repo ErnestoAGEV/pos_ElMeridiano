@@ -115,14 +115,14 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
       {/* Add new category */}
       <div className="flex items-end gap-3 mb-6">
         <div className="flex-1 flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-warm-600">Nueva categoría</label>
+          <label className="text-sm font-medium text-ink-medium2">Nueva categoría</label>
           <input
             type="text"
             value={nuevaNombre}
             onChange={(e) => setNuevaNombre(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCrear()}
             placeholder="Ej: Anillos, Collares, Pulseras..."
-            className="bg-white border border-ivory-400 rounded-xl px-4 py-2.5 text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
+            className="bg-surface-sunken border border-inkBorder-strong rounded-xl px-4 py-2.5 text-ink-strong placeholder-ink-placeholder2 focus:outline-none focus:border-ink transition-all"
             disabled={creando}
           />
         </div>
@@ -138,17 +138,17 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
           <Spinner size="md" />
         </div>
       ) : categorias.length === 0 ? (
-        <div className="text-center py-12 bg-ivory-50 rounded-xl border border-ivory-200">
-          <FolderOpen size={24} className="mx-auto text-warm-300 mb-2" />
-          <p className="text-sm text-warm-500 font-medium">No hay categorías registradas</p>
+        <div className="text-center py-12 bg-surface-sunken rounded-xl border border-inkBorder-standard">
+          <FolderOpen size={24} className="mx-auto text-ink-placeholder2 mb-2" />
+          <p className="text-sm text-ink-faint2 font-medium">No hay categorías registradas</p>
         </div>
       ) : (
-        <div className="border border-ivory-200 rounded-xl overflow-hidden max-h-[50vh] overflow-y-auto">
-          <div className="divide-y divide-ivory-100">
+        <div className="border border-inkBorder-standard rounded-xl overflow-hidden max-h-[50vh] overflow-y-auto">
+          <div className="divide-y divide-inkBorder-row">
             {categorias.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center justify-between px-4 py-3 hover:bg-ivory-50 transition-colors"
+                className="flex items-center justify-between px-4 py-3 hover:bg-surface-sunken transition-colors"
               >
                 {editandoId === cat.id ? (
                   /* Inline edit mode */
@@ -161,14 +161,14 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
                         if (e.key === 'Enter') guardarEdicion()
                         if (e.key === 'Escape') cancelarEdicion()
                       }}
-                      className="flex-1 bg-white border border-primary-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                      className="flex-1 bg-white border border-ink/40 rounded-lg px-3 py-1.5 text-sm text-ink-strong focus:outline-none focus:border-ink"
                       autoFocus
                       disabled={guardandoEdicion}
                     />
                     <button
                       onClick={guardarEdicion}
                       disabled={guardandoEdicion}
-                      className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 text-status-successText hover:bg-status-successBg rounded-lg transition-colors disabled:opacity-50"
                       title="Guardar"
                     >
                       <Check size={15} />
@@ -176,7 +176,7 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
                     <button
                       onClick={cancelarEdicion}
                       disabled={guardandoEdicion}
-                      className="p-1.5 text-warm-400 hover:bg-ivory-200 rounded-lg transition-colors"
+                      className="p-1.5 text-ink-faint2 hover:bg-surface-sunken2 rounded-lg transition-colors"
                       title="Cancelar"
                     >
                       <X size={15} />
@@ -185,18 +185,18 @@ export function CategoriaModal({ isOpen, onClose, onChanged }) {
                 ) : (
                   /* Display mode */
                   <>
-                    <span className="text-sm font-medium text-warm-800">{cat.nombre}</span>
+                    <span className="text-sm font-medium text-ink-strong">{cat.nombre}</span>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => iniciarEdicion(cat)}
-                        className="p-1.5 text-warm-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        className="p-1.5 text-ink-faint2 hover:text-ink hover:bg-surface-sunken2 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <PenLine size={15} />
                       </button>
                       <button
                         onClick={() => setConfirmEliminar(cat)}
-                        className="p-1.5 text-warm-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-ink-faint2 hover:text-status-dangerText hover:bg-status-dangerBg rounded-lg transition-colors"
                         title="Eliminar"
                       >
                         <Trash2 size={15} />

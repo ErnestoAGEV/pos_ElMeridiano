@@ -20,8 +20,14 @@ ipcMain.handle('reportes:ventas', (_event, { desde, hasta }) => {
   const porDia = {}
   for (const v of ventas) {
     const ts = v.created_at || ''
-    // Tratar timestamps como hora local (no agregar Z que fuerza UTC)
-    const normalized = ts.includes('T') ? ts.replace('Z', '') : ts.replace(' ', 'T')
+    // created_at se guarda como instante UTC (ISO con 'Z', o el formato con espacio de
+    // SQLite que tambien es UTC). Hay que conservar/anadir la 'Z' para que Date lo
+    // interprete como UTC y luego getFullYear/getMonth/getDate lo conviertan a la
+    // fecha local correcta -- quitar la 'Z' reinterpreta el instante UTC como si ya
+    // fuera hora local, desplazando la venta al dia equivocado (o "perdiendola" del
+    // dia real cuando el corrimiento cruza medianoche).
+    let normalized = ts.includes('T') ? ts : ts.replace(' ', 'T')
+    if (!/[Zz]$|[+-]\d{2}:?\d{2}$/.test(normalized)) normalized += 'Z'
     const d = new Date(normalized)
     if (isNaN(d.getTime())) continue
     const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`

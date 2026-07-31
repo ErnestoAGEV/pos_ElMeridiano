@@ -125,16 +125,16 @@ export function EtiquetaModal({ isOpen, onClose, producto }) {
       <div className="space-y-5">
         {/* Preview at real size */}
         <div>
-          <p className="text-sm font-medium text-warm-700 mb-2">
+          <p className="text-sm font-medium text-ink-medium2 mb-2">
             Vista previa ({ancho} × {alto} mm)
           </p>
-          <div className="bg-ivory-100 rounded-xl p-4 flex items-center justify-center overflow-auto">
+          <div className="bg-surface-sunken rounded-xl p-4 flex items-center justify-center overflow-auto">
             <div
-              className="bg-white border border-warm-300 shadow-sm flex flex-col items-center justify-center overflow-hidden"
+              className="bg-white border border-inkBorder-strong shadow-sm flex flex-col items-center justify-center overflow-hidden"
               style={{ width: `${ancho}mm`, height: `${alto}mm` }}
             >
               {barcodeError && (
-                <p className="text-[10px] text-red-500 text-center px-1">
+                <p className="text-[10px] text-status-dangerText text-center px-1">
                   Codigo no representable
                 </p>
               )}
@@ -153,38 +153,38 @@ export function EtiquetaModal({ isOpen, onClose, producto }) {
               )}
             </div>
           </div>
-          <p className="text-xs text-warm-400 mt-1.5">
+          <p className="text-xs text-ink-placeholder2 mt-1.5">
             El tamaño de la etiqueta se configura en Personalización.
           </p>
         </div>
 
         {/* Copies */}
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-warm-700">Copias</label>
+          <label className="text-sm font-medium text-ink-medium2">Copias</label>
           <input
             type="number"
             min="1"
             max="100"
             value={copias}
             onChange={(e) => setCopias(e.target.value)}
-            className="w-20 bg-ivory-50 border border-ivory-300 rounded-lg px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400"
+            className="w-20 bg-surface-sunken border border-inkBorder-strong rounded-lg px-3 py-1.5 text-sm text-ink-strong focus:outline-none focus:border-ink"
           />
         </div>
 
         {/* Include price toggle */}
         <div>
-          <label className={`flex items-center gap-2 text-sm ${tienePrecioFijo ? 'text-warm-700 cursor-pointer' : 'text-warm-300'}`}>
+          <label className={`flex items-center gap-2 text-sm ${tienePrecioFijo ? 'text-ink-medium2 cursor-pointer' : 'text-ink-placeholder'}`}>
             <input
               type="checkbox"
               checked={incluirPrecio}
               disabled={!tienePrecioFijo}
               onChange={(e) => setIncluirPrecio(e.target.checked)}
-              className="rounded border-warm-300"
+              className="rounded border-inkBorder-strong text-ink focus:ring-ink/30"
             />
             Incluir precio
           </label>
           {dinamico && (
-            <p className="text-xs text-warm-400 mt-1">
+            <p className="text-xs text-ink-placeholder2 mt-1">
               El precio de oro/plata se define al momento de vender, no se imprime en la etiqueta.
             </p>
           )}

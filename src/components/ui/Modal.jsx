@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 
 const sizes = {
   sm: 'max-w-md',
@@ -15,33 +16,49 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', closable 
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (!isOpen || !closable) return
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, closable, onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-warm-950/20 backdrop-blur-sm"
-        onClick={closable ? onClose : undefined}
-      />
-      <div
-        className={`relative bg-white rounded-2xl shadow-luxury-lg w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]`}
-      >
-        {/* Gold accent line */}
-        <div className="h-[3px] shrink-0 bg-primary-400" />
-
-        <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-ivory-300">
-          <h2 className="text-xl font-display font-semibold text-warm-900">{title}</h2>
-          {closable && (
-            <button
-              onClick={onClose}
-              className="text-warm-400 hover:text-warm-600 transition-colors p-1.5 rounded-lg hover:bg-ivory-200"
-            >
-              <X size={18} />
-            </button>
-          )}
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute inset-0 bg-ink/25 backdrop-blur-sm"
+            onClick={closable ? onClose : undefined}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className={`relative bg-white rounded-[20px] border border-inkBorder-strong shadow-luxury-lg w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden`}
+          >
+            <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-inkBorder-standard">
+              <h2 className="text-xl font-display italic text-ink">{title}</h2>
+              {closable && (
+                <button
+                  onClick={onClose}
+                  className="text-ink-faint2 hover:text-ink transition-colors p-1.5 rounded-lg hover:bg-surface-sunken2"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            <div className="px-6 py-5 overflow-y-auto">{children}</div>
+          </motion.div>
         </div>
-        <div className="px-6 py-5 overflow-y-auto">{children}</div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   )
 }

@@ -1,9 +1,11 @@
 import { HashRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { MotionConfig } from 'motion/react'
 import { AppRoutes } from './routes/AppRoutes'
 
 export default function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <HashRouter>
       <AppRoutes />
       <Toaster
@@ -11,28 +13,30 @@ export default function App() {
         toastOptions={{
           duration: 3500,
           style: {
-            background: '#FFFFFF',
-            color: '#3A3731',
-            border: '1px solid #E2DDD2',
+            background: '#ffffff',
+            color: '#2a2924',
+            border: '1px solid #E6E4DF',
             borderRadius: '14px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04)',
+            boxShadow: '0 22px 60px -30px rgba(20,18,15,0.28)',
             padding: '14px 18px',
-            fontSize: '15px',
+            fontSize: '14px',
+            fontFamily: "'Instrument Sans', system-ui, sans-serif",
             fontWeight: '500',
             lineHeight: '1.4',
             maxWidth: '420px',
           },
           success: {
-            iconTheme: { primary: 'var(--color-primary-500)', secondary: 'var(--color-primary-50)' },
-            style: { borderLeft: '4px solid var(--color-primary-400)' },
+            iconTheme: { primary: '#5f9e6f', secondary: '#EEF6EF' },
+            style: { borderLeft: '3px solid #5f9e6f' },
           },
           error: {
-            iconTheme: { primary: '#ef4444', secondary: '#fef2f2' },
-            style: { borderLeft: '4px solid #ef4444' },
+            iconTheme: { primary: '#d0665e', secondary: '#FBEDEC' },
+            style: { borderLeft: '3px solid #d0665e' },
             duration: 5000,
           },
         }}
       />
     </HashRouter>
+    </MotionConfig>
   )
 }

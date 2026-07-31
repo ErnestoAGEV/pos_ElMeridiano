@@ -2,6 +2,7 @@ import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Printer, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { motion } from 'motion/react'
 
 export function TicketModal({ venta, config, onClose }) {
   if (!venta) return null
@@ -91,19 +92,25 @@ export function TicketModal({ venta, config, onClose }) {
     <Modal isOpen={true} onClose={onClose} title="Venta Completada" size="sm">
       {/* Success header */}
       <div className="text-center mb-5">
-        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-          <Check size={28} className="text-emerald-600" />
+        <div className="w-14 h-14 rounded-full bg-status-successBg flex items-center justify-center mx-auto mb-3">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.28, delay: 0.08, ease: [0.34, 1.56, 0.64, 1] }}
+          >
+            <Check size={28} className="text-status-successText" />
+          </motion.div>
         </div>
-        <p className="text-lg font-display font-bold text-warm-900">Venta registrada!</p>
-        <p className="text-sm text-warm-500 mt-0.5">
-          Folio: <strong className="text-warm-800">{venta.folio ?? '--'}</strong>
+        <p className="text-lg font-display italic text-ink">Venta registrada!</p>
+        <p className="text-sm text-ink-faint2 mt-0.5">
+          Folio: <strong className="font-mono text-ink-strong">{venta.folio ?? '--'}</strong>
         </p>
       </div>
 
       {/* Printable ticket area */}
       <div
         id="ticket-print-area"
-        className="bg-ivory-50 rounded-xl p-4 text-xs font-mono text-warm-700 space-y-1 border border-ivory-200"
+        className="bg-surface-rail rounded-xl p-4 text-xs font-mono text-ink-medium2 space-y-1 border border-inkBorder-standard"
       >
         {/* Store header */}
         <div className="text-center space-y-0.5">
@@ -113,7 +120,7 @@ export function TicketModal({ venta, config, onClose }) {
           <p>Folio: {venta.folio ?? '--'}</p>
         </div>
 
-        <div className="border-t border-dashed border-warm-400 my-2" />
+        <div className="border-t border-dashed border-inkBorder-strong my-2" />
 
         {/* Items */}
         <div className="space-y-1.5">
@@ -127,7 +134,7 @@ export function TicketModal({ venta, config, onClose }) {
                 <p className="font-semibold truncate">
                   {label}{nombre ? ` - ${nombre}` : ''}{pesoInfo}
                 </p>
-                <div className="flex justify-between text-warm-500">
+                <div className="flex justify-between text-ink-faint2">
                   <span>{item.cantidad} x {fmt(item.precioUnitario)}</span>
                   <span>{fmt(item.precioUnitario * item.cantidad)}</span>
                 </div>
@@ -136,7 +143,7 @@ export function TicketModal({ venta, config, onClose }) {
           })}
         </div>
 
-        <div className="border-t border-dashed border-warm-400 my-2" />
+        <div className="border-t border-dashed border-inkBorder-strong my-2" />
 
         {/* Totals */}
         <div className="space-y-0.5">
@@ -156,7 +163,7 @@ export function TicketModal({ venta, config, onClose }) {
           </div>
         </div>
 
-        <div className="border-t border-dashed border-warm-400 my-2" />
+        <div className="border-t border-dashed border-inkBorder-strong my-2" />
 
         <p className="text-center">Metodo de pago: {metodoLabel}</p>
         <p className="text-center font-semibold mt-1">Gracias por su compra!</p>

@@ -1,57 +1,76 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+// Electron wraps every rejected ipcMain.handle() error as
+// `Error invoking remote method 'channel': Error: <mensaje original>`. Ese texto
+// tecnico no le sirve al usuario final -- aqui lo despojamos para que el
+// renderer siempre reciba solo el mensaje real ("PIN incorrecto", etc).
+function limpiarMensajeError(err) {
+  let msg = err?.message || String(err)
+  msg = msg.replace(/^Error invoking remote method '[^']*':\s*/, '')
+  msg = msg.replace(/^Error:\s*/, '')
+  return msg
+}
+
+async function invoke(channel, data) {
+  try {
+    return await ipcRenderer.invoke(channel, data)
+  } catch (err) {
+    throw new Error(limpiarMensajeError(err))
+  }
+}
+
 contextBridge.exposeInMainWorld('api', {
   auth: {
-    loginPin: (data) => ipcRenderer.invoke('auth:login-pin', data),
-    cambiarPin: (data) => ipcRenderer.invoke('auth:cambiar-pin', data),
+    loginPin: (data) => invoke('auth:login-pin', data),
+    cambiarPin: (data) => invoke('auth:cambiar-pin', data),
   },
   categorias: {
-    obtener: () => ipcRenderer.invoke('categorias:obtener'),
-    crear: (data) => ipcRenderer.invoke('categorias:crear', data),
-    actualizar: (data) => ipcRenderer.invoke('categorias:actualizar', data),
-    eliminar: (data) => ipcRenderer.invoke('categorias:eliminar', data),
+    obtener: () => invoke('categorias:obtener'),
+    crear: (data) => invoke('categorias:crear', data),
+    actualizar: (data) => invoke('categorias:actualizar', data),
+    eliminar: (data) => invoke('categorias:eliminar', data),
   },
   productos: {
-    obtener: (filtros) => ipcRenderer.invoke('productos:obtener', filtros),
-    obtenerPorId: (data) => ipcRenderer.invoke('productos:obtener-por-id', data),
-    crear: (data) => ipcRenderer.invoke('productos:crear', data),
-    actualizar: (data) => ipcRenderer.invoke('productos:actualizar', data),
-    eliminar: (data) => ipcRenderer.invoke('productos:eliminar', data),
+    obtener: (filtros) => invoke('productos:obtener', filtros),
+    obtenerPorId: (data) => invoke('productos:obtener-por-id', data),
+    crear: (data) => invoke('productos:crear', data),
+    actualizar: (data) => invoke('productos:actualizar', data),
+    eliminar: (data) => invoke('productos:eliminar', data),
   },
   precios: {
-    obtenerHoy: () => ipcRenderer.invoke('precios:obtener-hoy'),
-    obtenerUltimo: () => ipcRenderer.invoke('precios:obtener-ultimo'),
-    guardar: (data) => ipcRenderer.invoke('precios:guardar', data),
-    historial: (data) => ipcRenderer.invoke('precios:historial', data),
+    obtenerHoy: () => invoke('precios:obtener-hoy'),
+    obtenerUltimo: () => invoke('precios:obtener-ultimo'),
+    guardar: (data) => invoke('precios:guardar', data),
+    historial: (data) => invoke('precios:historial', data),
   },
   ventas: {
-    completar: (data) => ipcRenderer.invoke('ventas:completar', data),
-    obtener: (data) => ipcRenderer.invoke('ventas:obtener', data),
-    cancelar: (data) => ipcRenderer.invoke('ventas:cancelar', data),
+    completar: (data) => invoke('ventas:completar', data),
+    obtener: (data) => invoke('ventas:obtener', data),
+    cancelar: (data) => invoke('ventas:cancelar', data),
   },
   config: {
-    obtener: () => ipcRenderer.invoke('config:obtener'),
-    actualizar: (data) => ipcRenderer.invoke('config:actualizar', data),
+    obtener: () => invoke('config:obtener'),
+    actualizar: (data) => invoke('config:actualizar', data),
   },
   backup: {
-    exportar: () => ipcRenderer.invoke('backup:exportar'),
-    restaurar: () => ipcRenderer.invoke('backup:restaurar'),
-    seleccionarCarpeta: () => ipcRenderer.invoke('backup:seleccionar-carpeta'),
-    estado: () => ipcRenderer.invoke('backup:estado'),
-    auto: () => ipcRenderer.invoke('backup:auto'),
+    exportar: () => invoke('backup:exportar'),
+    restaurar: () => invoke('backup:restaurar'),
+    seleccionarCarpeta: () => invoke('backup:seleccionar-carpeta'),
+    estado: () => invoke('backup:estado'),
+    auto: () => invoke('backup:auto'),
   },
   exportar: {
-    guardarArchivo: (data) => ipcRenderer.invoke('exportar:guardar-archivo', data),
+    guardarArchivo: (data) => invoke('exportar:guardar-archivo', data),
   },
   reportes: {
-    ventas: (data) => ipcRenderer.invoke('reportes:ventas', data),
-    piezasPorCategoria: (data) => ipcRenderer.invoke('reportes:piezas-por-categoria', data),
-    ganancia: (data) => ipcRenderer.invoke('reportes:ganancia', data),
-    dashboard: () => ipcRenderer.invoke('reportes:dashboard'),
-    topProductos: (data) => ipcRenderer.invoke('reportes:top-productos', data),
-    topProductosIngreso: (data) => ipcRenderer.invoke('reportes:top-productos-ingreso', data),
-    productosVendidos: (data) => ipcRenderer.invoke('reportes:productos-vendidos', data),
-    productosMuertos: () => ipcRenderer.invoke('reportes:productos-muertos'),
-    gananciaPorMetal: (data) => ipcRenderer.invoke('reportes:ganancia-por-metal', data),
+    ventas: (data) => invoke('reportes:ventas', data),
+    piezasPorCategoria: (data) => invoke('reportes:piezas-por-categoria', data),
+    ganancia: (data) => invoke('reportes:ganancia', data),
+    dashboard: () => invoke('reportes:dashboard'),
+    topProductos: (data) => invoke('reportes:top-productos', data),
+    topProductosIngreso: (data) => invoke('reportes:top-productos-ingreso', data),
+    productosVendidos: (data) => invoke('reportes:productos-vendidos', data),
+    productosMuertos: () => invoke('reportes:productos-muertos'),
+    gananciaPorMetal: (data) => invoke('reportes:ganancia-por-metal', data),
   },
 })

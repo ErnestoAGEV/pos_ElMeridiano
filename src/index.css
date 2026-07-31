@@ -1,23 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Default grafito palette (overridden by TiendaProvider at runtime) */
-    --color-primary-50: #F7F7F8;
-    --color-primary-100: #EDEDF0;
-    --color-primary-200: #D4D4DB;
-    --color-primary-300: #B0B0BC;
-    --color-primary-400: #6B6B7B;
-    --color-primary-500: #56566A;
-    --color-primary-600: #454559;
-    --color-primary-700: #363647;
-    --color-primary-800: #282836;
-    --color-primary-900: #1A1A25;
-    /* Default fonts */
-    --font-display: 'Inter', system-ui, sans-serif;
-    --font-sans: 'Inter', system-ui, sans-serif;
+    /* Tinta palette (accent used as fixed ink, not overridden by TiendaProvider for nav/buttons) */
+    --color-primary-50: #f6f5f2;
+    --color-primary-100: #f2f1ed;
+    --color-primary-200: #EDEBE6;
+    --color-primary-300: #cfcdc4;
+    --color-primary-400: #8a8880;
+    --color-primary-500: #57564f;
+    --color-primary-600: #2a2924;
+    --color-primary-700: #1c1b19;
+    --color-primary-800: #1c1b19;
+    --color-primary-900: #1c1b19;
+    /* Fonts */
+    --font-display: 'Instrument Serif', serif;
+    --font-sans: 'Instrument Sans', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
   }
 
   body {
@@ -82,6 +85,14 @@
 }
 
 @layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .primary-glow {
     box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary-400) 8%, transparent), 0 0 60px color-mix(in srgb, var(--color-primary-400) 4%, transparent);
   }

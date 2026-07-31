@@ -70,65 +70,99 @@ export function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
+  const fechaHoy = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+
   return (
-    <div className="min-h-screen bg-ivory-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-xs">
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex">
+      {/* Panel de marca */}
+      <div className="hidden md:flex w-[560px] shrink-0 bg-ink text-white p-14 flex-col justify-between">
+        <div className="flex items-center gap-[13px]">
           <img
             src={config.logo_path || logoDefault}
             alt={config.nombre}
-            className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-primary-md bg-white"
+            className="w-11 h-11 rounded-[13px] object-cover bg-white"
           />
-          <h1 className="font-display text-3xl font-bold text-warm-900">{config.nombre || 'Sistema Joyero'}</h1>
-          {config.slogan && <p className="text-warm-400 text-xs mt-0.5">{config.slogan}</p>}
-          <p className="text-warm-400 text-sm mt-1">Ingresa tu PIN para continuar</p>
+          <div>
+            <div className="font-display italic text-2xl leading-none">{config.nombre || 'Meridiano'}</div>
+            <div className="text-[9.5px] tracking-[0.22em] uppercase text-ink-faint2 font-semibold mt-[3px]">
+              {config.slogan || 'Joyería'}
+            </div>
+          </div>
         </div>
 
-        {/* Indicador de PIN */}
-        <div className={`flex justify-center gap-4 mb-8 ${error ? 'animate-shake' : ''}`}>
-          {Array.from({ length: PIN_LENGTH }).map((_, i) => (
-            <span
-              key={i}
-              className={`w-4 h-4 rounded-full border-2 transition-colors ${
-                error
-                  ? 'bg-red-500 border-red-500'
-                  : i < pin.length
-                  ? 'bg-warm-900 border-warm-900'
-                  : 'bg-transparent border-warm-300'
-              }`}
-            />
-          ))}
+        <div>
+          <div className="font-display italic text-[46px] leading-[1.08] tracking-tight">
+            Elegancia en<br />cada pieza.
+          </div>
+          <p className="text-[15px] text-ink-placeholder2 mt-5 max-w-[380px] leading-relaxed">
+            Sistema de gestión para joyería — control de precios de metales, catálogo, ventas y cortes de caja.
+          </p>
         </div>
 
-        {/* Teclado numerico */}
-        <div className="grid grid-cols-3 gap-3">
-          {KEYPAD_KEYS.map((key, i) => {
-            if (key === null) return <div key={`empty-${i}`} />
-            if (key === 'borrar') {
+        <div className="flex items-center gap-2.5 text-[12.5px] text-ink-placeholder2">
+          <span className="w-2 h-2 rounded-full bg-status-successDot shrink-0" />
+          Sistema listo · Turno del {fechaHoy}
+        </div>
+      </div>
+
+      {/* Panel PIN */}
+      <div className="flex-1 flex items-center justify-center bg-surface-rail p-4">
+        <div className="w-full max-w-[300px]">
+          <div className="text-center mb-[34px]">
+            <h1 className="text-xl font-bold text-ink">Bienvenido de vuelta</h1>
+            <p className="text-[13.5px] text-ink-faint2 mt-[5px]">Ingresa tu PIN para continuar</p>
+          </div>
+
+          {/* Indicador de PIN */}
+          <div className={`flex justify-center gap-[18px] mb-[34px] ${error ? 'animate-shake' : ''}`}>
+            {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+              <span
+                key={i}
+                className={`w-[15px] h-[15px] rounded-full border-2 transition-colors ${
+                  error
+                    ? 'bg-status-dangerText border-status-dangerText'
+                    : i < pin.length
+                    ? 'bg-ink border-ink'
+                    : 'bg-transparent border-ink-placeholder3'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Teclado numerico */}
+          <div className="grid grid-cols-3 gap-3.5">
+            {KEYPAD_KEYS.map((key, i) => {
+              if (key === null) return <div key={`empty-${i}`} />
+              if (key === 'borrar') {
+                return (
+                  <button
+                    key="borrar"
+                    type="button"
+                    onClick={borrarDigito}
+                    disabled={verificando}
+                    className="aspect-square rounded-2xl text-ink-faint2 flex items-center justify-center hover:bg-surface-sunken2 active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    <Delete size={22} strokeWidth={1.8} />
+                  </button>
+                )
+              }
               return (
                 <button
-                  key="borrar"
+                  key={key}
                   type="button"
-                  onClick={borrarDigito}
+                  onClick={() => agregarDigito(key)}
                   disabled={verificando}
-                  className="aspect-square rounded-2xl bg-white border border-ivory-300 text-warm-500 flex items-center justify-center hover:bg-ivory-200 active:scale-95 transition-all disabled:opacity-50"
+                  className="aspect-square rounded-2xl bg-white border border-inkBorder-strong text-ink-strong text-2xl font-semibold hover:bg-surface-sunken2 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  <Delete size={20} />
+                  {key}
                 </button>
               )
-            }
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => agregarDigito(key)}
-                disabled={verificando}
-                className="aspect-square rounded-2xl bg-white border border-ivory-300 text-warm-800 text-2xl font-display font-semibold hover:bg-ivory-200 active:scale-95 transition-all disabled:opacity-50"
-              >
-                {key}
-              </button>
-            )
-          })}
+            })}
+          </div>
+
+          <p className="text-center mt-6 text-[11.5px] text-ink-placeholder">
+            También puedes escribir tu PIN con el teclado
+          </p>
         </div>
       </div>
     </div>

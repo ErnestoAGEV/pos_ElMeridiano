@@ -1,5 +1,19 @@
 import { useState, useMemo } from 'react'
 import { FileDown, FileSpreadsheet, Calendar, Minus } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+
+export function MiniBar({ pct }) {
+  return (
+    <div className="w-full h-2 bg-inkBorder-standard rounded-full overflow-hidden">
+      <motion.div
+        className="h-full rounded-full bg-ink"
+        initial={{ width: 0 }}
+        animate={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      />
+    </div>
+  )
+}
 import { useTienda } from '../../context/TiendaContext'
 import { Spinner } from '../../components/ui/Spinner'
 import { TabResumen } from './TabResumen'
@@ -38,21 +52,29 @@ function calcularRango(periodo) {
   return null
 }
 
+// Periodo previo de la misma duracion, inmediatamente antes de `rango`,
+// para comparar automaticamente sin que el usuario tenga que configurar nada.
+function calcularRangoAnterior(rango) {
+  if (!rango) return null
+  const pad = (n) => String(n).padStart(2, '0')
+  const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const desde = new Date(rango.desde + 'T12:00:00')
+  const hasta = new Date(rango.hasta + 'T12:00:00')
+  const diasEnRango = Math.round((hasta - desde) / 86400000) + 1
+
+  const prevHasta = new Date(desde)
+  prevHasta.setDate(prevHasta.getDate() - 1)
+  const prevDesde = new Date(prevHasta)
+  prevDesde.setDate(prevDesde.getDate() - (diasEnRango - 1))
+
+  return { desde: fmt(prevDesde), hasta: fmt(prevHasta) }
+}
+
 export function formatMoney(n) {
   if (n == null || isNaN(n)) return '$0'
   return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 }
 
-export function MiniBar({ pct }) {
-  return (
-    <div className="w-full h-2 bg-ivory-200 rounded-full overflow-hidden">
-      <div
-        className="h-full rounded-full bg-primary-500 transition-all duration-500"
-        style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
-      />
-    </div>
-  )
-}
 
 export function ReportesPage() {
   const { config } = useTienda()
@@ -71,6 +93,8 @@ export function ReportesPage() {
     }
     return calcularRango(periodo)
   }, [periodo, desde, hasta])
+
+  const rangoAnterior = useMemo(() => calcularRangoAnterior(rango), [rango])
 
   const usaRangoGlobal = tab === 'resumen' || tab === 'productos' || tab === 'ganancias'
 
@@ -95,54 +119,53 @@ export function ReportesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-9">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-warm-900">Reportes</h1>
-          <p className="text-sm text-warm-500 mt-0.5">Resumen de ventas, piezas y ganancias</p>
+          <h1 className="font-display italic text-[32px] text-ink leading-none">Reportes</h1>
+          <p className="text-[13.5px] text-ink-faint2 mt-2">Resumen de ventas, piezas y ganancias</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {cargando && <Spinner />}
           <button
             onClick={handleExportExcel}
             disabled={cargando}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-700 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-inkBorder-strong bg-white text-status-successText text-[13.5px] font-medium hover:bg-surface-sunken transition-all disabled:opacity-50"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            Exportar Excel
+            Excel
           </button>
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-warm-800 text-white hover:bg-warm-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white text-[13.5px] font-semibold transition-all"
           >
             <FileDown className="w-4 h-4" />
-            Exportar PDF
+            PDF
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-ivory-200">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              tab === t.id
-                ? 'border-primary-600 text-primary-700'
-                : 'border-transparent text-warm-500 hover:text-warm-700 hover:border-ivory-300'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Tabs + Period Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-inkBorder-standard mb-6">
+        <div className="flex gap-6">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`pb-3 text-[14px] font-medium border-b-2 -mb-px transition-colors ${
+                tab === t.id
+                  ? 'border-ink text-ink font-semibold'
+                  : 'border-transparent text-ink-faint2 hover:text-ink-medium'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-      {/* Period Selector — only for global tabs */}
-      {usaRangoGlobal && (
-        <div className="card p-4">
-          <div className="flex flex-wrap gap-2 items-center">
+        {usaRangoGlobal && (
+          <div className="flex flex-wrap gap-2 items-center pb-3">
             {[
               { id: 'hoy', label: 'Hoy' },
               { id: 'semana', label: 'Esta semana' },
@@ -152,10 +175,10 @@ export function ReportesPage() {
               <button
                 key={p.id}
                 onClick={() => setPeriodo(p.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-full text-[13px] font-medium transition-colors ${
                   periodo === p.id
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-ivory-100 text-warm-700 hover:bg-ivory-200'
+                    ? 'bg-ink text-white'
+                    : 'bg-surface-sunken text-ink-medium2 hover:bg-surface-sunken2'
                 }`}
               >
                 {p.label}
@@ -164,37 +187,47 @@ export function ReportesPage() {
 
             {periodo === 'personalizado' && (
               <div className="flex items-center gap-2 ml-2">
-                <Calendar className="w-4 h-4 text-warm-400" />
+                <Calendar className="w-4 h-4 text-ink-faint2" />
                 <div className="flex flex-col gap-0.5">
-                  <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Desde</label>
+                  <label className="text-[10px] uppercase tracking-wider text-ink-faint2 font-semibold">Desde</label>
                   <input
                     type="date"
                     value={desde}
                     onChange={(e) => setDesde(e.target.value)}
-                    className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
+                    className="bg-surface-sunken border border-inkBorder-strong rounded-xl px-3 py-1.5 text-sm text-ink-strong focus:outline-none focus:border-ink transition-all"
                   />
                 </div>
-                <Minus className="w-3 h-3 text-warm-400 mt-4" />
+                <Minus className="w-3 h-3 text-ink-faint2 mt-4" />
                 <div className="flex flex-col gap-0.5">
-                  <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Hasta</label>
+                  <label className="text-[10px] uppercase tracking-wider text-ink-faint2 font-semibold">Hasta</label>
                   <input
                     type="date"
                     value={hasta}
                     onChange={(e) => setHasta(e.target.value)}
-                    className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
+                    className="bg-surface-sunken border border-inkBorder-strong rounded-xl px-3 py-1.5 text-sm text-ink-strong focus:outline-none focus:border-ink transition-all"
                   />
                 </div>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Tab Content */}
-      {tab === 'resumen' && <TabResumen rango={rango} setCargando={setCargando} />}
-      {tab === 'productos' && <TabProductos rango={rango} setCargando={setCargando} />}
-      {tab === 'ganancias' && <TabGanancias rango={rango} setCargando={setCargando} />}
-      {tab === 'metales' && <TabMetales setCargando={setCargando} />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16, ease: 'easeOut' }}
+        >
+          {tab === 'resumen' && <TabResumen rango={rango} rangoAnterior={rangoAnterior} setCargando={setCargando} />}
+          {tab === 'productos' && <TabProductos rango={rango} setCargando={setCargando} />}
+          {tab === 'ganancias' && <TabGanancias rango={rango} rangoAnterior={rangoAnterior} setCargando={setCargando} />}
+          {tab === 'metales' && <TabMetales setCargando={setCargando} />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }

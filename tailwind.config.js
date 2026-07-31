@@ -6,8 +6,57 @@ export default {
       fontFamily: {
         display: ['var(--font-display)'],
         sans: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
       },
       colors: {
+        // Tinta ("Tinta" redesign) — monochrome ink scale
+        ink: {
+          DEFAULT: '#1c1b19',
+          strong: '#2a2924',
+          medium: '#46453f',
+          medium2: '#57564f',
+          soft: '#6b6b66',
+          faint: '#8a8880',
+          faint2: '#a8a69d',
+          placeholder: '#b4b2a9',
+          placeholder2: '#c0beb4',
+          placeholder3: '#cfcdc4',
+        },
+        surface: {
+          base: '#ffffff',
+          rail: '#fbfaf8',
+          sunken: '#f6f5f2',
+          sunken2: '#f4f3f0',
+          card: '#f8f7f4',
+          card2: '#faf9f6',
+        },
+        inkBorder: {
+          strong: '#E6E4DF',
+          standard: '#EDEBE6',
+          card: '#ECEAE4',
+          row: '#f2f1ed',
+        },
+        metal: {
+          oro24: '#C9A227',
+          oro14: '#C9A227',
+          oro10: '#C08A3E',
+          plata: '#9AA0A6',
+          acero: '#7C8CA1',
+        },
+        status: {
+          successDot: '#5f9e6f',
+          successBg: '#EEF6EF',
+          successBorder: '#D3E7D6',
+          successText: '#3f7a4e',
+          dangerDot: '#d0665e',
+          dangerText: '#b4544e',
+          dangerBg: '#FBEDEC',
+        },
+        dynamic: {
+          text: '#7a5c2f',
+          bg: '#F6EFE1',
+          border: '#EADFC8',
+        },
         // Warm ivory palette (stays static - neutral background)
         ivory: {
           50: '#FEFDFB',

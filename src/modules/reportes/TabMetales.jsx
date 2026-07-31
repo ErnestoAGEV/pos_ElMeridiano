@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { TrendingUp, Minus } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { motion } from 'motion/react'
 import { formatMoney } from './ReportesPage'
 
 const METALS = [
@@ -53,7 +54,7 @@ function LineChart({ datos }) {
 
   return (
     <div className="overflow-x-auto">
-      <svg width={chartW} height={chartH + 30} className="block">
+      <svg key={`${sorted[0]?.fecha}-${sorted[sorted.length - 1]?.fecha}-${sorted.length}`} width={chartW} height={chartH + 30} className="block">
         {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
           const y = chartH - pct * (chartH - 20) - 10
@@ -73,13 +74,16 @@ function LineChart({ datos }) {
             .filter(Boolean)
           if (points.length < 2) return null
           return (
-            <polyline
+            <motion.polyline
               key={metal.key}
               points={points.join(' ')}
               fill="none"
               stroke={metal.color}
               strokeWidth={2}
               strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
             />
           )
         })}
@@ -89,12 +93,15 @@ function LineChart({ datos }) {
           sorted.map((d, i) => {
             if (d[metal.key] == null) return null
             return (
-              <circle
+              <motion.circle
                 key={`${metal.key}-${i}`}
                 cx={getX(i)}
                 cy={getY(d[metal.key])}
                 r={3}
                 fill={metal.color}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2, delay: 0.4 + i * 0.015 }}
               />
             )
           })

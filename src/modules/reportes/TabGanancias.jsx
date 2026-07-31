@@ -1,8 +1,34 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { TrendingUp, Gem, Minus, GitCompareArrows, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { AnimatePresence, motion, animate } from 'motion/react'
 import { obtenerGanancia, obtenerGananciaPorMetal, obtenerPiezasPorCategoria } from './reportesService'
 import { formatMoney } from './ReportesPage'
+
+function AnimatedMoney({ value, className }) {
+  const [display, setDisplay] = useState(0)
+  const displayRef = useRef(0)
+
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      displayRef.current = value ?? 0
+      setDisplay(value ?? 0)
+      return
+    }
+    const controls = animate(displayRef.current, value ?? 0, {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => {
+        displayRef.current = v
+        setDisplay(v)
+      },
+    })
+    return () => controls.stop()
+  }, [value])
+
+  return <span className={className}>{formatMoney(display)}</span>
+}
 
 const METAL_LABELS = {
   oro_24k: 'Oro 24k',
@@ -38,12 +64,15 @@ function DeltaBadge({ actual, anterior }) {
   )
 }
 
-export function TabGanancias({ rango, setCargando }) {
+export function TabGanancias({ rango, rangoAnterior, setCargando }) {
   const [ganancia, setGanancia] = useState(null)
   const [piezasPorCategoria, setPiezasPorCategoria] = useState([])
   const [porMetal, setPorMetal] = useState([])
 
-  // Comparativa
+  // Comparativa automatica contra el periodo anterior equivalente
+  const [gananciaAuto, setGananciaAuto] = useState(null)
+
+  // Comparativa manual (el usuario elige un rango especifico)
   const [mostrarComparativa, setMostrarComparativa] = useState(false)
   const [compDesde, setCompDesde] = useState('')
   const [compHasta, setCompHasta] = useState('')
@@ -71,6 +100,19 @@ export function TabGanancias({ rango, setCargando }) {
   }, [rango, setCargando])
 
   useEffect(() => { cargarDatos() }, [cargarDatos])
+
+  // Cargar automaticamente el periodo anterior equivalente
+  useEffect(() => {
+    if (!rangoAnterior) {
+      setGananciaAuto(null)
+      return
+    }
+    let cancelado = false
+    obtenerGanancia(rangoAnterior)
+      .then((gan) => { if (!cancelado) setGananciaAuto(gan) })
+      .catch((err) => console.error(err))
+    return () => { cancelado = true }
+  }, [rangoAnterior])
 
   // Comparativa data
   useEffect(() => {
@@ -132,21 +174,29 @@ export function TabGanancias({ rango, setCargando }) {
           <GitCompareArrows className="w-4 h-4" />
           Comparar con...
         </button>
-        {mostrarComparativa && (
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Desde</label>
-              <input type="date" value={compDesde} onChange={(e) => setCompDesde(e.target.value)}
-                className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all" />
-            </div>
-            <Minus className="w-3 h-3 text-warm-400 mt-4" />
-            <div className="flex flex-col gap-0.5">
-              <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Hasta</label>
-              <input type="date" value={compHasta} onChange={(e) => setCompHasta(e.target.value)}
-                className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all" />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {mostrarComparativa && (
+            <motion.div
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="flex items-center gap-2"
+            >
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Desde</label>
+                <input type="date" value={compDesde} onChange={(e) => setCompDesde(e.target.value)}
+                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all" />
+              </div>
+              <Minus className="w-3 h-3 text-warm-400 mt-4" />
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] uppercase tracking-wider text-warm-400 font-semibold">Hasta</label>
+                <input type="date" value={compHasta} onChange={(e) => setCompHasta(e.target.value)}
+                  className="bg-ivory-50 border border-ivory-300 rounded-xl px-3 py-1.5 text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Ganancia KPI */}
@@ -156,9 +206,12 @@ export function TabGanancias({ rango, setCargando }) {
           <TrendingUp className="w-4 h-4 text-emerald-500" />
         </div>
         <div className="flex items-baseline gap-3">
-          <p className="text-2xl font-bold text-emerald-700">{formatMoney(totales.gananciaTotal)}</p>
+          <AnimatedMoney value={totales.gananciaTotal} className="text-2xl font-bold text-emerald-700" />
           <span className={`text-sm font-semibold ${margenColor(totales.margenTotal)}`}>{totales.margenTotal.toFixed(1)}% margen</span>
-          {hayComparativa && <DeltaBadge actual={totales.gananciaTotal} anterior={gananciaComp?.gananciaTotal} />}
+          <DeltaBadge
+            actual={totales.gananciaTotal}
+            anterior={mostrarComparativa ? gananciaComp?.gananciaTotal : gananciaAuto?.gananciaTotal}
+          />
         </div>
       </div>
 

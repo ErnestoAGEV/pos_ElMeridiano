@@ -97,11 +97,6 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
       return
     }
 
-    if (esFijo && !esChapaAcero && (!form.precio_fijo || parseFloat(form.precio_fijo) <= 0)) {
-      toast.error('Indica el precio fijo para este tipo de producto')
-      return
-    }
-
     setSaving(true)
     try {
       const payload = {
@@ -150,7 +145,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
             disabled={saving || deleting}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Metal *</label>
+            <label className="text-sm font-medium text-ink-medium2">Metal *</label>
             <select
               value={form.metal}
               onChange={handleChange('metal')}
@@ -176,7 +171,7 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
             disabled={saving || deleting}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-warm-600">Categoria *</label>
+            <label className="text-sm font-medium text-ink-medium2">Categoria *</label>
             <select
               value={form.categoria_id}
               onChange={handleChange('categoria_id')}
@@ -200,54 +195,23 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
               type="checkbox"
               checked={form.precio_fijo_forzado}
               onChange={(e) => setForm((f) => ({ ...f, precio_fijo_forzado: e.target.checked }))}
-              className="w-4 h-4 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
+              className="w-4 h-4 rounded border-inkBorder-strong text-ink focus:ring-ink/30"
               disabled={saving || deleting}
             />
-            <span className="text-sm text-warm-600">Vender a precio fijo (sin pesar)</span>
+            <span className="text-sm text-ink-medium2">Vender a precio fijo (sin pesar)</span>
           </label>
         )}
 
-        {/* Fixed price metal fields: costo_compra + precio_fijo (not for chapa/acero) */}
-        {esFijo && !esChapaAcero && (
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Costo de compra"
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.costo_compra}
-              onChange={handleChange('costo_compra')}
-              placeholder="$0.00"
-              disabled={saving || deleting}
-            />
-            <Input
-              label="Precio fijo *"
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.precio_fijo}
-              onChange={handleChange('precio_fijo')}
-              placeholder="$0.00"
-              disabled={saving || deleting}
-            />
-          </div>
-        )}
-
         {/* Pricing explanation */}
-        <div className="text-xs text-warm-400 bg-ivory-100 rounded-xl p-3">
-          {esChapaAcero ? (
+        <div className="text-xs text-ink-faint2 bg-surface-sunken rounded-xl p-3">
+          {esFijo ? (
             <>
-              <strong className="text-warm-600">Precio en venta:</strong> el precio de venta
+              <strong className="text-ink-medium2">Precio en venta:</strong> el precio de venta
               se captura al momento de registrar la venta en el punto de venta.
-            </>
-          ) : esFijo ? (
-            <>
-              <strong className="text-warm-600">Precio fijo:</strong> este producto se vendera
-              siempre al precio fijo indicado.
             </>
           ) : (
             <>
-              <strong className="text-warm-600">Precio dinamico:</strong> el peso, mano de obra
+              <strong className="text-ink-medium2">Precio dinamico:</strong> el peso, mano de obra
               y precio de venta se ingresan al momento de vender cada pieza.
             </>
           )}
@@ -260,10 +224,10 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
               type="checkbox"
               checked={form.activo}
               onChange={(e) => setForm((f) => ({ ...f, activo: e.target.checked }))}
-              className="w-4 h-4 rounded border-ivory-400 text-primary-500 focus:ring-primary-400/30"
+              className="w-4 h-4 rounded border-inkBorder-strong text-ink focus:ring-ink/30"
               disabled={saving || deleting}
             />
-            <span className="text-sm text-warm-600">Producto activo</span>
+            <span className="text-sm text-ink-medium2">Producto activo</span>
           </label>
         )}
 
@@ -274,10 +238,10 @@ export function ProductoModal({ isOpen, onClose, producto, categorias, onSaved }
               type="button"
               onClick={() => setConfirmDelete(true)}
               disabled={deleting || saving}
-              className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 px-3 py-1.5 rounded-lg disabled:opacity-50"
+              className="flex items-center gap-2 text-sm text-status-dangerText hover:brightness-90 transition-colors hover:bg-status-dangerBg px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
               {deleting ? (
-                <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-status-dangerText border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Trash2 size={16} />
               )}

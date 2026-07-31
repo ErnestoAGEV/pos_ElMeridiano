@@ -2,19 +2,19 @@ import { Spinner } from './Spinner'
 
 const variants = {
   primary:
-    'bg-primary-500 hover:bg-primary-400 text-white font-semibold shadow-primary-sm hover:shadow-primary-md',
+    'bg-ink hover:bg-ink-strong text-white font-semibold',
   secondary:
-    'bg-white hover:bg-ivory-200 text-warm-700 font-medium border border-ivory-400 shadow-luxury',
+    'bg-white hover:bg-surface-sunken text-ink-medium2 font-medium border border-inkBorder-strong',
   danger:
-    'bg-red-50 hover:bg-red-100 text-red-700 font-medium border border-red-200',
+    'bg-status-dangerBg hover:brightness-95 text-status-dangerText font-medium border border-status-dangerText/30',
   ghost:
-    'bg-transparent hover:bg-ivory-200 text-warm-500 hover:text-warm-700',
+    'bg-transparent hover:bg-surface-sunken2 text-ink-faint2 hover:text-ink-medium',
 }
 
 const sizes = {
   sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-2.5 text-sm',
+  md: 'px-4 py-2.5 text-sm',
+  lg: 'px-6 py-3 text-sm',
 }
 
 export function Button({
@@ -24,12 +24,14 @@ export function Button({
   loading = false,
   disabled = false,
   className = '',
+  type = 'button',
   ...props
 }) {
   return (
     <button
+      type={type}
       disabled={disabled || loading}
-      className={`inline-flex items-center gap-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/40 focus:ring-offset-2 focus:ring-offset-ivory-100 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-xl transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {loading && <Spinner size="sm" />}

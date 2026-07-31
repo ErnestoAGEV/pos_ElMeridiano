@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Plus, Search, PenLine, FolderOpen, Filter,
-  Package, Banknote, Tag, Trash2, Barcode,
+  Plus, Search, PenLine, FolderOpen, ChevronDown,
+  Package, Trash2, Barcode,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
@@ -10,7 +10,6 @@ import {
   eliminarProducto,
   requierePeso,
 } from './catalogoService'
-import { Button } from '../../components/ui/Button'
 import { Spinner } from '../../components/ui/Spinner'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { ProductoModal } from './ProductoModal'
@@ -35,14 +34,16 @@ const METAL_LABELS = {
   acero: 'Acero',
 }
 
-const METAL_COLORS = {
-  oro_24k: 'bg-amber-100 text-amber-700',
-  oro_14k: 'bg-yellow-100 text-yellow-700',
-  oro_10k: 'bg-orange-100 text-orange-700',
-  plata: 'bg-gray-100 text-gray-600',
-  chapa: 'bg-rose-100 text-rose-700',
-  acero: 'bg-blue-100 text-blue-700',
+const METAL_DOT = {
+  oro_24k: 'bg-metal-oro24',
+  oro_14k: 'bg-metal-oro14',
+  oro_10k: 'bg-metal-oro10',
+  plata: 'bg-metal-plata',
+  chapa: 'bg-metal-oro10',
+  acero: 'bg-metal-acero',
 }
+
+const TABLE_COLS = '96px 1.6fr 1fr 1fr 120px 96px'
 
 const formatMXN = (n) =>
   n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '--'
@@ -125,65 +126,68 @@ export function CatalogoPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-9">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-end justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl font-bold text-warm-900">Catalogo de Productos</h1>
-          <p className="text-warm-400 text-sm mt-1">
-            {productos.length} producto{productos.length !== 1 && 's'}
+          <h1 className="font-display italic text-[32px] text-ink leading-none">Catálogo</h1>
+          <p className="text-[13.5px] text-ink-faint2 mt-2">
+            {productos.length} producto{productos.length !== 1 && 's'} · {categorias.length} categoría{categorias.length !== 1 && 's'}
             {filtroCategoria || filtroMetal || busqueda ? ' (filtrado)' : ''}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="md" onClick={() => setCategoriasOpen(true)}>
-            <FolderOpen size={15} />
-            Categorias
-          </Button>
-          <Button size="md" onClick={() => setProductoModal({ open: true, producto: null })}>
-            <Plus size={15} />
-            Nuevo Producto
-          </Button>
+        <div className="flex gap-2.5">
+          <button
+            onClick={() => setCategoriasOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-inkBorder-strong bg-white text-ink-medium2 text-[13.5px] font-medium hover:bg-surface-sunken transition-all"
+          >
+            <FolderOpen size={17} strokeWidth={1.8} />
+            Categorías
+          </button>
+          <button
+            onClick={() => setProductoModal({ open: true, producto: null })}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white text-[13.5px] font-semibold transition-all"
+          >
+            <Plus size={17} strokeWidth={2} />
+            Nuevo producto
+          </button>
         </div>
       </div>
 
       {/* Filters bar */}
-      <div className="card p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-300" />
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre o codigo..."
-              className="w-full bg-ivory-50 border border-ivory-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-warm-800 placeholder-warm-300 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400 transition-all"
-            />
-          </div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex-1 flex items-center gap-[11px] bg-surface-sunken rounded-xl px-4 py-2.5">
+          <Search size={18} className="text-ink-placeholder2 shrink-0" strokeWidth={1.8} />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre o código…"
+            className="w-full bg-transparent text-[14px] text-ink-strong placeholder-ink-placeholder2 focus:outline-none"
+          />
+        </div>
 
-          {/* Category filter */}
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-warm-400" />
-            <select
-              value={filtroCategoria}
-              onChange={(e) => setFiltroCategoria(e.target.value)}
-              className="select-luxury text-sm py-2.5"
-            >
-              <option value="">Todas las categorias</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="relative">
+          <select
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
+            className="appearance-none flex items-center gap-2 pl-4 pr-9 py-2.5 rounded-xl border border-inkBorder-strong bg-white text-ink-medium2 text-[13.5px] font-medium cursor-pointer focus:outline-none"
+          >
+            <option value="">Todas las categorías</option>
+            {categorias.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint2" />
+        </div>
 
-          {/* Metal filter */}
+        <div className="relative">
           <select
             value={filtroMetal}
             onChange={(e) => setFiltroMetal(e.target.value)}
-            className="select-luxury text-sm py-2.5"
+            className="appearance-none flex items-center gap-2 pl-4 pr-9 py-2.5 rounded-xl border border-inkBorder-strong bg-white text-ink-medium2 text-[13.5px] font-medium cursor-pointer focus:outline-none"
           >
             <option value="">Todos los metales</option>
             {METAL_OPTIONS.map((m) => (
@@ -192,144 +196,103 @@ export function CatalogoPage() {
               </option>
             ))}
           </select>
+          <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint2" />
         </div>
       </div>
 
-      {/* Category chips (quick filter) */}
-      {categorias.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button
-            onClick={() => setFiltroCategoria('')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-              !filtroCategoria
-                ? 'bg-primary-50 text-primary-600 border-primary-200'
-                : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200 hover:text-primary-600'
-            }`}
-          >
-            Todos
-          </button>
-          {categorias.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setFiltroCategoria(c.id === filtroCategoria ? '' : c.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                filtroCategoria === c.id
-                  ? 'bg-primary-50 text-primary-600 border-primary-200'
-                  : 'bg-white text-warm-500 border-ivory-300 hover:border-primary-200 hover:text-primary-600'
-              }`}
-            >
-              {c.nombre}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Product grid */}
+      {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
           <Spinner size="lg" />
         </div>
       ) : productos.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Package size={40} className="mx-auto text-warm-300 mb-3" />
-          <h3 className="font-display text-xl font-semibold text-warm-700 mb-1">Sin productos</h3>
-          <p className="text-sm text-warm-400">
+        <div className="rounded-2xl border border-inkBorder-card p-12 text-center">
+          <Package size={40} className="mx-auto text-ink-placeholder2 mb-3" strokeWidth={1.5} />
+          <h3 className="text-xl font-semibold text-ink-medium mb-1">Sin productos</h3>
+          <p className="text-sm text-ink-faint2">
             {busqueda || filtroCategoria || filtroMetal
               ? 'No se encontraron productos con esos filtros.'
               : 'Agrega tu primer producto al catalogo.'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-inkBorder-card overflow-hidden">
+          <div
+            className="grid gap-4 px-[22px] py-[13px] bg-surface-rail border-b border-inkBorder-standard text-[10.5px] tracking-[0.1em] uppercase text-ink-faint2 font-bold"
+            style={{ gridTemplateColumns: TABLE_COLS }}
+          >
+            <span>Código</span>
+            <span>Producto</span>
+            <span>Categoría</span>
+            <span>Metal</span>
+            <span className="text-right">Precio</span>
+            <span className="text-right">Acciones</span>
+          </div>
           {productos.map((prod) => {
             const dinamico = requierePeso(prod)
 
             return (
               <div
                 key={prod.id}
-                className={`card p-5 group hover:shadow-luxury-md transition-all duration-200 cursor-pointer ${
+                className={`group grid gap-4 items-center px-[22px] py-3.5 border-b border-inkBorder-row last:border-b-0 cursor-pointer hover:bg-surface-sunken transition-colors ${
                   !prod.activo ? 'opacity-50' : ''
                 }`}
+                style={{ gridTemplateColumns: TABLE_COLS }}
                 onClick={() => setProductoModal({ open: true, producto: prod })}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    {/* Code badge */}
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-warm-400 bg-ivory-100 px-2 py-0.5 rounded-md">
-                        {prod.codigo}
-                      </span>
-                      {!prod.activo && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 border border-red-200">
-                          Inactivo
-                        </span>
-                      )}
-                    </div>
-                    {prod.nombre && (
-                      <h3 className="font-display text-lg font-semibold text-warm-900 truncate">
-                        {prod.nombre}
-                      </h3>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEtiquetaModal({ open: true, producto: prod })
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
-                      title="Imprimir etiqueta"
-                    >
-                      <Barcode size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setProductoModal({ open: true, producto: prod })
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-ivory-200 text-warm-400 hover:text-primary-500 transition-all"
-                    >
-                      <PenLine size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => handleEliminar(e, prod)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-warm-400 hover:text-red-500 transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
+                <span className="font-mono text-[11px] text-ink-faint truncate">{prod.codigo}</span>
 
-                {/* Category + Metal badges */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {prod.categoria_nombre && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-ivory-200 text-warm-600 border border-ivory-400">
-                      <Tag size={10} />
-                      {prod.categoria_nombre}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[14px] font-semibold text-ink-strong truncate">{prod.nombre}</span>
+                  {dinamico && (
+                    <span className="shrink-0 text-[10px] font-semibold text-dynamic-text bg-dynamic-bg border border-dynamic-border rounded-[6px] px-[7px] py-0.5">
+                      Al pesar
                     </span>
                   )}
-                  {prod.metal && (
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        METAL_COLORS[prod.metal] || 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {METAL_LABELS[prod.metal] || prod.metal}
+                  {!prod.activo && (
+                    <span className="shrink-0 text-[10px] font-semibold text-status-dangerText bg-status-dangerBg rounded-[6px] px-[7px] py-0.5">
+                      Inactivo
                     </span>
                   )}
                 </div>
 
-                {/* Price info */}
-                <div className="flex items-end justify-between mt-auto">
-                  <div className="flex items-center gap-1 text-[10px] text-warm-300">
-                    <Banknote size={10} />
-                    {dinamico ? 'Precio al vender' : 'Precio fijo'}
-                  </div>
-                  {!dinamico && (
-                    <p className="font-display text-xl font-bold text-warm-900">
-                      {formatMXN(prod.precio_fijo)}
-                    </p>
-                  )}
+                <span className="text-[13px] text-ink-soft truncate">{prod.categoria_nombre || '—'}</span>
+
+                <div className="flex items-center gap-[7px] min-w-0">
+                  {prod.metal && <span className={`w-2 h-2 rounded-full shrink-0 ${METAL_DOT[prod.metal] || 'bg-ink-placeholder3'}`} />}
+                  <span className="text-[13px] text-ink-soft truncate">{METAL_LABELS[prod.metal] || prod.metal || '—'}</span>
+                </div>
+
+                <span className={`text-[14px] font-bold text-right ${dinamico || !prod.precio_fijo ? 'text-ink-faint2 font-medium' : 'text-ink'}`}>
+                  {dinamico ? 'Al pesar' : prod.precio_fijo ? formatMXN(prod.precio_fijo) : 'Al vender'}
+                </span>
+
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEtiquetaModal({ open: true, producto: prod })
+                    }}
+                    className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-ink-faint2 opacity-0 group-hover:opacity-100 hover:bg-surface-sunken2 transition-all"
+                    title="Imprimir etiqueta"
+                  >
+                    <Barcode size={16} strokeWidth={1.8} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setProductoModal({ open: true, producto: prod })
+                    }}
+                    className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-ink-faint2 opacity-0 group-hover:opacity-100 hover:bg-surface-sunken2 transition-all"
+                  >
+                    <PenLine size={16} strokeWidth={1.8} />
+                  </button>
+                  <button
+                    onClick={(e) => handleEliminar(e, prod)}
+                    className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-[#c4b0b0] opacity-0 group-hover:opacity-100 hover:bg-status-dangerBg transition-all"
+                  >
+                    <Trash2 size={16} strokeWidth={1.8} />
+                  </button>
                 </div>
               </div>
             )

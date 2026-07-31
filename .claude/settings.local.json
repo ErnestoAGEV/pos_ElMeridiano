@@ -137,7 +137,29 @@
       "Bash(ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron.cmd -e ' *)",
       "Bash(ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron.cmd _test_syntax_temp.cjs)",
       "Bash(rm _test_syntax_temp.cjs)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron.cmd _test_final_syntax_temp.cjs)",
+      "Bash(rm _test_final_syntax_temp.cjs)",
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/auth/LoginPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/dashboard/DashboardPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/metales/MetalesPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/catalogo/CatalogoPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/ventas/VentasPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/historial/HistorialPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/reportes/ReportesPage.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/index.css)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/personalizacion/PersonalizacionPage.jsx)",
+      "Bash(curl -s http://localhost:5183/src/index.css)",
+      "Bash(kill %1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/reportes/TabResumen.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/modules/catalogo/ProductoModal.jsx)",
+      "Bash(file src/assets/logo-default.png)",
+      "Bash(identify src/assets/logo-default.png)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/components/Sidebar.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/App.jsx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/src/components/ui/Button.jsx)"
     ]
   }
 }
