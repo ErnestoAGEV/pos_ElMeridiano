@@ -5,15 +5,35 @@ const { app } = require('electron')
 let db = null
 
 function getDbPath() {
+  const fs = require('fs')
   const userDataPath = app.getPath('userData')
   const newPath = path.join(userDataPath, 'meridiano.db')
-  // Migrate from old name if needed
-  if (!require('fs').existsSync(newPath)) {
-    const oldPath = path.join(userDataPath, 'pos-meridiano.db')
-    if (require('fs').existsSync(oldPath)) {
-      require('fs').copyFileSync(oldPath, newPath)
+  if (fs.existsSync(newPath)) return newPath
+
+  // El paquete npm se llamaba "pos-meridiano" (app visible como "JoyeriaPOS")
+  // antes de renombrarse a "meridiano-sistema-joyero" (app visible "Meridiano").
+  // Electron guarda userData en %AppData%\<nombre-del-paquete-npm>, asi que un
+  // cliente actualizando desde esa version vieja tiene su base de datos en una
+  // carpeta HERMANA distinta, no dentro de la misma carpeta. La buscamos ahi
+  // tambien antes de asumir que es una instalacion nueva, para no mostrarle un
+  // catalogo vacio solo por el cambio de nombre del producto.
+  const appDataRoot = path.dirname(userDataPath)
+  const candidatos = [
+    // [carpeta hermana, nombre de archivo]
+    ['pos-meridiano', 'pos-meridiano.db'],
+    ['pos-meridiano', 'meridiano.db'],
+    [path.basename(userDataPath), 'pos-meridiano.db'], // mismo nombre de app, archivo viejo
+  ]
+
+  for (const [carpeta, archivo] of candidatos) {
+    const origen = path.join(appDataRoot, carpeta, archivo)
+    if (fs.existsSync(origen)) {
+      fs.mkdirSync(userDataPath, { recursive: true })
+      fs.copyFileSync(origen, newPath)
+      return newPath
     }
   }
+
   return newPath
 }
 
